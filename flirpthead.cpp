@@ -230,6 +230,11 @@ int FlirPTHead::pantiltSet(float pDeg, float tDeg, int pSpeed, int tSpeed)
 	return saveCommand(ptzCommandList.at(C_PANTILT_SET).arg(pPoint).arg(tPoint).arg(pSpeed).arg(tSpeed));
 }
 
+int FlirPTHead::panTiltGoPos(float ppos, float tpos)
+{
+	return pantiltSet(ppos, tpos, 1, 1);
+}
+
 int FlirPTHead::panTiltStop()
 {
 	return saveCommand(ptzCommandList.at(C_STOP));
@@ -237,12 +242,12 @@ int FlirPTHead::panTiltStop()
 
 float FlirPTHead::getPanAngle()
 {
-	return panPos;
+	return panPos * 180.0 / MaxPanPos;
 }
 
 float FlirPTHead::getTiltAngle()
 {
-	return tiltPos;
+	return tiltPos * 90.0 / MaxTiltPos / 3;
 }
 
 void FlirPTHead::sendCommand()

@@ -30,6 +30,7 @@ public:
 	int panSet(int pDeg, int pSpeed);
 	int tiltSet(int tDeg, int tSpeed);
 	int pantiltSet(float pDeg, float tDeg, int pSpeed, int tSpeed);
+	int panTiltGoPos(float ppos, float tpos) override;
 	int panTiltStop();
 	float getPanAngle();
 	float getTiltAngle();
