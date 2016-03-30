@@ -2,6 +2,8 @@
 
 #include <errno.h>
 
+#include <QStringList>
+
 PseudoOnvifDeviceMgtSystemInterface::PseudoOnvifDeviceMgtSystemInterface()
 {
 }
