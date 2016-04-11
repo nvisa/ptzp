@@ -15,8 +15,7 @@
 /**
 	\class AT88Driver
 
-	\brief This class implements AT88 family of EEPROM driver.
-
+	\brief Implements AT88 family of EEPROM driver.
 
 	At the moment following models are supported:
 
@@ -127,7 +126,7 @@ QByteArray AT88Driver::readZone(int zone)
  */
 int AT88Driver::writeZone(int zone, const QByteArray &ba)
 {
-	return -ENOENT;
+	return -ENOSYS;
 }
 
 /**
@@ -139,7 +138,7 @@ int AT88Driver::writeZone(int zone, const QByteArray &ba)
  */
 int AT88Driver::writePage(int zone, int page, const QByteArray &ba)
 {
-
+	return -ENOSYS;
 }
 
 /**
