@@ -113,6 +113,11 @@ int AT88Driver::getZoneSize()
 	return -EINVAL;
 }
 
+/**
+ * @brief AT88Driver::readZone
+ * @param zone zone number
+ * @return read data on success, NULL QByteArray otherwise.
+ */
 QByteArray AT88Driver::readZone(int zone)
 {
 	return readUserZone(zone);
@@ -120,25 +125,32 @@ QByteArray AT88Driver::readZone(int zone)
 
 /**
  * @brief AT88Driver::writeZone
- * @param zone
- * @param ba
- * @return Error always, this function is not implemented yet.
+ * @param zone zone number
+ * @param ba write argument
+ * @return '0' on success, negative error code otherwise.
  */
 int AT88Driver::writeZone(int zone, const QByteArray &ba)
 {
-	return -ENOSYS;
+	return writeUserZone(zone, 0, ba);
 }
 
 /**
  * @brief AT88Driver::writePage
- * @param zone
- * @param page
- * @param ba
- * @return Error always, this function is not implemented yet.
+ * @param zone zone number
+ * @param page page number
+ * @param ba write argument
+ * @return '0' on success, negative error code otherwise.
  */
 int AT88Driver::writePage(int zone, int page, const QByteArray &ba)
 {
-	return -ENOSYS;
+	if (ba.length() < getPageSize()) {
+		if( page < getZoneSize() / getPageSize())
+			return writeUserZone(zone, page, ba);
+		else
+			return -ENOSYS;
+	}
+	else
+		return -EFAULT;
 }
 
 /**
