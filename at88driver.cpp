@@ -251,7 +251,7 @@ QByteArray AT88Driver::readUserZone(int zone)
 	if (err)
 		return QByteArray();
 
-	uchar buf[32];
+	uchar buf[getZoneSize()];
 	buf[0] = 0;
 	buf[1] = 0;
 	buf[2] = getZoneSize();
