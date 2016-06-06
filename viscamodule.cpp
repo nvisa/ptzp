@@ -8,6 +8,8 @@ ViscaModule::ViscaModule(QextSerialPort *port, QObject *parent) :
 	QObject(parent)
 {
 	this->port = port;
+	serialTimer = new QTimer(this);
+	connect(serialTimer, SIGNAL(timeout()), SLOT(timeout()));
 }
 
 ViscaModule::~ViscaModule()
@@ -77,7 +79,7 @@ int ViscaModule::startZoomIn()
 {
 	//const char buf[] = { 0x81, 0x01, 0x04, 0x07, 0x02, 0xff };
 	const char buf[] = { 0x81, 0x01, 0x04, 0x07, 0x25, 0xff };
-
+	serialTimer->start(100);
 	return writePort(buf, sizeof(buf));
 }
 
@@ -85,12 +87,13 @@ int ViscaModule::startZoomOut()
 {
 	//const char buf[] = { 0x81, 0x01, 0x04, 0x07, 0x03, 0xff };
 	const char buf[] = { 0x81, 0x01, 0x04, 0x07, 0x35, 0xff };
-
+	serialTimer->start(100);
 	return writePort(buf, sizeof(buf));
 }
 
 int ViscaModule::stopZoom()
 {
+	serialTimer->stop();
 	const char buf[] = { 0x81, 0x01, 0x04, 0x07, 0x00, 0xff };
 	return writePort(buf, sizeof(buf));
 }
@@ -553,6 +556,32 @@ int ViscaModule::applyProgramAEmode(ProgramAEmode ae, ShutterSpeed shVal, Exposu
 	setFocusMode(focusMode);
 	return 0;
 }
+
+void ViscaModule::timeout()
+{
+	if (port->bytesAvailable() == 0)
+		return;
+	static QByteArray buf;
+	buf.append(port->readAll());
+	while (buf.size()) {
+		if (buf.at(0) == 0x90) {
+			if (buf.size() < 2)
+				break;
+			if (buf.at(1) == 0x41 || buf.at(1) == 0x51) {
+				if (buf.size() < 3)
+					break;
+				buf.remove(0, 3);
+			} else if (buf.at(1) == 0x07) {
+				if (buf.size() < 11)
+					break;
+				currentZoomPos = buf[6] * 16 * 16 * 16 + buf[7] * 16 * 16 + buf[8] * 16+ buf[9];
+			} else
+				buf.clear();
+		} else
+			buf.clear();
+	}
+}
+
 #if 0
 +#include "qextserialport.h"
 +static int serTest(const QMap<QString, QString> &args)

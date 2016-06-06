@@ -190,10 +190,15 @@ public:
 	int selectZoomType(bool digiZoom, ZoomType zoomType);
 	bool getDigiZoomState();
 	ZoomType getZoomType();
+	int getLatestZoomPos() { return currentZoomPos; }
 
 	int applyProgramAEmode(ProgramAEmode ae, ShutterSpeed shVal, ExposureValue exVal, GainValue gain, bool ircf, FocusMode focusMode);
 
+protected slots:
+	void timeout();
 protected:
+	int currentZoomPos;
+	QTimer *serialTimer;
 	QextSerialPort *port;
 };
 
