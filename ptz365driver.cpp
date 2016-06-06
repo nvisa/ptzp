@@ -122,6 +122,7 @@ class ComInterface
 public:
 	virtual int write(uchar reg, uchar val) = 0;
 	virtual uchar read(uchar reg) = 0;
+	virtual QByteArray write(const QByteArray &ba, int timeout) = 0;
 };
 
 class I2CInterface : public ComInterface
@@ -141,6 +142,12 @@ public:
 	{
 		return parent->i2cRead(reg);
 	}
+
+	QByteArray write(const QByteArray &ba, int timeout)
+	{
+		return QByteArray();
+	}
+
 
 	Ptz365Driver *parent;
 };
@@ -174,7 +181,8 @@ public:
 			int addr = i2c_regs[I2CR_PELCOD_ADDR];
 			int speed = i2c_regs[I2CR_PELCOD_SPEED];
 			int par = i2c_regs[I2CR_PELCOD_DATA];
-			port->write(get_pelcod(addr, val, speed, par), 7);
+			QByteArray ba(get_pelcod(addr, val, speed, par), 7);
+			port->write(ba);
 		} else if (reg == I2CR_US_COMMAND) {
 			/*struct usart *usart = get_usart(1);
 			usart->baudrate = i2c_regs[I2CR_US_BAUDRATE_HIGH] * 256 + i2c_regs[I2CR_US_BAUDRATE_LOW];
@@ -194,6 +202,13 @@ public:
 			port->write(tmp, 7);
 		}
 		return 0;
+	}
+
+	QByteArray write(const QByteArray &ba, int timeout)
+	{
+		port->write(ba);
+		usleep(timeout * 1000);
+		return port->readAll();
 	}
 
 	uchar read(uchar reg)
@@ -283,6 +298,11 @@ int Ptz365Driver::setCustomCommand(const QByteArray &ba)
 	return 0;
 }
 
+QByteArray Ptz365Driver::writeRead(const QByteArray &ba, int timeout)
+{
+	return iface->write(ba, timeout);
+}
+
 static QByteArray setupDegree(int degree, uchar cmd)
 {
 	while (degree < 0)
@@ -353,6 +373,21 @@ int Ptz365Driver::getTiltPosition()
 	uchar b1 = iface->read(0x17);
 	uchar b2 = iface->read(0x18);
 	return b1 * 256 + b2;
+}
+
+int Ptz365Driver::readPosition(int &pan, int &tilt)
+{
+	char mes[] = {0x3a, 0xff, 0x82, 0x00, 0, 0, 0, 0x81, 0x5c};
+	QByteArray ba = writeRead(QByteArray(mes, 9), 100);
+	const uchar *buf = (const uchar *)ba.constData();
+	if (ba.size() < 9) {
+		pan = 0;
+		tilt = 0;
+		return -EINVAL;
+	}
+	pan = buf[3] * 256 + buf[4];
+	tilt = buf[5] * 256 + buf[6];
+	return 0;
 }
 
 void Ptz365Driver::timeout()

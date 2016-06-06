@@ -36,12 +36,14 @@ public:
 	void setCommand(uchar cmd, int timeout = 0);
 	uchar getCommand(uchar cmd);
 	int setCustomCommand(const QByteArray &ba);
+	QByteArray writeRead(const QByteArray &ba, int timeout);
 
 	int panTo(int degree);
 	int tiltTo(int degree);
 	int moveTo(movDirection mDr, uchar panSpd, uchar tiltSpd);
 	int getPanPosition();
 	int getTiltPosition();
+	int readPosition(int &pan, int &tilt);
 signals:
 
 public slots:
