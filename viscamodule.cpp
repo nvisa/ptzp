@@ -3,6 +3,7 @@
 #include "qextserialport/qextserialport.h"
 
 #include <errno.h>
+#include <unistd.h>
 
 ViscaModule::ViscaModule(QextSerialPort *port, QObject *parent) :
 	QObject(parent)
