@@ -576,6 +576,7 @@ void ViscaModule::timeout()
 				if (buf.size() < 11)
 					break;
 				currentZoomPos = buf[6] * 16 * 16 * 16 + buf[7] * 16 * 16 + buf[8] * 16+ buf[9];
+				buf.clear();
 			} else
 				buf.clear();
 		} else
