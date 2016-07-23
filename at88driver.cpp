@@ -170,10 +170,10 @@ int AT88Driver::writeZone(int zone, const QByteArray &ba)
  */
 int AT88Driver::writePage(int zone, int page, const QByteArray &ba)
 {
-	if (page + ba.length() > getZoneSize())
-		return -ENOMEM;
-	else
-		return writeUserZone(zone, page, ba);
+	int pageOff = page * getPageSize();
+	if (pageOff + ba.length() > getZoneSize())
+		return -E2BIG;
+	return writeUserZone(zone, pageOff, ba);
 }
 
 /**
