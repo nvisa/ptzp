@@ -9,6 +9,7 @@ class AT88Driver : public I2CDevice
 public:
 	enum Model {
 		SC0104C,
+		SC0808C,
 		SC1616C,
 	};
 
@@ -22,6 +23,13 @@ public:
 	QByteArray readZone(int zone);
 	int writeZone(int zone, const QByteArray &ba);
 	int writePage(int zone, int page, const QByteArray &ba);
+
+	quint64 getAtr() { return atr; }
+	quint16 getFab() { return fabCode; }
+	quint16 getMtz() { return mtz; }
+	quint32 getCmc() { return cmc; }
+	quint64 getLot() { return lot; }
+	uchar getDcr() { return dcr; }
 
 protected:
 	QByteArray readConfigMem();

@@ -47,6 +47,8 @@ int AT88Driver::getEepromModel()
 		return SC0104C;
 	if (atr == 0x3bb2110010800016ull)
 		return SC1616C;
+	if (atr == 0x3bb2110010800008ull)
+		return SC0808C;
 	return -EINVAL;
 }
 
@@ -59,6 +61,8 @@ int AT88Driver::getEepromSize()
 	int m = getEepromModel();
 	if (m == SC0104C)
 		return 128;
+	if (m == SC0808C)
+		return 1024;
 	if (m == SC1616C)
 		return 2048;
 	if (m < 0)
@@ -75,6 +79,8 @@ int AT88Driver::getZoneCount()
 	int m = getEepromModel();
 	if (m == SC0104C)
 		return 4;
+	if (m == SC0808C)
+		return 8;
 	if (m == SC1616C)
 		return 16;
 	if (m < 0)
@@ -90,6 +96,7 @@ int AT88Driver::getPageSize()
 {
 	int m = getEepromModel();
 	if (m == SC0104C
+			|| m == SC0808C
 			|| m == SC1616C)
 		return 16;
 	if (m < 0)
@@ -106,6 +113,8 @@ int AT88Driver::getZoneSize()
 	int m = getEepromModel();
 	if (m == SC0104C)
 		return 32;
+	if (m == SC0808C)
+		return 128;
 	if (m == SC1616C)
 		return 128;
 	if (m < 0)
