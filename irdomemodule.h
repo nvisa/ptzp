@@ -7,9 +7,8 @@
 #include "pattern.h"
 
 #define PELCOD_ADD 0x01
-#define SETPOSLENGT 8
-
-#define SPECIAL_POS_FILE "specialPos.bin"
+#define DEF_PRESET_LIMIT 8
+#define DEF_PRESET_FILE "specialPos.bin"
 #define POS_UPDATE_INTERVAL 200
 class IrDomeModule : public Pattern
 {
@@ -259,7 +258,8 @@ public:
 	};
 
 
-	explicit IrDomeModule(QextSerialPort *port, int readWrite, QObject *parent = 0);
+	explicit IrDomeModule(QextSerialPort *port, int readWrite, QString presetFilename = DEF_PRESET_FILE, int presetLimitNo = DEF_PRESET_LIMIT,
+						  QString pattFilename = DEF_PATT_FILENAME, int pattLimit = DEF_PATT_LIM, QObject *parent = 0);
 	~IrDomeModule();
 
 	const QByteArray getPelcod(uchar addr, PelcoDCommands cmd, uchar data1 , uchar data2);
@@ -283,7 +283,7 @@ public:
 	ZoomType getZoomType();
 	int selectZoomType(bool digiZoom, ZoomType zoomType);
 
-	int	setZoomFocusSettings();
+	int setZoomFocusSettings();
 
 	int startFocusNear();
 	int startFocusFar();
@@ -308,11 +308,11 @@ public:
 	int setProgramAEmode(ProgramAEmode val);
 	ProgramAEmode getProgramAEmode();
 
-	int	setShutterSpeed(ShutterSpeed val);
+	int setShutterSpeed(ShutterSpeed val);
 	ShutterSpeed getShutterSpeed();
 	int setShutterLimit(int upLim, int downLim);
 
-	int	setExposureValue(ExposureValue val);
+	int setExposureValue(ExposureValue val);
 	ExposureValue getExposureValue();
 	int setExposureTarget(int val);
 
@@ -356,7 +356,6 @@ public:
 	int pPanRightTiltUp(uchar speedPan, uchar speedTilt);
 	int pPanRightTiltDown(uchar speedPan, uchar speedTilt);
 
-	// china dome is not supported
 	int pSetPreset(uchar saveNo);
 	int pClearPreset(uchar saveNo);
 	int pGotoPreset(uchar saveNo);
@@ -372,17 +371,14 @@ public:
 	int pGetPosPan();
 	int pGetPosTilt();
 	int pGetPosZoom();
-	// china dome is not supported
 
 	int pStop();
 	QPair<int, int> sSetPos(uint posH, uint posV);
 	QPair<int, int> sGetPos();
 	QPair<int, int> GetPosMem();
 
-	// china dome is not supported
 	int sSetZoom(uint zoomPos);
 	int sGetZoom();
-	// china dome is not supported
 
 	int sSetAbsolute(uint posH, uint posV, uint zoomPos);
 
@@ -395,7 +391,8 @@ public:
 	int presetSave(int ind);
 	int presetDelete(int ind);
 	int presetState(int ind);
-	QString presetPos(int ind);
+	Positions presetPos(int ind);
+	QString presetPosString(int ind);
 	int getPresetLimit();
 
 	int patternStart(int ind);
@@ -410,9 +407,9 @@ public:
 
 	int homeSave();
 	int homeGoto();
-	const QString getHomePos();
+	const Positions getHomePos();
+	const QString getHomePosString();
 
-	int disablePort();
 	void updatePositionDisable();
 	void updatePositionActive();
 	int updatePositionInterval(int msec);
@@ -433,8 +430,7 @@ public:
 	int maskSet(uint maskID, int width, int height, bool nn = 1);
 	int maskSetNoninterlock(uint maskID, int x, int y, int width, int height, bool nn);
 
-	// china dome is not supported
-	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);	// china dome is not supported
+	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);
 	int maskGrid(MaskGrid onOff);
 	int freeze(bool state);
 	int setWhiteBalance(WhiteBalance WB);
@@ -444,7 +440,6 @@ public:
 	int titleClear(uint lineNumber);
 	int titleDisplay(uint lineNumber, bool onOff);
 	int titleWrite(uint lineNumber, const QByteArray str, uint hPosition, TitleColor color, bool blink);
-	 //china dome is not supported
 
 public slots:
 	int writePort(const char *command, int len);
@@ -454,8 +449,10 @@ private slots:
 
 protected:
 	QextSerialPort *irPort;
-	struct Positions setPoss[SETPOSLENGT];
-	bool setPosState[SETPOSLENGT];
+
+	QString presetSaveFile;
+	int presetLimit;
+	QList<QPair<bool, Positions> > preset;
 	struct Positions homePos;
 
 private:
