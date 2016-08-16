@@ -25,7 +25,6 @@ void CamInfo::getModuleSummary()
 		camPort->setParity(tempParity);
 		return;
 	} else {
-
 		camPort->setBaudRate(tempBaund);
 		camPort->setParity(tempParity);
 		mDebug("Undefined camera modul or modul is not aviable.");
@@ -302,7 +301,6 @@ int CamInfo::getHitachi()
 		modeStr = "UNDEFINED";
 	}
 	mDebug("Focus Mode:\t%s", modeStr.toAscii().data());
-
 
 	mDebug("Zoom:\t%d", hitachi->readReg(camPort, 0xfc91));
 	return 0;

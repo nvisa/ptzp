@@ -11,7 +11,6 @@ class CamInfo : public QObject
 	Q_OBJECT
 public:
 	explicit CamInfo(QextSerialPort *port, QObject *parent = 0);
-
 	void getModuleSummary();
 
 protected:
