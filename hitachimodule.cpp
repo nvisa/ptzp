@@ -1,11 +1,10 @@
 #include "hitachimodule.h"
 #include "qextserialport.h"
 
-#include <debug.h>
-
 #include <math.h>
 #include <errno.h>
 #include <unistd.h>
+#include <debug.h>
 
 #include <QElapsedTimer>
 
@@ -18,8 +17,6 @@ HitachiModule::HitachiModule(QextSerialPort *port, QObject *parent) :
 	QObject(parent)
 {
 	hiPort = port;
-	hiPort->setBaudRate(BAUD4800);
-	hiPort->setParity(PAR_EVEN);
 	timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), SLOT(timeout()));
 	timer->start(600*1000);
@@ -68,7 +65,7 @@ int HitachiModule::writePort(QextSerialPort *port, const QString &command)
 	if (!command.length())
 		return -EIO;
 	const int succ = port->write(command.toAscii()) == command.size() ? 0 : -EIO;
-	usleep(command.size() * 300);
+	usleep(command.size() * 210);
 	return succ;
 }
 
@@ -654,7 +651,12 @@ int HitachiModule::setCameraMode(CameraMode mode)
 	return 0;
 }
 
-HitachiModule::CameraMode HitachiModule::getCameraMode() // this function is wrong for sc110
+/**
+ * @brief HitachiModule::getCameraMode
+ * @return
+ * this function is wrong for sc110
+ */
+HitachiModule::CameraMode HitachiModule::getCameraMode()
 {
 	int val = readReg(hiPort, 0x1701);
 	if (val == 0x04)
@@ -913,9 +915,9 @@ int HitachiModule::initializeRAM()
 
 void HitachiModule::timeout()
 {
-	qDebug() << "current shutter value: " << readRegW(hiPort, 0xffda);
-	qDebug() << "current exposure value: " << readRegW(hiPort, 0xffdc);
-	qDebug() << "current gain value: " << getAGCgain();
+	mDebug("current shutter value: %d", readRegW(hiPort, 0xffda));
+	mDebug("current exposure value: %d", readRegW(hiPort, 0xffdc));
+	mDebug("current gain value: %f", getAGCgain());
 }
 
 int HitachiModule::readRegW(QextSerialPort *port, int reg)
