@@ -1,10 +1,11 @@
 #ifndef PATTERNRECORDER_H
 #define PATTERNRECORDER_H
 
-#include <QObject>
 #include <QFile>
-#include "QElapsedTimer"
-#include "debug.h"
+#include <QObject>
+#include <QElapsedTimer>
+
+#include <ecl/debug.h>
 
 #define DEF_PATT_LIM 8
 #define DEF_PATT_FILENAME "pattern_"

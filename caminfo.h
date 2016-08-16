@@ -2,9 +2,10 @@
 #define CAMINFO_H
 
 #include <QObject>
+
 #include <drivers/irdomemodule.h>
 #include <drivers/hitachimodule.h>
-#include <qextserialport.h>
+#include <drivers/qextserialport/qextserialport.h>
 
 class CamInfo : public QObject
 {

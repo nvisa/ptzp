@@ -1,5 +1,5 @@
 #include "hitachimodule.h"
-#include "qextserialport.h"
+#include "drivers/qextserialport/qextserialport.h"
 
 #include <math.h>
 #include <errno.h>
@@ -33,7 +33,7 @@ int HitachiModule::writePort( const QString &command)
 {
 	if (!command.length())
 		return -EIO;
-	const int succ = hiPort->write(command.toAscii()) == command.size() ? 0 : -EIO;
+	const int succ = hiPort->write(command.toLatin1()) == command.size() ? 0 : -EIO;
 	usleep(command.size() * 210);
 	return succ;
 }
@@ -44,7 +44,7 @@ QString HitachiModule::readPort( const QString &command)
 	hiPort->readAll();
 
 	QByteArray readData;
-	hiPort->write(command.toAscii());
+	hiPort->write(command.toLatin1());
 	QElapsedTimer t;
 	t.start();
 	while (hiPort->bytesAvailable() < command.size()) {
@@ -57,14 +57,14 @@ QString HitachiModule::readPort( const QString &command)
 	while (readData.size() && readData.at(0) == 0)
 		readData.remove(0, 1);
 	fDebug("Read data(%d) is '%s'", readData.size(), readData.data());
-	return QString::fromAscii(readData);
+	return QString::fromLatin1(readData);
 }
 
 int HitachiModule::writePort(QextSerialPort *port, const QString &command)
 {
 	if (!command.length())
 		return -EIO;
-	const int succ = port->write(command.toAscii()) == command.size() ? 0 : -EIO;
+	const int succ = port->write(command.toLatin1()) == command.size() ? 0 : -EIO;
 	usleep(command.size() * 210);
 	return succ;
 }
@@ -75,7 +75,7 @@ QString HitachiModule::readPort(QextSerialPort *port, const QString &command)
 	port->readAll();
 
 	QByteArray readData;
-	port->write(command.toAscii());
+	port->write(command.toLatin1());
 	QElapsedTimer t;
 	t.start();
 	while (port->bytesAvailable() < command.size()) {
@@ -88,7 +88,7 @@ QString HitachiModule::readPort(QextSerialPort *port, const QString &command)
 	while (readData.size() && readData.at(0) == 0)
 		readData.remove(0, 1);
 	fDebug("Read data(%d) is '%s'", readData.size(), readData.data());
-	return QString::fromAscii(readData);
+	return QString::fromLatin1(readData);
 }
 
 int HitachiModule::setIRCFInOutCtrl(HitachiModule::IRCFControl val)

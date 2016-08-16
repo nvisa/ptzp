@@ -1,5 +1,7 @@
 #include "irdomemodule.h"
+
 #include <errno.h>
+#include <unistd.h>
 
 #define ARRAY_SIZE(X) (sizeof(X) / sizeof(X[0]))
 

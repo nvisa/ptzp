@@ -1,15 +1,18 @@
 #ifndef IRDOMEMODULE_H
 #define IRDOMEMODULE_H
+
 #include <QTimer>
 #include <QPair>
 #include <QByteArray>
-#include "qextserialport.h"
-#include "pattern.h"
+
+#include <drivers/pattern.h>
+#include <drivers/qextserialport/qextserialport.h>
 
 #define PELCOD_ADD 0x01
 #define DEF_PRESET_LIMIT 8
 #define DEF_PRESET_FILE "specialPos.bin"
 #define POS_UPDATE_INTERVAL 200
+
 class IrDomeModule : public Pattern
 {
 	Q_OBJECT

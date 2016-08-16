@@ -1,6 +1,8 @@
 #include "pattern.h"
-#include "QTimer"
-#include "errno.h"
+
+#include <QTimer>
+
+#include <errno.h>
 
 Pattern::Pattern(int writeState, QString pattFilename, int pattLimit, QObject *parent) :
 	QObject(parent)
@@ -8,12 +10,10 @@ Pattern::Pattern(int writeState, QString pattFilename, int pattLimit, QObject *p
 	writeAble = writeState;
 	patternLimit = pattLimit;
 	patternFile = pattFilename;
-	for (int i = 0; i < patternLimit; i++) {
+	for (int i = 0; i < patternLimit; i++)
 		patternStates.append(NO_RUN_RECORD);
-	}
-	if (writeAble) {
+	if (writeAble)
 		patternInit();
-	}
 	patternT.start();
 }
 

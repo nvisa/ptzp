@@ -72,7 +72,7 @@ int CamInfo::getIrDomemodule()
 	} else {
 		modeStr = "0x" + QString::number(mode, 16) + "RESERVED";
 	}
-	mDebug("Monitoring Mode:\t%s", modeStr.toAscii().data());
+	mDebug("Monitoring Mode:\t%s", modeStr.toLatin1().data());
 
 	if ( mode == 3 ) {
 		modeStr = "1/100";
@@ -191,7 +191,7 @@ int CamInfo::getIrDomemodule()
 			modeStr = "Undefined";
 		}
 	}
-	mDebug("Shutter Speed:\t%s", modeStr.toAscii().data());
+	mDebug("Shutter Speed:\t%s", modeStr.toLatin1().data());
 
 	int focus = dome->getFocusMode();
 	if  (focus == IrDomeModule::FOCUS_AUTO) {
@@ -201,7 +201,7 @@ int CamInfo::getIrDomemodule()
 	} else {
 		modeStr = "UNDEFINED";
 	}
-	mDebug("Focus Mode:\t%s", modeStr.toAscii().data());
+	mDebug("Focus Mode:\t%s", modeStr.toLatin1().data());
 
 	dome->vGetZoom();
 	mDebug("Zoom:\t%d", dome->lastV.zoom);
@@ -252,7 +252,7 @@ int CamInfo::getHitachi()
 	} else {
 		modeStr = "INVALID";
 	}
-	mDebug("Program AE mode:\t%s", modeStr.toAscii().data());
+	mDebug("Program AE mode:\t%s", modeStr.toLatin1().data());
 
 	HitachiModule::ShutterSpeed shut = hitachi->getShutterSpeed(ae);
 	if (shut == HitachiModule::SH_SPD_1_OV_4) {
@@ -290,7 +290,7 @@ int CamInfo::getHitachi()
 	} else {
 		modeStr = "Undefined";
 	}
-	mDebug("Shutter Speed:\t%s", modeStr.toAscii().data());
+	mDebug("Shutter Speed:\t%s", modeStr.toLatin1().data());
 
 	HitachiModule::FocusMode focus = hitachi->getFocusMode();
 	if (focus == HitachiModule::FOCUS_AUTO) {
@@ -300,7 +300,7 @@ int CamInfo::getHitachi()
 	} else {
 		modeStr = "UNDEFINED";
 	}
-	mDebug("Focus Mode:\t%s", modeStr.toAscii().data());
+	mDebug("Focus Mode:\t%s", modeStr.toLatin1().data());
 
 	mDebug("Zoom:\t%d", hitachi->readReg(camPort, 0xfc91));
 	return 0;
