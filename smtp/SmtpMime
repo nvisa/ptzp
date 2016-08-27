@@ -1,0 +1,9 @@
+#ifndef SMTPMIME_H
+#define SMTPMIME_H
+
+#include "smtpclient.h"
+#include "mimehtml.h"
+#include "mimeattachment.h"
+#include "mimeinlinefile.h"
+
+#endif // SMTPMIME_H
