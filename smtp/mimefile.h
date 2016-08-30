@@ -5,7 +5,7 @@
 #include <QFile>
 #include "smtpexports.h"
 
-class SMTP_EXPORT MimeFile : protected MimePart
+class SMTP_EXPORT MimeFile : public MimePart
 {
 	Q_OBJECT
 public:

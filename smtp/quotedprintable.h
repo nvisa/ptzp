@@ -5,7 +5,7 @@
 #include <QByteArray>
 #include "smtpexports.h"
 
-class SMTP_EXPORT QuotedPrintable : private QObject
+class SMTP_EXPORT QuotedPrintable : public QObject
 {
 	Q_OBJECT
 public:

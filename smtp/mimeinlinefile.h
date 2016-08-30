@@ -5,7 +5,7 @@
 
 #include "smtpexports.h"
 
-class SMTP_EXPORT MimeInlineFile : private MimeFile
+class SMTP_EXPORT MimeInlineFile : public MimeFile
 {
 public:
 	MimeInlineFile(QFile *f);

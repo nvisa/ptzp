@@ -4,7 +4,7 @@
 #include "mimetext.h"
 #include "smtpexports.h"
 
-class SMTP_EXPORT MimeHtml : private MimeText
+class SMTP_EXPORT MimeHtml : public MimeText
 {
 	Q_OBJECT
 public:

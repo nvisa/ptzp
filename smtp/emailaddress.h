@@ -4,7 +4,7 @@
 #include <QObject>
 #include "smtpexports.h"
 
-class SMTP_EXPORT EmailAddress : private QObject
+class SMTP_EXPORT EmailAddress : public QObject
 {
 	Q_OBJECT
 public:
