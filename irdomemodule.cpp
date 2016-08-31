@@ -1333,7 +1333,6 @@ const QByteArray IrDomeModule::readPort(const char *command, int wrlen, int rdle
 
 int IrDomeModule::writePort(QextSerialPort* port, const char *command, int len)
 {
-	ffDebug() << "Send Command:" << QByteArray(command, len).toHex().data();
 	port->write(command, len);
 	usleep(100 * len);
 	return len;
@@ -1355,7 +1354,6 @@ QByteArray IrDomeModule::readPort(QextSerialPort *port, const char *command, int
 			break;
 	}
 	readData = port->readAll();
-	ffDebug() << "read data: " << readData.toHex();
 	return readData;
 }
 

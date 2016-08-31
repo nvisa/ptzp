@@ -5,8 +5,8 @@
 #include <QPair>
 #include <QByteArray>
 
-#include <drivers/pattern.h>
-#include <drivers/qextserialport/qextserialport.h>
+#include <ecl/drivers/pattern.h>
+#include <ecl/drivers/qextserialport/qextserialport.h>
 
 #define PELCOD_ADD 0x01
 #define DEF_PRESET_LIMIT 8

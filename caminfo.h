@@ -3,9 +3,9 @@
 
 #include <QObject>
 
-#include <drivers/irdomemodule.h>
-#include <drivers/hitachimodule.h>
-#include <drivers/qextserialport/qextserialport.h>
+#include <ecl/drivers/irdomemodule.h>
+#include <ecl/drivers/hitachimodule.h>
+#include <ecl/drivers/qextserialport/qextserialport.h>
 
 class CamInfo : public QObject
 {

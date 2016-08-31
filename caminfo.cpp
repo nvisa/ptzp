@@ -224,6 +224,7 @@ int CamInfo::getHitachi()
 			mDebug("Monitoring Mode:\t7201p/30fps");
 		}
 	} else {
+		hitachi->deleteLater();
 		return -1;
 	}
 
@@ -303,5 +304,6 @@ int CamInfo::getHitachi()
 	mDebug("Focus Mode:\t%s", modeStr.toLatin1().data());
 
 	mDebug("Zoom:\t%d", hitachi->readReg(camPort, 0xfc91));
+	hitachi->deleteLater();
 	return 0;
 }
