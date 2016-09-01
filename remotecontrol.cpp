@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "settings/applicationsettings.h"
 
+#include <QUdpSocket>
 #include <QTcpSocket>
 #include <QTcpServer>
 
@@ -16,12 +17,33 @@ bool RemoteControl::listen(const QHostAddress &address, quint16 port)
 {
 	serv = new QTcpServer(this);
 	connect(serv, SIGNAL(newConnection()), SLOT(newConnection()));
+
+	sock = new QUdpSocket(this);
+	sock->bind(QHostAddress::Any, port);
+	connect(sock, SIGNAL(readyRead()), SLOT(readPendingDatagrams()));
+
 	return serv->listen(address, port);
 }
 
 void RemoteControl::addMapping(const QString &group, ApplicationSettings *s)
 {
 	mappings.insert(group, s);
+}
+
+void RemoteControl::readPendingDatagrams()
+{
+	while (sock->hasPendingDatagrams()) {
+		QByteArray datagram;
+		datagram.resize(sock->pendingDatagramSize());
+		QHostAddress sender;
+		quint16 senderPort;
+
+		sock->readDatagram(datagram.data(), datagram.size(),
+								&sender, &senderPort);
+		QByteArray ba = processUdpMessage(datagram).toUtf8();
+		if (ba.size())
+			sock->writeDatagram(ba, sender, senderPort);
+	}
 }
 
 void RemoteControl::newConnection()
@@ -58,6 +80,23 @@ void RemoteControl::dataReady()
 		} else
 			sock->write(QString("error:un-supported command\n").toUtf8());
 	}
+}
+
+const QString RemoteControl::processUdpMessage(const QString &mes)
+{
+	if (mes.trimmed().isEmpty())
+		return "";
+	QString resp;
+	QStringList fields = mes.trimmed().split(" ", QString::SkipEmptyParts);
+	if (fields.size() > 1 && fields[0] == "get") {
+		QString set = fields[1].trimmed();
+		resp = QString("get:%1:%2").arg(set).arg(getSetting(set).toString());
+	} else if (fields.size() > 2 && fields[0] == "set") {
+		QString set = fields[1].trimmed();
+		int err = setSetting(set, fields[2].trimmed());
+		resp = QString("set:%1:%2").arg(set).arg(err);
+	}
+	return resp;
 }
 
 const QVariant RemoteControl::getSetting(const QString &setting)
