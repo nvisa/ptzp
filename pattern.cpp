@@ -1,6 +1,7 @@
 #include "pattern.h"
 
 #include <QTimer>
+#include <QDataStream>
 
 #include <errno.h>
 

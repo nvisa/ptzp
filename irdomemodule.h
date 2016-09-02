@@ -258,6 +258,12 @@ public:
 		QPair<int, int> position;
 		int zoom;
 		int irLedstate;
+		int progAe;
+		int ircfVis;
+		int shSpd;
+		int expVal;
+		int agcVal;
+		int focusMode;
 	};
 
 

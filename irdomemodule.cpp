@@ -41,6 +41,7 @@ IrDomeModule::IrDomeModule(QextSerialPort *port, int readWrite, QString presetFi
 		file2SpecialPosition();
 	}
 }
+
 IrDomeModule::~IrDomeModule()
 {
 	if (updateTimer->isActive())
