@@ -112,7 +112,7 @@ void SimpleHttpServer::readMessage()
 				QString mime;
 				const QByteArray ba = getFileAuth(getHeaders["filename"], mime, getUrl);
 				if (ba.size()) {
-					mInfo("sending file '%s'", qPrintable(tokens[1]));
+					mInfo("sending file '%s'", qPrintable(getHeaders["filename"]));
 					QStringList resp;
 					resp << "HTTP/1.1 200 OK";
 					resp << "Accept-Ranges: bytes";
