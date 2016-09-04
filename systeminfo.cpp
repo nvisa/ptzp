@@ -155,6 +155,7 @@ SystemInfo::SystemInfo(QObject *parent) :
 {
 	meminfo = NULL;
 	memtime.start();
+	lastMemFree = 0;
 }
 
 int SystemInfo::getUptime()
@@ -168,12 +169,12 @@ int SystemInfo::getUptime()
 
 int SystemInfo::getCpuLoad()
 {
-	return inst.cpu.load;
+	return inst.cpu.getInstLoadFromProc();
 }
 
 int SystemInfo::getProcFreeMemInfo()
 {
-	if (memtime.elapsed() < 1000)
+	if (lastMemFree && memtime.elapsed() < 1000)
 		return lastMemFree;
 	if (!meminfo) {
 		meminfo = new QFile("/proc/meminfo");
