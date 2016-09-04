@@ -16,7 +16,6 @@ public:
 	explicit RemoteControl(QObject *parent = 0);
 
 	bool listen(const QHostAddress &address, quint16 port);
-	void addMapping(const QString &group, ApplicationSettings *);
 signals:
 
 protected slots:
@@ -28,11 +27,9 @@ protected:
 	const QString processUdpMessage(const QString &mes);
 	const QVariant getSetting(const QString &setting);
 	int setSetting(const QString &setting, const QVariant &value);
-	ApplicationSettings * getMapping(const QString &setting);
 
 	QTcpServer *serv;
 	QUdpSocket *sock;
-	QHash<QString, ApplicationSettings *> mappings;
 };
 
 #endif // REMOTECONTROL_H

@@ -25,11 +25,6 @@ bool RemoteControl::listen(const QHostAddress &address, quint16 port)
 	return serv->listen(address, port);
 }
 
-void RemoteControl::addMapping(const QString &group, ApplicationSettings *s)
-{
-	mappings.insert(group, s);
-}
-
 void RemoteControl::readPendingDatagrams()
 {
 	while (sock->hasPendingDatagrams()) {
@@ -101,7 +96,7 @@ const QString RemoteControl::processUdpMessage(const QString &mes)
 
 const QVariant RemoteControl::getSetting(const QString &setting)
 {
-	return getMapping(setting)->get(setting);
+	return ApplicationSettings::instance()->getm(setting);
 }
 
 int RemoteControl::setSetting(const QString &setting, const QVariant &value)
@@ -110,13 +105,5 @@ int RemoteControl::setSetting(const QString &setting, const QVariant &value)
 	QVariant next = value;
 	if (!next.convert(var.type()))
 		return -EIO;
-	return getMapping(setting)->set(setting, next);
-}
-
-ApplicationSettings *RemoteControl::getMapping(const QString &setting)
-{
-	const QStringList &vals = setting.split(".");
-	if (mappings.contains(vals.first()))
-		return mappings[vals.first()];
-	return ApplicationSettings::instance();
+	return ApplicationSettings::instance()->setm(setting, next);
 }
