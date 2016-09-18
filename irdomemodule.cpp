@@ -1132,23 +1132,28 @@ int IrDomeModule::irLedControl(LedControl cmd)
 }
 
 int IrDomeModule::setAutoIRLed() {
-	uint zoomRatio = getZoomRatio();
-
-	if(zoomRatio <= 5)
-		return irLedControl(LEVEL1);
-	else if(zoomRatio <= 10)
-		return irLedControl(LEVEL2);
-	else if(zoomRatio <= 15)
-		return irLedControl(LEVEL3);
-	else if(zoomRatio <= 20)
-		return irLedControl(LEVEL4);
-	else if(zoomRatio <= 25)
-		return irLedControl(LEVEL5);
-	else if(zoomRatio <= 30)
-		return irLedControl(LEVEL6);
-	else
+	if (lastV.irLedstate != AUTO)
 		return -1;
+	if (getIRCFstat()) {
+		uint zoomRatio = getZoomRatio();
+		if(zoomRatio <= 5)
+			return irLedControl(LEVEL1);
+		else if(zoomRatio <= 10)
+			return irLedControl(LEVEL2);
+		else if(zoomRatio <= 15)
+			return irLedControl(LEVEL3);
+		else if(zoomRatio <= 20)
+			return irLedControl(LEVEL4);
+		else if(zoomRatio <= 25)
+			return irLedControl(LEVEL5);
+		else if(zoomRatio <= 30)
+			return irLedControl(LEVEL6);
+		else
+			return -1;
+	} else
+		return irLedControl(MANUEL);
 }
+
 
 int IrDomeModule::presetCall(int ind)
 {
@@ -1387,14 +1392,14 @@ int IrDomeModule::writePort(const char *command, int len)
 
 void IrDomeModule::updatePosition()
 {
-	QByteArray ba = readPort(irPort, getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9,9);
+	/*QByteArray ba = readPort(irPort, getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9,9);
 	if (ba.size() != 9)
 		return;
 	uchar *bytes = (uchar*) ba.constData();
 	if (bytes[2] == 0x82 || bytes[8] == checksum(bytes, 7)) {
 		lastV.position = QPair <int,int> ((bytes[3] << 8 ) + bytes[4], (bytes[5] << 8 )+ bytes[6]);
 	}
-	usleep(15000);
+	usleep(15000);*/
 	setAutoIRLed();
 }
 
