@@ -244,6 +244,11 @@ public:
 		TITLE_BLUE
 	};
 
+	enum SupportDevice {
+		PANTILT = 1,
+		NIGHTVISION
+	};
+
 	struct Positions {
 		int posHor;
 		int posVer;
@@ -251,6 +256,8 @@ public:
 	};
 
 	struct LastVariables {
+		int nightVisionSupport;
+		int panTitlSupport;
 		int momentSpeed;
 		int zoomSpeed;
 		int lastSelectPreset;
@@ -423,6 +430,8 @@ public:
 	void updatePositionActive();
 	int updatePositionInterval(int msec);
 	int updatePositionInterval();
+
+	int addSupport(SupportDevice dev, int state);
 
 	const QByteArray readPort(const char *command, int wrlen, int rdlen);
 
