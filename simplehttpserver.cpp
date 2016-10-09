@@ -52,6 +52,35 @@ int SimpleHttpServer::handlePostData(const QByteArray &)
 	return 404;
 }
 
+void SimpleHttpServer::sendGetResponse(QTcpSocket *sock)
+{
+	QString mime;
+	const QByteArray ba = getFileAuth(getHeaders["filename"], mime, getUrl);
+	if (ba.size()) {
+		mInfo("sending file '%s'", qPrintable(getHeaders["filename"]));
+		QStringList resp;
+		resp << "HTTP/1.1 200 OK";
+		resp << "Accept-Ranges: bytes";
+		resp << QString("Content-Length: %1").arg(ba.size());
+		resp << "Keep-Alive: timeout=3,max=100";
+		resp << "Connection: Keep-Alive";
+		resp << QString("Content-Type: %1").arg(mime);
+		/* following 3 headers are for preventing browsers(or proxies) caching the result */
+		resp << "Cache-Control: no-cache, no-store, must-revalidate";
+		resp << "Pragma: no-cache";
+		resp << "Expires: 0";
+		resp << addCustomGetHeaders(getHeaders["filename"]);
+		resp << "\r\n";
+		sock->write(resp.join("\r\n").toUtf8().append(ba));
+	} else {
+		QStringList resp;
+		resp << "HTTP/1.1 404 Not Found";
+		resp << "Connection: Keep-Alive";
+		resp << "\r\n";
+		sock->write(resp.join("\r\n").toUtf8());
+	}
+}
+
 int SimpleHttpServer::handlePostDataAuth(const QByteArray &ba)
 {
 	if (isAuthenticated())
@@ -109,32 +138,7 @@ void SimpleHttpServer::readMessage()
 			QStringList tokens = QString(sock->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
 			tokens.removeAll("");
 			if (!tokens.size()) {
-				QString mime;
-				const QByteArray ba = getFileAuth(getHeaders["filename"], mime, getUrl);
-				if (ba.size()) {
-					mInfo("sending file '%s'", qPrintable(getHeaders["filename"]));
-					QStringList resp;
-					resp << "HTTP/1.1 200 OK";
-					resp << "Accept-Ranges: bytes";
-					resp << QString("Content-Length: %1").arg(ba.size());
-					resp << "Keep-Alive: timeout=3,max=100";
-					resp << "Connection: Keep-Alive";
-					resp << QString("Content-Type: %1").arg(mime);
-					/* following 3 headers are for preventing browsers(or proxies) caching the result */
-					resp << "Cache-Control: no-cache, no-store, must-revalidate";
-					resp << "Pragma: no-cache";
-					resp << "Expires: 0";
-					resp << addCustomGetHeaders(getHeaders["filename"]);
-					resp << "\r\n";
-					sock->write(resp.join("\r\n").toUtf8().append(ba));
-				} else {
-					QStringList resp;
-					resp << "HTTP/1.1 404 Not Found";
-					resp << "Connection: Keep-Alive";
-					resp << "\r\n";
-					sock->write(resp.join("\r\n").toUtf8());
-				}
-
+				sendGetResponse(sock);
 				state = IDLE;
 			} else
 				getHeaders.insert(tokens[0], tokens[1]);

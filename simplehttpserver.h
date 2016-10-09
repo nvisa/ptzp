@@ -16,6 +16,7 @@ public:
 protected:
 	virtual const QByteArray getFile(const QString filename, QString &mime, QUrl &url);
 	virtual int handlePostData(const QByteArray &);
+	virtual void sendGetResponse(QTcpSocket *sock);
 
 private slots:
 	void newConnection();
