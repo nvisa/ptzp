@@ -446,7 +446,7 @@ public:
 	int continuousReplyZoom(bool state);
 	int maskDisplay(uint maskID, bool onOff);
 	int maskSet(uint maskID, int width, int height, bool nn = 1);
-	int maskSetNoninterlock(uint maskID, int x, int y, int width, int height, bool nn);
+	int maskSetNoninterlock(uint maskID, int x, int y, int width, int height);
 
 	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);
 	int maskGrid(MaskGrid onOff);

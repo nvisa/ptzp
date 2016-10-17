@@ -1622,14 +1622,14 @@ int IrDomeModule::maskSet (uint maskID, int width, int height, bool nn)
  * @param nn : if 0 ,this mask is used one time after reset setting, if 1, setting is record
  * @return
  */
-int IrDomeModule::maskSetNoninterlock (uint maskID, int x, int y, int width, int height, bool nn)
+int IrDomeModule::maskSetNoninterlock (uint maskID, int x, int y, int width, int height)
 {
 	if((maskID > 0x17) || (width > 0x50) || (width < -0x50) ||
 			(height > 0x2D) || (height < -0x2D)||
 			(x > 0x50) || (x < -0x50) ||
 			(y > 0x2D) || (y < -0x2D))
 		return -1;
-	const char buf[] = {0x81, 0x01, 0x04, 0x6F, maskID & 0xFF, nn,
+	const char buf[] = {0x81, 0x01, 0x04, 0x6F, maskID & 0xFF,
 						(x & 0xF0) >> 4, x & 0x0F,
 						(y & 0xF0) >> 4, y & 0x0F,
 						(width & 0xF0) >> 4, width & 0x0F,
