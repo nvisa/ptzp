@@ -1471,9 +1471,11 @@ IrDomeModule::ModuleType IrDomeModule::getModel(QextSerialPort *port)
 	const QByteArray ba = readPort(port, buf, sizeof(buf), 10);
 	if (ba.at(3) == 0x20) {
 		if ((ba.at(4) == 0x04) && (ba.at(5) == 0x5f)) {
-			modType = MODULE_TYPE_CHINESE;
+			modType = MODULE_TYPE_OEM_3X;
 		} else if ((ba.at(4) == 0x04) && (ba.at(5) == 0x6f)) {
-			modType = MODULE_TYPE_SONY;
+			modType = MODULE_TYPE_SONY_30X;
+		} else if ((ba.at(4) == 0x04) && (ba.at(5) == 0x67)) {
+			modType = MODULE_TYPE_OEM_30X;
 		}
 	}
 	return modType;

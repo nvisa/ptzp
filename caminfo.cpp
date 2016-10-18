@@ -36,10 +36,12 @@ int CamInfo::getIrDomemodule()
 	IrDomeModule *dome = new IrDomeModule(camPort, 0);
 	camPort->flush();
 	int model = dome->getModel(camPort);
-	if (model == IrDomeModule::MODULE_TYPE_CHINESE) {
-		qDebug() << "Modul:\tCHINESE";
-	} else if (model == IrDomeModule::MODULE_TYPE_SONY) {
+	if (model == IrDomeModule::MODULE_TYPE_OEM_3X) {
+		qDebug() << "Modul:\tOEM 3X";
+	} else if (model == IrDomeModule::MODULE_TYPE_SONY_30X) {
 		qDebug() << "Modul:\tSONY";
+	} else if (model == IrDomeModule::MODULE_TYPE_OEM_30X) {
+		qDebug() << "Modul:\tOEM 30X";
 	} else
 		return -1;
 

@@ -65,8 +65,9 @@ public:
 
 	enum ModuleType {
 		MODULE_TYPE_UNDEFINED = -1,
-		MODULE_TYPE_CHINESE,
-		MODULE_TYPE_SONY,
+		MODULE_TYPE_OEM_3X,
+		MODULE_TYPE_SONY_30X,
+		MODULE_TYPE_OEM_30X,
 	};
 
 	enum FocusMode {
