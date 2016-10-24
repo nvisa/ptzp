@@ -140,23 +140,16 @@ QByteArray AT88Driver::readZone(int zone)
  */
 int AT88Driver::writeZone(int zone, const QByteArray &ba)
 {
-	if (ba.length() > getZoneSize())
-		return -E2BIG;
-	else {
-		int index = ba.length() / getPageSize();
-		int curr_array = 0;
-		for (int count = 0; count < index; count++) {
-			usleep(7000);
-			curr_array = count * getPageSize();
-			if (writePage(zone, curr_array, ba.mid(curr_array, getPageSize())))
-				return -35;
-		}
-		index = index * getPageSize();
-		if (index < ba.length()) {
-			usleep(7000);
-			if (writePage(zone, index, ba.mid(curr_array, ba.length() - index)))
-				return -35;
-		}
+	int pageCnt = ba.size() / getPageSize();
+	if (pageCnt * getPageSize() < ba.size())
+		pageCnt++;
+	if (pageCnt > getZoneSize() / getPageSize())
+		return -EINVAL;
+	for (int i = 0; i < pageCnt; i++) {
+		int err = writePage(zone, i, ba.mid(i * getPageSize(), getPageSize()));
+		if (err)
+			return err;
+		usleep(7000);
 	}
 	return 0;
 }
