@@ -702,7 +702,7 @@ int IrDomeModule::applyProgramAEmode(ProgramAEmode ae, ShutterSpeed shVal, Expos
 int IrDomeModule::vGetZoom()
 {
 	const char opZoom[] = { 0x81, 0x09, 0x04, 0x47, 0xff };
-	QByteArray ba = readPort(opZoom, sizeof(opZoom), 7);
+	QByteArray ba = readPort(irPort, opZoom, sizeof(opZoom), 7);
 	if (ba.size() == 7) {
 		lastV.zoom = ((ba.at(2) & 0x0F) << 12) + ((ba.at(3) & 0x0F) << 8) + ((ba.at(4) & 0x0F) << 4) + (ba.at(5) & 0x0F);
 		ApplicationSettings::instance()->setm("ptz.stats.zoom_set_value", lastV.zoom);
@@ -1069,7 +1069,7 @@ QPair <int,int> IrDomeModule::sGetPos()
 {
 	if (!lastV.panTitlSupport)
 		return QPair <int,int> (-EPROTONOSUPPORT, -EPROTONOSUPPORT);
-	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9,9);
+	QByteArray ba = readPort(irPort, getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9,9);
 	if (ba.size() == 9) {
 		uchar *bytes = (uchar*) ba.constData();
 		if (bytes[2] == 0x82 || bytes[8] == checksum(bytes, 7)) {
@@ -1493,9 +1493,13 @@ int IrDomeModule::writePort(const char *command, int len)
 
 void IrDomeModule::updatePosition()
 {
-	sGetPos();
 	vGetZoom();
-	setAutoIRLed();
+	if (lastV.nightVisionSupport)
+		setAutoIRLed();
+	if (lastV.panTitlSupport) {
+		sGetPos();
+		maskSetPanTiltAngle(lastV.position.first, lastV.position.second);
+	}
 }
 
 int IrDomeModule::specialPosition2File()
