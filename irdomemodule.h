@@ -448,6 +448,9 @@ public:
 	int maskDisplay(uint maskID, bool onOff);
 	int maskSet(uint maskID, int width, int height, bool nn = 1);
 	int maskSetNoninterlock(uint maskID, int x, int y, int width, int height);
+	int maskSetPTZ(uint maskID, uint pan, uint tilt, uint zoom);
+	int maskSetPanTiltAngle(uint pan, uint tilt);
+	int maskSetRanges(int panMax, int panMin, int tiltMax, int tiltMin, int zoomMax, int zoomMin);
 
 	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);
 	int maskGrid(MaskGrid onOff);
@@ -473,6 +476,16 @@ protected:
 	int presetLimit;
 	QList<QPair<bool, Positions> > preset;
 	struct Positions homePos;
+
+	struct maskRange {
+		int pMin;
+		int pMax;
+		int tMin;
+		int tMax;
+		int zMin;
+		int zMax;
+	};
+	maskRange maskRanges;
 
 private:
 	int specialPosition2File();
