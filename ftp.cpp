@@ -5,7 +5,7 @@
 
 #include <ecl/debug.h>
 
-Ftp::Ftp()
+Ftp::Ftp(QObject *parent) : QFtp(parent)
 {
 	connect(this,SIGNAL(commandStarted(int)),this,SLOT(stateCommand()));
 	connect(this,SIGNAL(stateChanged(int)),this,SLOT(stateChanged()));
@@ -65,7 +65,7 @@ void Ftp::getFile(QString path)
 
 void Ftp::putFile(QString filePath,QString location)
 {
-	QFile *file = new QFile(filePath);
+	QFile *file = new QFile(filePath, this);
 	if (file->open(QIODevice::ReadWrite))
 		mDebug ("file is open");
 	else
