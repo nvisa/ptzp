@@ -15,8 +15,10 @@ public:
 	QString get(const QString &key);
 	int set(const QString &key, const QString &value);
 	void setTarget(const QString &targetIp, int port);
+	int setTcpKeepAlive(int timeout);
 
 signals:
+	void disconnectedFromHost();
 
 protected slots:
 	void dataReady();
@@ -24,11 +26,14 @@ protected slots:
 	void disconnectedFrom();
 
 protected:
+	int applyKeepAlive();
+
 	QHostAddress target;
 	QTimer timer;
 	quint16 dstPort;
 	QEventLoop el;
 	QStringList resp;
+	int keepAliveTimeout;
 };
 
 #endif // REMOTETCPCONNECTION_H
