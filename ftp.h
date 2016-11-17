@@ -7,7 +7,7 @@ class Ftp : public QFtp
 {
 	Q_OBJECT
 public:
-	Ftp();
+	Ftp(QObject * parent);
 
 	void ftpConnect(QString address, QString username, QString pass);
 	QString ftpAddress(const QString address);
