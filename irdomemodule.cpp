@@ -1643,39 +1643,65 @@ int IrDomeModule::maskSetNoninterlock (uint maskID, int x, int y, int width, int
 	return writePort(buf, sizeof(buf));
 }
 
-int IrDomeModule::maskSetPTZ(uint maskID, uint pan, uint tilt, uint zoom)
+int IrDomeModule::maskSetPTZ(uint maskID, int pan, int tilt, uint zoom)
 {
 	if (maskRanges.pMax == maskRanges.pMin)
 		return -ENODATA;
 	if (maskRanges.tMax == maskRanges.tMin)
 		return -ENODATA;
-	if (maskRanges.zMax == maskRanges.zMin)
+	if (maskRanges.xMax == maskRanges.xMin)
 		return -ENODATA;
-	pan = pan * ((maskRanges.pMax - maskRanges.pMin) / 360.0);
-	tilt = maskRanges.tMax - tilt * ((maskRanges.tMax - maskRanges.tMin) / 360.0);
-	zoom = zoom * (0x7AC0 * 1.0 / (maskRanges.zMax - maskRanges.zMin));
+	if (maskRanges.yMax == maskRanges.yMin)
+		return -ENODATA;
+	if (hPole)
+		pan = -pan;
+	if (vPole)
+		tilt = -tilt;
+	if (tilt > 180)
+		tilt -= 360;
+	if (tilt < -180)
+		tilt += 360;
+	if (pan > 180)
+		pan -= 360;
+	if (pan < -180)
+		pan += 360;
+	tilt = tilt * yTiltRate + maskRanges.yMin;
+	pan = pan * xPanRate + maskRanges.xMin;
 	const char cmdMask[] = {0x81, 0x01, 0x04, 0x7B, maskID,
-					 (0xf00 & pan) >> 8, (0xf0 & pan) >> 4, (0xf & pan),
-					 (0xf00 & tilt) >> 8, (0xf0 & tilt) >> 4, (0xf & tilt),
-					 (0xf00 & zoom) >> 8, (0xf0 & zoom) >> 4, (0xf & zoom), 0xFF};
+							(0xf00 & pan) >> 8, (0xf0 & pan) >> 4, (0xf & pan),
+							(0xf00 & tilt) >> 8, (0xf0 & tilt) >> 4, (0xf & tilt),
+							(0xf000 & zoom) >> 16,(0xf00 & zoom) >> 8, (0xf0 & zoom) >> 4,
+							(0xf & zoom), 0xFF};
 	return writePort(cmdMask, sizeof(cmdMask));
 }
 
-int IrDomeModule::maskSetPanTiltAngle(uint pan, uint tilt)
+int IrDomeModule::maskSetPanTiltAngle(int pan, int tilt)
 {
 	if (maskRanges.pMax == maskRanges.pMin)
 		return -ENODATA;
 	if (maskRanges.tMax == maskRanges.tMin)
 		return -ENODATA;
-	pan = maskRanges.pMax - pan * ((maskRanges.pMax - maskRanges.pMin) / 360.0);
-	tilt = maskRanges.tMax - tilt * ((maskRanges.tMax - maskRanges.tMin) / 360.0);
+	if (hPole)
+		pan = -pan;
+	if (vPole)
+		tilt = -tilt;
+	if (tilt > 180)
+		tilt -= 360;
+	if (tilt < -180)
+		tilt += 360;
+	if (pan > 180)
+		pan -= 360;
+	if (pan < -180)
+		pan += 360;
+	tilt = tilt * yTiltRate + maskRanges.yMin;
+	pan = pan * xPanRate + maskRanges.xMin;
 	const char cmdMask[] = {0x81, 0x01, 0x04, 0x79,
-					 (0xf00 & pan) >> 8, (0xf0 & pan) >> 4, (0xf & pan),
-					 (0xf00 & tilt) >> 8, (0xf0 & tilt) >> 4, (0xf & tilt), 0xFF};
-	return writePort(irPort, cmdMask, sizeof(cmdMask));
+							(0xf00 & pan) >> 8, (0xf0 & pan) >> 4, (0xf & pan),
+							(0xf00 & tilt) >> 8, (0xf0 & tilt) >> 4, (0xf & tilt), 0xFF};
+	return writePort(cmdMask, sizeof(cmdMask));
 }
 
-int IrDomeModule::maskSetRanges(int panMax, int panMin, int tiltMax, int tiltMin, int zoomMax, int zoomMin)
+int IrDomeModule::maskSetRanges(int panMax, int panMin, int xMax, int xMin, int tiltMax, int tiltMin, int yMax, int yMin, bool hConvert, bool vConvert)
 {
 	if (panMax == panMin)
 		return -ENODATA;
@@ -1687,10 +1713,21 @@ int IrDomeModule::maskSetRanges(int panMax, int panMin, int tiltMax, int tiltMin
 	maskRanges.tMax = tiltMax;
 	maskRanges.tMin = tiltMin;
 
-	if (zoomMax == zoomMin)
+	if (xMax == xMin)
 		return -ENODATA;
-	maskRanges.zMax = zoomMax;
-	maskRanges.zMin = zoomMin;
+	maskRanges.xMax = xMax;
+	maskRanges.xMin = xMin;
+
+	if (yMax == yMin)
+		return -ENODATA;
+	maskRanges.yMax = yMax;
+	maskRanges.yMin = yMin;
+
+	hPole = hConvert;
+	vPole = vConvert;
+
+	xPanRate = (1.0 * maskRanges.xMax - 1.0 * maskRanges.xMin) / (1.0 * maskRanges.pMax - 1.0 * maskRanges.pMin);
+	yTiltRate = (1.0 * maskRanges.yMax - 1.0 * maskRanges.yMin) / (1.0 * maskRanges.tMax - 1.0 * maskRanges.tMin);
 	return 0;
 }
 

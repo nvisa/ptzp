@@ -448,9 +448,9 @@ public:
 	int maskDisplay(uint maskID, bool onOff);
 	int maskSet(uint maskID, int width, int height, bool nn = 1);
 	int maskSetNoninterlock(uint maskID, int x, int y, int width, int height);
-	int maskSetPTZ(uint maskID, uint pan, uint tilt, uint zoom);
-	int maskSetPanTiltAngle(uint pan, uint tilt);
-	int maskSetRanges(int panMax, int panMin, int tiltMax, int tiltMin, int zoomMax, int zoomMin);
+	int maskSetPTZ(uint maskID, int pan, int tilt, uint zoom);
+	int maskSetPanTiltAngle(int pan, int tilt);
+	int maskSetRanges(int panMax, int panMin, int xMax, int xMin, int tiltMax, int tiltMin, int yMax, int yMin, bool hConvert, bool vConvert);
 
 	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);
 	int maskGrid(MaskGrid onOff);
@@ -482,15 +482,22 @@ protected:
 		int pMax;
 		int tMin;
 		int tMax;
-		int zMin;
-		int zMax;
+		int xMin;
+		int xMax;
+		int yMin;
+		int yMax;
 	};
-	maskRange maskRanges;
 
 private:
 	int specialPosition2File();
 	int file2SpecialPosition();
 	QTimer *updateTimer;
+
+	maskRange maskRanges;
+	float xPanRate;
+	float yTiltRate;
+	bool hPole;
+	bool vPole;
 
 	static const QByteArray charTable;
 };
