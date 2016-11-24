@@ -75,9 +75,24 @@ void SimpleHttpServer::sendGetResponse(QTcpSocket *sock)
 	} else {
 		QStringList resp;
 		resp << "HTTP/1.1 404 Not Found";
+		resp << "Accept-Ranges: bytes";
+		QString nf = "<html>"
+					 "<head><title>404 Not Found</title></head>"
+					 "<body>"
+					 "<center><h1>404 Not Found</h1></center>"
+					 "</body>"
+					 "</html>";
+		resp << QString("Content-Length: %1").arg(nf.size());
+		resp << "Keep-Alive: timeout=3,max=100";
 		resp << "Connection: Keep-Alive";
+		resp << QString("Content-Type: %1").arg(mime);
+		/* following 3 headers are for preventing browsers(or proxies) caching the result */
+		resp << "Cache-Control: no-cache, no-store, must-revalidate";
+		resp << "Pragma: no-cache";
+		resp << "Expires: 0";
+		resp << addCustomGetHeaders(getHeaders["filename"]);
 		resp << "\r\n";
-		sock->write(resp.join("\r\n").toUtf8());
+		sock->write(resp.join("\r\n").toUtf8().append(nf));
 	}
 }
 
