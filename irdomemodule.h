@@ -11,7 +11,6 @@
 #define PELCOD_ADD 0x01
 #define DEF_PRESET_LIMIT 8
 #define DEF_PRESET_FILE "specialPos.bin"
-#define POS_UPDATE_INTERVAL 200
 
 class IrDomeModule : public Pattern
 {
@@ -64,10 +63,11 @@ public:
 	};
 
 	enum ModuleType {
+		MODULE_TYPE_NO_VISCA_MODULE = -2,
 		MODULE_TYPE_UNDEFINED = -1,
-		MODULE_TYPE_OEM_3X,
-		MODULE_TYPE_SONY_30X,
-		MODULE_TYPE_OEM_30X,
+		MODULE_TYPE_PV6403_F12D,
+		MODULE_TYPE_FCB_EV7500,
+		MODULE_TYPE_PV8430_F2D,
 	};
 
 	enum FocusMode {
@@ -259,25 +259,16 @@ public:
 	struct LastVariables {
 		int nightVisionSupport;
 		int panTitlSupport;
-		int momentSpeed;
-		int zoomSpeed;
-		int lastSelectPreset;
-		int lastSelectPattern;
+
 		QPair<int, int> position;
 		int zoom;
 		int irLedstate;
-		int progAe;
-		int ircfVis;
-		int shSpd;
-		int expVal;
-		int agcVal;
-		int focusMode;
+		bool IRCFstat;
 	};
 
 
 	explicit IrDomeModule(QextSerialPort *port, int readWrite, QString presetFilename = DEF_PRESET_FILE, int presetLimitNo = DEF_PRESET_LIMIT,
 						  QString pattFilename = DEF_PATT_FILENAME, int pattLimit = DEF_PATT_LIM, QObject *parent = 0);
-	~IrDomeModule();
 
 	const QByteArray getPelcod(uchar addr, PelcoDCommands cmd, uchar data1 , uchar data2);
 	const QByteArray getSpecialCommand(SpecialCommands cmd, uint data1, uint data2);
@@ -359,7 +350,6 @@ public:
 
 	int applyProgramAEmode(ProgramAEmode ae, ShutterSpeed shVal, ExposureValue exVal, GainValue gain, bool ircf, FocusMode focusMode);
 
-
 	int vGetZoom();
 	int vSetZoom(uint zoomPos);
 	uint getZoomRatio();
@@ -392,10 +382,12 @@ public:
 	int pStop();
 	QPair<int, int> sSetPos(uint posH, uint posV);
 	QPair<int, int> sGetPos();
-	QPair<int, int> GetPosMem();
+	QPair<int, int> getPosMem();
 
 	int sSetZoom(uint zoomPos);
 	int sGetZoom();
+	int getZoomMem();
+	void setZoomMem(int z);
 
 	int sSetAbsolute(uint posH, uint posV, uint zoomPos);
 
@@ -427,20 +419,14 @@ public:
 	const Positions getHomePos();
 	const QString getHomePosString();
 
-	void updatePositionDisable();
-	void updatePositionActive();
-	int updatePositionInterval(int msec);
-	int updatePositionInterval();
-
 	int addSupport(SupportDevice dev, int state);
+	bool isSupport(SupportDevice dev);
 
-	const QByteArray readPort(const char *command, int wrlen, int rdlen);
+	const QByteArray readPort(const char *command, int wrlen, int rdlen, bool rec = false);
 
 	static int writePort(QextSerialPort* port, const char *command, int len);
 	static QByteArray readPort(QextSerialPort* port, const char *command, int wrlen, int rdlen);
 	static ModuleType getModel(QextSerialPort* port);
-
-	struct LastVariables lastV;
 
 	int pictureEffect(Effect eff);
 	int continuousReplyFocus(bool state);
@@ -463,14 +449,26 @@ public:
 	int titleDisplay(uint lineNumber, bool onOff);
 	int titleWrite(uint lineNumber, const QByteArray str, uint hPosition, TitleColor color, bool blink);
 
-public slots:
-	int writePort(const char *command, int len);
+	void setSeriPortState(QIODevice::OpenMode mod);
+	QIODevice::OpenMode getSeriPortState();
 
-private slots:
+	void setCmdInterval(int interval);
+	int getCmdInterval();
+
+public slots:
+	int writePort(const char *command, int len, bool rec = false);
 	void updatePosition();
+
+signals:
+	void postionsUpdated();
+	void panTiltPositionReady();
+	void zoomPositionReady();
+	void seriPortWrote();
 
 protected:
 	QextSerialPort *irPort;
+
+	struct LastVariables lastV;
 
 	QString presetSaveFile;
 	int presetLimit;
@@ -491,13 +489,16 @@ protected:
 private:
 	int specialPosition2File();
 	int file2SpecialPosition();
-	QTimer *updateTimer;
 
+	uint maskBits;
 	maskRange maskRanges;
 	float xPanRate;
 	float yTiltRate;
 	bool hPole;
 	bool vPole;
+
+	QElapsedTimer seriPortElapse;
+	int cmdInterval;
 
 	static const QByteArray charTable;
 };

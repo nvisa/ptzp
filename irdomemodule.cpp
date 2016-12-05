@@ -4,6 +4,15 @@
 #include <unistd.h>
 #include <settings/applicationsettings.h>
 
+#include <QEventLoop>
+
+static void mySleep(int msec)
+{
+	QEventLoop l;
+	QTimer::singleShot(msec, &l, SLOT(quit()));
+	l.exec();
+}
+
 #define ARRAY_SIZE(X) (sizeof(X) / sizeof(X[0]))
 
 const QByteArray IrDomeModule::charTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZ& ?!1234567890ÀÈÌÒÙÁÉÍÓÚÂÊÔÆÃÕÑÇßÄÏÖÜÅ$¥£¿¡ø”:’.,/-";
@@ -23,34 +32,24 @@ IrDomeModule::IrDomeModule(QextSerialPort *port, int readWrite, QString presetFi
 	Pattern(readWrite, pattFilename, pattLimit, parent)
 {
 	writeAble = readWrite;
+	cmdInterval = 110;
+	maskBits = 0;
 	irPort = port;
-	updateTimer = new QTimer(this);
-	connect(updateTimer, SIGNAL(timeout()), this, SLOT(updatePosition()));
-	updateTimer->setInterval(POS_UPDATE_INTERVAL);
 	presetLimit = presetLimitNo;
 	presetSaveFile = presetFilename;
 	Positions temp = {0,0,0};
 	for(int i = 0; i < presetLimit; i++)
 		preset.append(QPair<bool, Positions>(0, temp));
+	seriPortElapse.start();
 	memset(&lastV, 0, sizeof(LastVariables));
-	lastV.momentSpeed = 50;
-	lastV.zoomSpeed = 4;
 	if(writeAble) {
 		connect(this, SIGNAL(nextCmd(const char *,int)), this ,SLOT(writePort(const char *,int)));
 		file2SpecialPosition();
 	}
 }
 
-IrDomeModule::~IrDomeModule()
-{
-	if (updateTimer->isActive())
-		updateTimer->stop();
-	updateTimer->deleteLater();
-}
-
 const QByteArray IrDomeModule::getPelcod(uchar addr, PelcoDCommands cmd, uchar data1, uchar data2)
 {
-	updateTimer->start();
 	QByteArray command;
 	command.resize(7);
 	uchar *buf = (uchar *) command.constData();
@@ -142,7 +141,6 @@ const QByteArray IrDomeModule::getPelcod(uchar addr, PelcoDCommands cmd, uchar d
 
 const QByteArray IrDomeModule::getSpecialCommand(SpecialCommands cmd, uint data1, uint data2)
 {
-	updateTimer->start();
 	QByteArray command;
 	command.resize(9);
 	uchar *buf = (uchar *) command.constData();
@@ -169,7 +167,6 @@ const QByteArray IrDomeModule::getSpecialCommand(SpecialCommands cmd, uint data1
 
 const QByteArray IrDomeModule::getLedControl(LedControl cmd)
 {
-	updateTimer->start();
 	QByteArray command;
 	command.resize(7);
 	uchar *buf = (uchar *) command.constData();
@@ -223,7 +220,6 @@ int IrDomeModule::initializeCameraReset()
 int IrDomeModule::initializeCamera()
 {
 	initializeCameraLens();
-	usleep(15000);
 	return initializeCameraReset();
 }
 
@@ -244,29 +240,26 @@ int IrDomeModule::vQueReg(int reg)
 
 int IrDomeModule::startZoomIn(uint zoomSpeed)
 {
-	updateTimer->start();
 	if (zoomSpeed < 8) {
 		const char buf[] = { 0x81, 0x01, 0x04, 0x07, 0x20 + zoomSpeed, 0xff };
-		return writePort(buf, sizeof(buf));
+		return writePort(buf, sizeof(buf), true);
 	} else
 		return -ENODATA;
 }
 
 int IrDomeModule::startZoomOut(uint zoomSpeed)
 {
-	updateTimer->start();
 	if (zoomSpeed < 8) {
 		const char buf[] = { 0x81, 0x01, 0x04, 0x07, 0x30 + zoomSpeed, 0xff };
-		return writePort(buf, sizeof(buf));
+		return writePort(buf, sizeof(buf), true);
 	} else
 		return -ENODATA;
 }
 
 int IrDomeModule::stopZoom()
 {
-	updateTimer->start();
 	const char opZoom[] = { 0x81, 0x01, 0x04, 0x07, 0x00, 0xff };
-	return writePort(opZoom, sizeof(opZoom));
+	return writePort(opZoom, sizeof(opZoom), true);
 }
 
 bool IrDomeModule::getDigiZoomState()
@@ -299,7 +292,6 @@ int IrDomeModule::selectZoomType(bool digiZoom, ZoomType zoomType)
 	const char digZoom[] = { 0x81, 0x01, 0x04, 0x06, digZoomT, 0xff };
 	const char zType[] = { 0x81, 0x01, 0x04, 0x36, zTypeT, 0xff };
 	writePort(digZoom, sizeof(digZoom));
-	usleep(15000);
 	return writePort(zType, sizeof(zType));
 }
 
@@ -388,7 +380,6 @@ int IrDomeModule::setDisplayRotation(RotateMode val)
 	const char flipMode[] = { 0x81, 0x01, 0x04, 0x66, flipModeT, 0xff };
 
 	writePort(mirrorMode, sizeof(mirrorMode));
-	usleep(15000);
 	return writePort(flipMode, sizeof(flipMode));
 }
 
@@ -417,14 +408,15 @@ int IrDomeModule::setIRCFstat(bool stat)
 	if (stat == true)
 		ircfModeT = 0x02;
 	const char ircfMode[] = { 0x81, 0x01, 0x04, 0x01, ircfModeT, 0xff };
-	return writePort(ircfMode, sizeof(ircfMode));
+	return writePort(ircfMode, sizeof(ircfMode), true);
 }
 
 bool IrDomeModule::getIRCFstat()
 {
 	const char ircfMode[] = { 0x81, 0x09, 0x04, 0x01, 0xff };
 	QByteArray ba = readPort(ircfMode, sizeof(ircfMode), 4);
-	return (ba.at(2) == 0x02) ? true : false;
+	lastV.IRCFstat = (ba.at(2) == 0x02) ? true : false;
+	return lastV.IRCFstat;
 }
 
 int IrDomeModule::setAutoICR(bool stat)
@@ -433,7 +425,7 @@ int IrDomeModule::setAutoICR(bool stat)
 	if (stat == true)
 		autoICRt = 0x02;
 	const char autoICR[] = { 0x81, 0x01, 0x04, 0x51, autoICRt, 0xff };
-	return writePort(autoICR, sizeof(autoICR));
+	return writePort(autoICR, sizeof(autoICR), true);
 }
 
 bool IrDomeModule::getAutoICR()
@@ -522,7 +514,6 @@ IrDomeModule::ExposureValue IrDomeModule::getExposureValue()
 		return EXP_CLOSE;
 	else
 		exVal = EXP_UNDEFINED - exVal + 3;
-	mDebug("exVal: %d", exVal);
 	return (ExposureValue)(exVal);
 }
 
@@ -547,7 +538,6 @@ IrDomeModule::GainValue IrDomeModule::getGainValue()
 
 int IrDomeModule::setGainLimit(int upLim, int downLim)
 {
-	mDebug("up limit gain: %d down limit gain: %d", upLim, downLim);
 	const char gainLimit[] = { 0x81, 0x01, 0x04, 0x40, 0x05,
 							   (upLim & 0xf0) >> 4, (upLim & 0x0f),
 							   (downLim & 0xf0) >> 4, (downLim & 0x0f), 0xff };
@@ -556,7 +546,6 @@ int IrDomeModule::setGainLimit(int upLim, int downLim)
 
 int IrDomeModule::setNoiseReduction(int val)
 {
-	mDebug("nois red: %d", val);
 	if (val > 5)
 		return -ENODATA;
 	const char nred[] = { 0x81, 0x01, 0x04, 0x53, val & 0x0f, 0xff };
@@ -567,7 +556,6 @@ int IrDomeModule::getNoiseReduction()
 {
 	const char nred[] = { 0x81, 0x09, 0x04, 0x53, 0xff };
 	QByteArray ba = readPort(nred, sizeof(nred), 4);
-	mDebug("noisered: %c" ,ba.at(2));
 	return (int)(ba.at(2));
 }
 
@@ -646,7 +634,6 @@ int IrDomeModule::setIrisLimit(int upLim, int downLim)
 							 (upLim & 0x0f0) >> 4, (upLim & 0x00f),
 							 (downLim & 0xf00) >> 8, (downLim & 0x0f0) >> 4,
 							 (downLim & 0x00f), 0xff };
-	mDebug("shutter limits %s", &irisLim[5]);
 	return 	writePort(irisLim, sizeof(irisLim));
 }
 
@@ -682,8 +669,6 @@ int IrDomeModule::applyProgramAEmode(ProgramAEmode ae, ShutterSpeed shVal, Expos
 {
 	static ProgramAEmode prevAE = MODE_INVALID;
 	setProgramAEmode(ae);
-	if (prevAE != ae)
-		usleep(15*1000);
 	prevAE = ae;
 	if (ae == MODE_SHUTTER_PRIORITY) {
 		setShutterSpeed(shVal);
@@ -702,10 +687,10 @@ int IrDomeModule::applyProgramAEmode(ProgramAEmode ae, ShutterSpeed shVal, Expos
 int IrDomeModule::vGetZoom()
 {
 	const char opZoom[] = { 0x81, 0x09, 0x04, 0x47, 0xff };
-	QByteArray ba = readPort(irPort, opZoom, sizeof(opZoom), 7);
+	QByteArray ba = readPort(opZoom, sizeof(opZoom), 7);
 	if (ba.size() == 7) {
 		lastV.zoom = ((ba.at(2) & 0x0F) << 12) + ((ba.at(3) & 0x0F) << 8) + ((ba.at(4) & 0x0F) << 4) + (ba.at(5) & 0x0F);
-		ApplicationSettings::instance()->setm("ptz.stats.zoom_set_value", lastV.zoom);
+		emit zoomPositionReady();
 		return lastV.zoom;
 	}
 	return -1;
@@ -718,7 +703,7 @@ int IrDomeModule::vSetZoom(uint zoomPos)
 	const char opZoom[] = { 0x81, 0x01, 0x04, 0x47, ((zoomPos & 0XF000) >> 12),
 							((zoomPos & 0XF00) >> 8), ((zoomPos & 0XF0) >> 4),
 							(zoomPos & 0XF), 0xff };
-	QByteArray ba = readPort(opZoom, sizeof(opZoom), 20);
+	QByteArray ba = readPort(opZoom, sizeof(opZoom), 20, true);
 	if (ba.length() == 20) {
 		char* baData = ba.data();
 		lastV.zoom = ((baData[15] & 0x0f) << 4) + ((baData[17] & 0x0f) << 4) +
@@ -735,7 +720,7 @@ int IrDomeModule::pPanLeft(uchar speedPan)
 		return -EPROTONOSUPPORT;
 	if (speedPan > 0x3f)
 		speedPan = 0x40;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANL, speedPan, 0), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANL, speedPan, 0), 7, true);
 }
 
 int IrDomeModule::pPanRight(uchar speedPan)
@@ -744,7 +729,7 @@ int IrDomeModule::pPanRight(uchar speedPan)
 		return -EPROTONOSUPPORT;
 	if (speedPan > 0x3f)
 		speedPan = 0x40;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANR, speedPan, 0), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANR, speedPan, 0), 7, true);
 }
 
 int IrDomeModule::pTiltUp(uchar speedTilt)
@@ -753,7 +738,7 @@ int IrDomeModule::pTiltUp(uchar speedTilt)
 		return -EPROTONOSUPPORT;
 	if (speedTilt > 0x3f)
 		speedTilt = 0x3f;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_TILTU, 0, speedTilt), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_TILTU, 0, speedTilt), 7, true);
 }
 
 int IrDomeModule::pTiltDown(uchar speedTilt)
@@ -762,7 +747,7 @@ int IrDomeModule::pTiltDown(uchar speedTilt)
 		return -EPROTONOSUPPORT;
 	if (speedTilt > 0x3f)
 		speedTilt = 0x3f;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_TILTD, 0, speedTilt), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_TILTD, 0, speedTilt), 7, true);
 }
 
 int IrDomeModule::pPanLeftTiltUp(uchar speedPan, uchar speedTilt)
@@ -773,7 +758,7 @@ int IrDomeModule::pPanLeftTiltUp(uchar speedPan, uchar speedTilt)
 		speedTilt = 0x3f;
 	if (speedPan > 0x3f)
 		speedPan = 0x40;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANL_TILTU, speedPan, speedTilt), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANL_TILTU, speedPan, speedTilt), 7, true);
 }
 
 int IrDomeModule::pPanLeftTiltDown(uchar speedPan, uchar speedTilt)
@@ -784,7 +769,7 @@ int IrDomeModule::pPanLeftTiltDown(uchar speedPan, uchar speedTilt)
 		speedTilt = 0x3f;
 	if (speedPan > 0x3f)
 		speedPan = 0x40;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANL_TILTD, speedPan, speedTilt), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANL_TILTD, speedPan, speedTilt), 7, true);
 }
 
 int IrDomeModule::pPanRightTiltUp(uchar speedPan, uchar speedTilt)
@@ -795,7 +780,7 @@ int IrDomeModule::pPanRightTiltUp(uchar speedPan, uchar speedTilt)
 		speedTilt = 0x3f;
 	if (speedPan > 0x3f)
 		speedPan = 0x40;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANR_TILTU, speedPan, speedTilt), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANR_TILTU, speedPan, speedTilt), 7, true);
 }
 
 int IrDomeModule::pPanRightTiltDown(uchar speedPan, uchar speedTilt)
@@ -806,7 +791,7 @@ int IrDomeModule::pPanRightTiltDown(uchar speedPan, uchar speedTilt)
 		speedTilt = 0x3f;
 	if (speedPan > 0x3f)
 		speedPan = 0x40;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANR_TILTD, speedPan, speedTilt), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_PANR_TILTD, speedPan, speedTilt), 7, true);
 }
 
 /**
@@ -851,7 +836,7 @@ int IrDomeModule::pGotoPreset(uchar saveNo)
 		return -EPROTONOSUPPORT;
 	if (saveNo > 15)
 		return -1;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_GOTO_PRESET, 0, saveNo), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_GOTO_PRESET, 0, saveNo), 7, true);
 }
 
 /**
@@ -863,7 +848,7 @@ int IrDomeModule::pFlip180()
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_FLIP180, 0, 0), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_FLIP180, 0, 0), 7, true);
 }
 
 /**
@@ -875,7 +860,7 @@ int IrDomeModule::pZeroPan()
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_ZERO_PAN, 0, 0), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_ZERO_PAN, 0, 0), 7, true);
 }
 
 /**
@@ -887,7 +872,7 @@ int IrDomeModule::pReset()
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_RESET, 0, 0), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_RESET, 0, 0), 7, true);
 }
 
 /**
@@ -902,7 +887,7 @@ int IrDomeModule::pSetPan(uint pos)
 		return -EPROTONOSUPPORT;
 	if (pos >= 36000)
 		return -1;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_SET_PAN_POS, (pos >> 8) && 0xFF, pos && 0xFF), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_SET_PAN_POS, (pos >> 8) & 0xFF, pos & 0xFF), 7, true);
 }
 
 /**
@@ -917,7 +902,7 @@ int IrDomeModule::pSetTilt(uint pos)
 		return -EPROTONOSUPPORT;
 	if (pos >= 9000)
 		return -1;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_SET_TILT_POS, (pos >> 8) && 0xFF, pos && 0xFF), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_SET_TILT_POS, (pos >> 8) & 0xFF, pos & 0xFF), 7, true);
 }
 
 /**
@@ -988,7 +973,7 @@ int IrDomeModule::pGetPosPan()
 		uchar *bytes = (uchar*) ba.constData();
 		if (bytes[4] == 0x59 || bytes[7] == checksum(bytes, 7)) {
 			lastV.position.first  = (bytes[4] << 8 ) + bytes[5];
-			ApplicationSettings::instance()->setm("ptz.stats.pan_set_value", lastV.position.first);
+			emit panTiltPositionReady();
 			return lastV.position.first;
 		}
 	}
@@ -1009,7 +994,7 @@ int IrDomeModule::pGetPosTilt()
 		uchar *bytes = (uchar*) ba.constData();
 		if (bytes[4] == 0x5B || bytes[7] == checksum(bytes, 7)) {
 			lastV.position.second  = (bytes[4] << 8 ) + bytes[5];
-			ApplicationSettings::instance()->setm("ptz.stats.tilt_set_value", lastV.position.second);
+			emit panTiltPositionReady();
 			return lastV.position.second;
 		}
 	}
@@ -1030,7 +1015,7 @@ int IrDomeModule::pGetPosZoom()
 		uchar *bytes = (uchar*) ba.constData();
 		if (bytes[4] == 0x5D || bytes[7] == checksum(bytes, 7)) {
 			lastV.zoom  = (bytes[4] << 8 ) + bytes[5];
-			ApplicationSettings::instance()->setm("ptz.stats.zoom_set_value", lastV.zoom);
+			emit zoomPositionReady();
 			setAutoIRLed();
 			return lastV.zoom;
 		}
@@ -1042,7 +1027,7 @@ int IrDomeModule::pStop()
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_STOP, 0, 0), 7);
+	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_STOP, 0, 0), 7, true);
 }
 
 QPair <int,int> IrDomeModule::sSetPos(uint posH, uint posV)
@@ -1051,14 +1036,13 @@ QPair <int,int> IrDomeModule::sSetPos(uint posH, uint posV)
 		return QPair <int,int> (-EPROTONOSUPPORT, -EPROTONOSUPPORT);
 	if (posH >= 36000 || posV >= 9000)
 		return QPair <int,int> (-1, -1);
-	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_SET_COOR, posH, posV), 9,9);
+	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_SET_COOR, posH, posV), 9, 9, true);
 	if (ba.size() == 9) {
 		uchar *bytes = (uchar*) ba.constData();
 		if (bytes[2] == 0x82 || bytes[8] == checksum(bytes, 7)) {
 			QPair <int,int> rPos = QPair <int,int> ((bytes[3] << 8 ) + bytes[4], (bytes[5] << 8 )+ bytes[6]);
-			ApplicationSettings::instance()->setm("ptz.stats.pan_set_value", lastV.position.first);
-			ApplicationSettings::instance()->setm("ptz.stats.tilt_set_value", lastV.position.second);
 			lastV.position = rPos;
+			emit panTiltPositionReady();
 			return lastV.position;
 		}
 	}
@@ -1069,21 +1053,20 @@ QPair <int,int> IrDomeModule::sGetPos()
 {
 	if (!lastV.panTitlSupport)
 		return QPair <int,int> (-EPROTONOSUPPORT, -EPROTONOSUPPORT);
-	QByteArray ba = readPort(irPort, getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9,9);
+	const QByteArray &ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9, 9, true);
 	if (ba.size() == 9) {
-		uchar *bytes = (uchar*) ba.constData();
+		const uchar * const bytes = (uchar*) ba.constData();
 		if (bytes[2] == 0x82 || bytes[8] == checksum(bytes, 7)) {
-			QPair <int,int> rPos = QPair <int,int> ((bytes[3] << 8 ) + bytes[4], (bytes[5] << 8 )+ bytes[6]);
-			ApplicationSettings::instance()->setm("ptz.stats.pan_set_value", lastV.position.first);
-			ApplicationSettings::instance()->setm("ptz.stats.tilt_set_value", lastV.position.second);
+			QPair <int,int> rPos ((bytes[3] << 8 ) + bytes[4], (bytes[5] << 8 )+ bytes[6]);
 			lastV.position = rPos;
+			emit panTiltPositionReady();
 			return lastV.position;
 		}
 	}
 	return QPair <int,int> (-1, -1);
 }
 
-QPair<int, int> IrDomeModule::GetPosMem()
+QPair<int, int> IrDomeModule::getPosMem()
 {
 	return lastV.position;
 }
@@ -1098,7 +1081,7 @@ int IrDomeModule::sSetZoom(uint zoomPos)
 {
 	if (zoomPos > 0x7AC0)
 		return -1;
-	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_ZOOM_POS, zoomPos, 0), 9,9);
+	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_ZOOM_POS, zoomPos, 0), 9, 9);
 	if (ba.size() == 9) {
 		uchar *bytes = (uchar*) ba.constData();
 		if (bytes[2] == 0x92 || bytes[8] == checksum(bytes, 7)) {
@@ -1117,16 +1100,26 @@ int IrDomeModule::sSetZoom(uint zoomPos)
  */
 int IrDomeModule::sGetZoom()
 {
-	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_CURR_POS, 0, 0), 9,9);
+	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_CURR_POS, 0, 0), 9, 9);
 	if (ba.size() == 9) {
 		uchar *bytes = (uchar*) ba.constData();
 		if (bytes[2] == 0x92 || bytes[8] == checksum(bytes, 7)){
 			lastV.zoom = (bytes[3] << 8 ) + bytes[4];
-			ApplicationSettings::instance()->setm("ptz.stats.zoom_set_value", lastV.zoom);
+			emit zoomPositionReady();
 			return lastV.zoom;
 		}
 	}
 	return -1;
+}
+
+int IrDomeModule::getZoomMem()
+{
+	return lastV.zoom;
+}
+
+void IrDomeModule::setZoomMem(int z)
+{
+	lastV.zoom = z;
 }
 
 /**
@@ -1136,6 +1129,7 @@ int IrDomeModule::sGetZoom()
  */
 uint IrDomeModule::getZoomRatio ()
 {
+	/* TO DO: do not use static zoom ratio level */
 	static const int zoomRatio[] = {
 		0x0000, 0x16A1, 0x2063, 0x2628, 0x2A1D, 0x2D13,
 		0x2F6D, 0x3161, 0x330D ,0x3486 ,0x35D7, 0x3709,
@@ -1155,7 +1149,6 @@ uint IrDomeModule::getZoomRatio ()
 int IrDomeModule::sSetAbsolute(uint posH, uint posV, uint zoomPos)
 {
 	int zoom = vSetZoom(zoomPos);
-	usleep(15000);
 	QPair <int,int> pos = sSetPos(posH, posV);
 	if (pos.first < 0 || pos.second < 0 || zoom < 0)
 		return -1;
@@ -1167,15 +1160,13 @@ QString IrDomeModule::dVersion()
 	const char version[] = {0xFF, 0xFF, 0x00, 0xC2, 0x00, 0x00, 0xC1 };
 	QByteArray ba = readPort(version, sizeof(version), 14);
 	if (ba.size() == 14) {
-		uchar* reply1 = (uchar*)ba.data();
-		uchar* reply2 = reply1 + 7;
-		if (reply1[6] == checksum((const uchar*)reply1, 6) && reply2[6] == checksum((const uchar*)reply2, 6)) {
-			QString verInfo;
-			verInfo = 'V' + QString::number((reply1[4] & 0xE0)) + '.' + QString::number(reply1[4] & 0x1F) + ' ' +
-					QString::number(reply1[5] + 2000);
+		const uchar* const reply1 = (const uchar*)ba.data();
+		const uchar* const reply2 = reply1 + 7;
+		if (reply1[6] == checksum((uchar*)reply1, 6) && reply2[6] == checksum((uchar*)reply2, 6)) {
+			QString verInfo = QString("V%1.%2 %3").arg(reply1[4] & 0xE0).arg(reply1[4] & 0x1F).arg(reply1[5] + 2000);
 			if (reply2[4] < 10)
 				verInfo += '0';
-			verInfo += QString::number(reply2[4]) + QString::number(reply2[5]);
+			verInfo += QString("%1%2").arg(reply2[4]).arg(reply2[5]);
 			return verInfo;
 		}
 	}
@@ -1186,11 +1177,9 @@ int IrDomeModule::irLedControl(LedControl cmd)
 {	
 	if (!lastV.nightVisionSupport)
 		return -EPROTONOSUPPORT;
-	writePort(getLedControl(cmd), 7);
-	if ( cmd == IrDomeModule::MANUEL) {
-		usleep(15000);
-		writePort(getLedControl(IrDomeModule::LEVEL0), 7);
-	}
+	writePort(getLedControl(cmd), 7, true);
+	if ( cmd == IrDomeModule::MANUEL)
+		writePort(getLedControl(IrDomeModule::LEVEL0), 7, true);
 	return 1;
 }
 
@@ -1200,7 +1189,7 @@ int IrDomeModule::setAutoIRLed() {
 		return -EPROTONOSUPPORT;
 	if (lastV.irLedstate != AUTO)
 		return -1;
-	if (getIRCFstat()) {
+	if (lastV.IRCFstat) {
 		uint zoomRatio = getZoomRatio();
 		if(zoomRatio <= 5)
 			return irLedControl(LEVEL1);
@@ -1259,7 +1248,7 @@ int IrDomeModule::presetState(int ind)
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	if (ind < presetLimit)
+	if (ind > -1 && ind < presetLimit)
 		return preset.at(ind).first;
 	return -1;
 }
@@ -1333,7 +1322,7 @@ int IrDomeModule::patternState(int ind)
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	if (ind < patternLimit)
+	if (ind > -1 && ind < patternLimit)
 		return patternStates[ind];
 	return -1;
 }
@@ -1383,29 +1372,6 @@ const QString IrDomeModule::getHomePosString()
 			", z:" + QString::number(homePos.posZoom);
 }
 
-void IrDomeModule::updatePositionDisable()
-{
-	if (updateTimer->isActive())
-		updateTimer->stop();
-}
-
-void IrDomeModule::updatePositionActive()
-{
-	if (!updateTimer->isActive())
-		updateTimer->start();
-}
-
-int IrDomeModule::updatePositionInterval(int msec)
-{
-	updateTimer->setInterval(msec);
-	return updateTimer->interval();
-}
-
-int IrDomeModule::updatePositionInterval()
-{
-	return updateTimer->interval();
-}
-
 int IrDomeModule::addSupport(IrDomeModule::SupportDevice dev, int state)
 {
 	if (dev == PANTILT)
@@ -1416,30 +1382,52 @@ int IrDomeModule::addSupport(IrDomeModule::SupportDevice dev, int state)
 		return -ENOSTR;
 }
 
-const QByteArray IrDomeModule::readPort(const char *command, int wrlen, int rdlen)
+bool IrDomeModule::isSupport(IrDomeModule::SupportDevice dev)
+{
+	if (dev == PANTILT)
+		return lastV.panTitlSupport;
+	else if (dev == NIGHTVISION)
+		return lastV.nightVisionSupport;
+	else
+		return -ENOSTR;
+}
+
+const QByteArray IrDomeModule::readPort(const char *command, int wrlen, int rdlen, bool rec)
 {
 	/* clear buffers */
 	irPort->readAll();
 
 	QByteArray readData;
-	writePort(command, wrlen);
-	usleep(100 * wrlen);
+	writePort(command, wrlen, rec);
 	QElapsedTimer t;
 	t.start();
+	if (irPort->queryMode() == QextSerialPort::EventDriven) {
+		QTimer timeBreak;
+		timeBreak.setSingleShot(true);
+		QEventLoop l;
+		connect(&timeBreak, SIGNAL(timeout()), &l , SLOT(quit()));
+		connect(irPort, SIGNAL(readyRead()), &l , SLOT(quit()));
+		timeBreak.start(1000);
+		l.exec();
+		if (timeBreak.isActive())
+			timeBreak.stop();
+	}
+	t.start();
 	while (irPort->bytesAvailable() < rdlen) {
-		usleep(100);
+		mySleep(2);
 		if (t.elapsed() > 1000)
 			break;
 	}
 	readData = irPort->readAll();
-	mInfo("Read Command: %s", readData.toHex().data());
+	if(rec)
+		mInfo("Read Command: %s", readData.toHex().data());
 	return readData;
 }
 
 int IrDomeModule::writePort(QextSerialPort* port, const char *command, int len)
 {
 	port->write(command, len);
-	usleep(100 * len);
+	usleep(1000000 / port->baudRate() * len);
 	return len;
 }
 
@@ -1450,11 +1438,21 @@ QByteArray IrDomeModule::readPort(QextSerialPort *port, const char *command, int
 
 	QByteArray readData;
 	writePort(port, command, wrlen);
-	usleep(100 * wrlen);
 	QElapsedTimer t;
+	if (port->queryMode() == QextSerialPort::EventDriven) {
+		QTimer timeBreak;
+		timeBreak.setSingleShot(true);
+		QEventLoop l;
+		connect(&timeBreak, SIGNAL(timeout()), &l , SLOT(quit()));
+		connect(port, SIGNAL(readyRead()), &l , SLOT(quit()));
+		timeBreak.start(1000);
+		l.exec();
+		if (timeBreak.isActive())
+			timeBreak.stop();
+	}
 	t.start();
 	while (port->bytesAvailable() < rdlen) {
-		usleep(100);
+		mySleep(2);
 		if (t.elapsed() > 1000)
 			break;
 	}
@@ -1471,23 +1469,34 @@ IrDomeModule::ModuleType IrDomeModule::getModel(QextSerialPort *port)
 	const QByteArray ba = readPort(port, buf, sizeof(buf), 10);
 	if (ba.at(3) == 0x20) {
 		if ((ba.at(4) == 0x04) && (ba.at(5) == 0x5f)) {
-			modType = MODULE_TYPE_OEM_3X;
+			modType = MODULE_TYPE_PV6403_F12D;
 		} else if ((ba.at(4) == 0x04) && (ba.at(5) == 0x6f)) {
-			modType = MODULE_TYPE_SONY_30X;
+			modType = MODULE_TYPE_FCB_EV7500;
 		} else if ((ba.at(4) == 0x04) && (ba.at(5) == 0x67)) {
-			modType = MODULE_TYPE_OEM_30X;
+			modType = MODULE_TYPE_PV8430_F2D;
 		}
-	}
+	} else
+		modType = MODULE_TYPE_NO_VISCA_MODULE;
 	return modType;
 }
 
-int IrDomeModule::writePort(const char *command, int len)
+int IrDomeModule::writePort(const char *command, int len, bool rec)
 {
-	mInfo("Send Command: %s", QByteArray(command, len).toHex().data());
-	if(writeAble)
+	int t = seriPortElapse.elapsed();
+	if (t < cmdInterval) {
+		if (t > cmdInterval)
+			t = 0;
+		mySleep(cmdInterval - t);
+	}
+	seriPortElapse.restart();
+	if(rec)
+		mInfo("Send Command: %s", QByteArray(command, len).toHex().data());
+	if(writeAble && rec)
 		record(command, len);
 	irPort->write(command, len);
-	usleep(100 * len);
+	emit seriPortWrote();
+	seriPortElapse.restart();
+	usleep(1000000 / irPort->baudRate() * len);
 	return len;
 }
 
@@ -1498,8 +1507,10 @@ void IrDomeModule::updatePosition()
 		setAutoIRLed();
 	if (lastV.panTitlSupport) {
 		sGetPos();
-		maskSetPanTiltAngle(lastV.position.first, lastV.position.second);
+		if (maskBits)
+			maskSetPanTiltAngle(lastV.position.first, lastV.position.second);
 	}
+	emit postionsUpdated();
 }
 
 int IrDomeModule::specialPosition2File()
@@ -1733,7 +1744,6 @@ int IrDomeModule::maskSetRanges(int panMax, int panMin, int xMax, int xMin, int 
 
 int IrDomeModule::maskDisplay (uint maskID, bool onOff)
 {
-	static uint maskBits = 0;
 	if (onOff)
 		maskBits |= (1 << maskID);
 	else
@@ -1928,20 +1938,37 @@ int IrDomeModule::titleWrite(uint lineNumber,const QByteArray str, uint hPositio
 	if (lineNumber > 10)
 		return -1;
 	titleClear(lineNumber);
-	usleep(15000);
 	titleSet1(lineNumber, hPosition, color,blink);
-	usleep(15000);
 	int strLen = str.size();
 	const char* strData = str.constData();
 	if (strLen > 10) {
 		titleSet2(lineNumber, strData, 10);
-		usleep(15000);
 		if (strLen > 20 )
 			titleSet3(lineNumber, strData + 10, 10);
 		else
 			titleSet3(lineNumber, strData + 10, strLen -10);
 	} else
 		titleSet2(lineNumber, strData, strLen);
-	usleep(15000);
 	return titleDisplay(lineNumber, 1);
+}
+
+void IrDomeModule::setSeriPortState(QIODevice::OpenMode mod)
+{
+	if (!irPort->isOpen())
+		irPort->open(mod);
+}
+
+QIODevice::OpenMode IrDomeModule::getSeriPortState()
+{
+	return irPort->openMode();
+}
+
+void IrDomeModule::setCmdInterval(int interval)
+{
+	cmdInterval = interval;
+}
+
+int IrDomeModule::getCmdInterval()
+{
+	return cmdInterval;
 }
