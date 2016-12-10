@@ -36,11 +36,11 @@ int CamInfo::getIrDomemodule()
 	IrDomeModule *dome = new IrDomeModule(camPort, 0);
 	camPort->flush();
 	int model = dome->getModel(camPort);
-	if (model == IrDomeModule::MODULE_TYPE_OEM_3X) {
+	if (model == IrDomeModule::MODULE_TYPE_PV6403_F12D ) {
 		qDebug() << "Modul:\tOEM 3X";
-	} else if (model == IrDomeModule::MODULE_TYPE_SONY_30X) {
+	} else if (model == IrDomeModule::MODULE_TYPE_FCB_EV7500) {
 		qDebug() << "Modul:\tSONY";
-	} else if (model == IrDomeModule::MODULE_TYPE_OEM_30X) {
+	} else if (model == IrDomeModule::MODULE_TYPE_PV8430_F2D ) {
 		qDebug() << "Modul:\tOEM 30X";
 	} else
 		return -1;
@@ -206,7 +206,7 @@ int CamInfo::getIrDomemodule()
 	qDebug() << "Focus Mode:\t"<< modeStr.toLatin1().data();
 
 	dome->vGetZoom();
-	qDebug() << "Zoom:\t"<< dome->lastV.zoom;
+	qDebug() << "Zoom:\t"<< dome->getZoomMem();
 	return 0;
 }
 

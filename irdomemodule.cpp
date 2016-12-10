@@ -1053,7 +1053,7 @@ QPair <int,int> IrDomeModule::sGetPos()
 {
 	if (!lastV.panTitlSupport)
 		return QPair <int,int> (-EPROTONOSUPPORT, -EPROTONOSUPPORT);
-	const QByteArray &ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9, 9, true);
+	const QByteArray &ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_GET_COOR, 0, 0), 9, 9);
 	if (ba.size() == 9) {
 		const uchar * const bytes = (uchar*) ba.constData();
 		if (bytes[2] == 0x82 || bytes[8] == checksum(bytes, 7)) {
