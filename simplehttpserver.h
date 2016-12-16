@@ -3,6 +3,7 @@
 
 #include <QUrl>
 #include <QHash>
+#include <QFile>
 #include <QObject>
 
 class QTcpServer;
@@ -16,6 +17,7 @@ public:
 protected:
 	virtual const QByteArray getFile(const QString filename, QString &mime, QUrl &url);
 	virtual int handlePostData(const QByteArray &);
+	virtual int handlePostDataFile(const QString &);
 	virtual void sendGetResponse(QTcpSocket *sock);
 
 private slots:
@@ -24,6 +26,8 @@ private slots:
 protected:
 	bool isAuthenticated();
 	bool isAuthenticated(const QString &username);
+	QString getTemporaryDir() { return temporaryDir;}
+	void setTemporaryDir(const QString &tempDir) { temporaryDir = tempDir;}
 	virtual QStringList addCustomGetHeaders(const QString &filename);
 
 	QTcpServer *server;
@@ -38,15 +42,18 @@ protected:
 	QHash<QString, QString> postHeaders;
 	QHash<QString, QString> getHeaders;
 	QByteArray postData;
+	QFile postDataFile;
 	bool useAuthentication;
 	QString authenticatedUserName;
 	bool useCustomAuth;
 	QUrl getUrl;
 	QString authenticatedUserToken;
 private:
+	QString temporaryDir;
 	bool parsePostData(QTcpSocket *sock);
 	bool shouldRead(QTcpSocket *sock);
 	virtual int handlePostDataAuth(const QByteArray &ba);
+	virtual int handlePostDataFileAuth(const QString &ba);
 	virtual const QByteArray getFileAuth(const QString filename, QString &mime, QUrl &url);
 };
 

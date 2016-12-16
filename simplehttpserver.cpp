@@ -29,6 +29,7 @@ SimpleHttpServer::SimpleHttpServer(int port, QObject *parent) :
 
 	useAuthentication = false;
 	useCustomAuth = false;
+	temporaryDir = "/tmp";
 }
 
 const QByteArray SimpleHttpServer::getFileAuth(const QString filename, QString &mime, QUrl &url)
@@ -48,6 +49,11 @@ const QByteArray SimpleHttpServer::getFile(const QString filename, QString &mime
 }
 
 int SimpleHttpServer::handlePostData(const QByteArray &)
+{
+	return 404;
+}
+
+int SimpleHttpServer::handlePostDataFile(const QString &)
 {
 	return 404;
 }
@@ -103,6 +109,13 @@ int SimpleHttpServer::handlePostDataAuth(const QByteArray &ba)
 	return 404;
 }
 
+int SimpleHttpServer::handlePostDataFileAuth(const QString &ba)
+{
+	if (isAuthenticated())
+		return handlePostDataFile(ba);
+	return 404;
+}
+
 QStringList SimpleHttpServer::addCustomGetHeaders(const QString &filename)
 {
 	Q_UNUSED(filename);
@@ -112,10 +125,31 @@ QStringList SimpleHttpServer::addCustomGetHeaders(const QString &filename)
 bool SimpleHttpServer::parsePostData(QTcpSocket *sock)
 {
 	int postSize = postHeaders["Content-Length:"].toInt();
-	postData.append(sock->readAll());
-	if (postData.size() >= postSize) {
-		int err = handlePostDataAuth(postData);
-		postData.clear();
+	int err = -1;
+	if (postSize > 3 * 1024 * 1024) {
+		if (!postDataFile.isOpen()) {
+			postDataFile.setFileName(QString("%1/simpleHttp%2.tmp").arg(temporaryDir).arg(rand()));
+			if (!postDataFile.open(QIODevice::WriteOnly)) {
+				sock->readAll();
+				postData.clear();
+				err = 400;
+			}
+		}
+		if (err < 0) {
+			postDataFile.write(sock->readAll());
+			if (postDataFile.size() >= postSize) {
+				postDataFile.close();
+				err = handlePostDataFileAuth(postDataFile.fileName());
+			}
+		}
+	} else {
+		postData.append(sock->readAll());
+		if (postData.size() >= postSize) {
+			err = handlePostDataAuth(postData);
+			postData.clear();
+		}
+	}
+	if (err >= 0) {
 		state = IDLE;
 		QStringList resp;
 		if (err == 0)
