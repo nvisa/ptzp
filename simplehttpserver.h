@@ -44,6 +44,7 @@ protected:
 	QUrl getUrl;
 	QString authenticatedUserToken;
 private:
+	bool parsePostData(QTcpSocket *sock);
 	bool shouldRead(QTcpSocket *sock);
 	virtual int handlePostDataAuth(const QByteArray &ba);
 	virtual const QByteArray getFileAuth(const QString filename, QString &mime, QUrl &url);

@@ -109,6 +109,27 @@ QStringList SimpleHttpServer::addCustomGetHeaders(const QString &filename)
 	return QStringList();
 }
 
+bool SimpleHttpServer::parsePostData(QTcpSocket *sock)
+{
+	int postSize = postHeaders["Content-Length:"].toInt();
+	postData.append(sock->readAll());
+	if (postData.size() >= postSize) {
+		int err = handlePostDataAuth(postData);
+		postData.clear();
+		state = IDLE;
+		QStringList resp;
+		if (err == 0)
+			resp << "HTTP/1.1 200 OK";
+		else
+			resp << QString("HTTP/1.1 %1").arg(err);
+		resp << QString("Content-Length: 0");
+		resp << "\r\n";
+		sock->write(resp.join("\r\n").toUtf8());
+	} else
+		return true;
+	return false;
+}
+
 void SimpleHttpServer::newConnection()
 {
 	while (server->hasPendingConnections()) {
@@ -161,39 +182,12 @@ void SimpleHttpServer::readMessage()
 			QStringList tokens = QString(sock->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
 			tokens.removeAll("");
 			if (!tokens.size()) {
-				int postSize = postHeaders["Content-Length:"].toInt();
-				postData.append(sock->readAll());
-				if (postData.size() >= postSize) {
-					int err = handlePostDataAuth(postData);
-					postData.clear();
-					state = IDLE;
-					QStringList resp;
-					if (err == 0)
-						resp << "HTTP/1.1 200 OK";
-					else
-						resp << QString("HTTP/1.1 %1").arg(err);
-					resp << QString("Content-Length: 0");
-					resp << "\r\n";
-					sock->write(resp.join("\r\n").toUtf8());
-				} else
+				if (parsePostData(sock))
 					state = POST;
 			} else if (tokens.size() == 2)
 				postHeaders.insert(tokens[0], tokens[1]);
 		} else if (state == POST) {
-			int postSize = postHeaders["Content-Length:"].toInt();
-			postData.append(sock->readAll());
-			if (postData.size() >= postSize) {
-				int err = handlePostDataAuth(postData);
-				postData.clear();
-				state = IDLE;
-				QStringList resp;
-				if (err == 0)
-					resp << "HTTP/1.1 200 OK";
-				else
-					resp << QString("HTTP/1.1 %1").arg(err);
-				resp << "\r\n";
-				sock->write(resp.join("\r\n").toUtf8());
-			}
+			parsePostData(sock);
 		}
 		//sock->close();
 		//sock->abort();
