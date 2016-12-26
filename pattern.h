@@ -15,10 +15,10 @@
 class Pattern : public QObject
 {
 	Q_OBJECT
+	int readPatternFile(int ind);
 public:
 
 	explicit Pattern(int writeState, QString pattFilename = DEF_PATT_FILENAME, int pattLimit = DEF_PATT_LIM, QObject *parent = 0);
-	~Pattern();
 
 private slots:
 	void timeout();
@@ -44,6 +44,8 @@ protected:
 		SAVED
 	};
 	struct cmdAndTime {
+		cmdAndTime(){}
+		cmdAndTime(qint64 t,const QByteArray &c):time(t),cmd(c){}
 		qint64 time;
 		QByteArray cmd;
 	};
@@ -54,6 +56,7 @@ protected:
 	QElapsedTimer patternT;
 	QList<patternState> patternStates; //0: NO_RUN_RECORD , 1: RECORD, 2: RUN, 3 :SAVED
 	QList<struct cmdAndTime> patternCmds;
+	int cmdIndex;
 };
 
 #endif // PATTERNRECORDER_H
