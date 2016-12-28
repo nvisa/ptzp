@@ -1129,21 +1129,13 @@ void IrDomeModule::setZoomMem(int z)
  */
 uint IrDomeModule::getZoomRatio ()
 {
-	/* TO DO: do not use static zoom ratio level */
-	static const int zoomRatio[] = {
-		0x0000, 0x16A1, 0x2063, 0x2628, 0x2A1D, 0x2D13,
-		0x2F6D, 0x3161, 0x330D ,0x3486 ,0x35D7, 0x3709,
-		0x3820, 0x3920, 0x3A0A, 0x3ADD, 0x3B9C, 0x3CDC,
-		0x3D60, 0x3D60, 0x3DD4, 0x3E39, 0x3E90, 0x3EDC,
-		0x3F1E, 0x3F57, 0x3F8A, 0x3FB6, 0x3FDC, 0x4000
-	};
-	if (lastV.zoom == 0)
+	if (lastV.zoom == 0 || zoomRatio.size() == 0)
 		return 0;
 
-	for (uint i = 1; i < ARRAY_SIZE(zoomRatio); i++ )
-		if ((zoomRatio[i-1] < lastV.zoom) && (zoomRatio[i] >= lastV.zoom))
-			return i;
-	return ARRAY_SIZE(zoomRatio);
+	for (int i = 1; i < zoomRatio.size(); i++ )
+		if ((zoomRatio.at(i-1) < lastV.zoom) && (zoomRatio.at(i) >= lastV.zoom))
+			return (uint)i;
+	return zoomRatio.size();
 }
 
 int IrDomeModule::sSetAbsolute(uint posH, uint posV, uint zoomPos)
@@ -1980,4 +1972,23 @@ void IrDomeModule::setCmdInterval(int interval)
 int IrDomeModule::getCmdInterval()
 {
 	return cmdInterval;
+}
+
+int IrDomeModule::setZoomLookUp(const QStringList &zoomRatioList)
+{
+	if (!zoomRatioList.size())
+		return -EINVAL;
+	zoomRatio.clear();
+	bool ok;
+	int zRatio;
+	foreach (QString s, zoomRatioList) {
+		zRatio = s.toInt(&ok, 16);
+		if (ok)
+			zoomRatio.append(zRatio);
+		else {
+			zoomRatio.clear();
+			return -EINVAL;
+		}
+	}
+	return 0;
 }
