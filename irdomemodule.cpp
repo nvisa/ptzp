@@ -1177,10 +1177,19 @@ int IrDomeModule::irLedControl(LedControl cmd)
 {	
 	if (!lastV.nightVisionSupport)
 		return -EPROTONOSUPPORT;
+
+	if (cmd == AUTO) {
+		lastV.irLedstate = AUTO;
+		return 0;
+	}
+
 	writePort(getLedControl(cmd), 7, true);
-	if ( cmd == IrDomeModule::MANUEL)
+	if ( cmd == IrDomeModule::MANUEL) {
+		lastV.irLedstate = cmd;
 		writePort(getLedControl(IrDomeModule::LEVEL0), 7, true);
-	return 1;
+		return 0;
+	}
+	return -EROFS;
 }
 
 int IrDomeModule::setAutoIRLed() {
@@ -1206,7 +1215,7 @@ int IrDomeModule::setAutoIRLed() {
 		else
 			return -1;
 	} else
-		return irLedControl(MANUEL);
+		return irLedControl(LEVEL0);
 }
 
 int IrDomeModule::presetCall(int ind)
