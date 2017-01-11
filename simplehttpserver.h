@@ -37,17 +37,30 @@ protected:
 		POST_HEADER,
 		POST,
 	};
+
+	struct SocketVariables {
+		ServerState state;
+		QHash<QString, QString> postHeaders;
+		QHash<QString, QString> getHeaders;
+		QByteArray postData;
+		QFile *postDataFile;
+		QUrl getUrl;
+	};
+	QHash<QTcpSocket *, SocketVariables> socketVar;
+
 	ServerState state;
 	QHash<QString, QString> mimeTypesByExtension;
 	QHash<QString, QString> postHeaders;
 	QHash<QString, QString> getHeaders;
 	QByteArray postData;
-	QFile postDataFile;
+	QFile *postDataFile;
 	bool useAuthentication;
 	QString authenticatedUserName;
 	bool useCustomAuth;
 	QUrl getUrl;
 	QString authenticatedUserToken;
+	void getSocketVar(QTcpSocket *sock);
+	void setSocketVar(QTcpSocket *sock);
 private:
 	QString temporaryDir;
 	bool parsePostData(QTcpSocket *sock);

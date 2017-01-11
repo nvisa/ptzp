@@ -127,19 +127,22 @@ bool SimpleHttpServer::parsePostData(QTcpSocket *sock)
 	int postSize = postHeaders["Content-Length:"].toInt();
 	int err = -1;
 	if (postSize > 3 * 1024 * 1024) {
-		if (!postDataFile.isOpen()) {
-			postDataFile.setFileName(QString("%1/simpleHttp%2.tmp").arg(temporaryDir).arg(rand()));
-			if (!postDataFile.open(QIODevice::WriteOnly)) {
+		if (postDataFile == NULL) {
+			postDataFile = new QFile(QString("%1/simpleHttp%2.tmp").arg(temporaryDir).arg(rand()));
+			connect(sock, SIGNAL(disconnected()), postDataFile, SLOT(deleteLater()));
+		}
+		if (!postDataFile->isOpen()) {
+			if (!postDataFile->open(QIODevice::WriteOnly)) {
 				sock->readAll();
 				postData.clear();
 				err = 400;
 			}
 		}
-		if (err < 0) {
-			postDataFile.write(sock->readAll());
-			if (postDataFile.size() >= postSize) {
-				postDataFile.close();
-				err = handlePostDataFileAuth(postDataFile.fileName());
+		if (postDataFile->isOpen()) {
+			postDataFile->write(sock->readAll());
+			if (postDataFile->size() >= postSize) {
+				postDataFile->close();
+				err = handlePostDataFileAuth(postDataFile->fileName());
 			}
 		}
 	} else {
@@ -168,6 +171,8 @@ void SimpleHttpServer::newConnection()
 {
 	while (server->hasPendingConnections()) {
 		QTcpSocket *sock = server->nextPendingConnection();
+		socketVar.insert(sock, SocketVariables());
+		socketVar[sock].postDataFile = NULL;
 		mInfo("new connection from '%s'", qPrintable(sock->peerAddress().toString()));
 		connect(sock, SIGNAL(readyRead()), SLOT(readMessage()));
 		connect(sock, SIGNAL(disconnected()), sock, SLOT(deleteLater()));
@@ -177,6 +182,7 @@ void SimpleHttpServer::newConnection()
 void SimpleHttpServer::readMessage()
 {
 	QTcpSocket *sock = (QTcpSocket *)sender();
+	getSocketVar(sock);
 	while (shouldRead(sock)) {
 		if (state == IDLE) {
 			QStringList tokens = QString(sock->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
@@ -227,6 +233,7 @@ void SimpleHttpServer::readMessage()
 		//sock->abort();
 		//sock->deleteLater();
 	}
+	setSocketVar(sock);
 }
 
 bool SimpleHttpServer::isAuthenticated()
@@ -255,4 +262,24 @@ bool SimpleHttpServer::shouldRead(QTcpSocket *sock)
 	if (state == POST)
 		return sock->bytesAvailable();
 	return sock->canReadLine();
+}
+
+void SimpleHttpServer::getSocketVar(QTcpSocket *sock)
+{
+	postHeaders = socketVar[sock].postHeaders;
+	getHeaders = socketVar[sock].getHeaders;
+	postData = socketVar[sock].postData;
+	postDataFile = socketVar[sock].postDataFile;
+	getUrl = socketVar[sock].getUrl;
+	state = socketVar[sock].state;
+}
+
+void SimpleHttpServer::setSocketVar(QTcpSocket *sock)
+{
+	socketVar[sock].postHeaders = postHeaders;
+	getHeaders = socketVar[sock].getHeaders = getHeaders;
+	socketVar[sock].postData = postData;
+	socketVar[sock].postDataFile = postDataFile;
+	socketVar[sock].getUrl = getUrl;
+	socketVar[sock].state = state;
 }
