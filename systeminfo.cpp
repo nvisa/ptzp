@@ -4,6 +4,7 @@
 
 #include <QFile>
 #include <QTimer>
+#include <QProcess>
 #include <QStringList>
 
 #include <errno.h>
@@ -262,4 +263,97 @@ int SystemInfo::CpuInfo::getInstLoadFromProc()
 	lastIdle = idle;
 	lastNonIdle = nonIdle;
 	return load;
+}
+
+static const QStringList getProcMounts()
+{
+	QFile f("/proc/mounts");
+	if (!f.open(QFile::ReadOnly))
+		return QStringList();
+	QStringList rt = QString(f.readAll()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+	f.close();
+	return rt;
+}
+
+SystemInfo::PathMountState SystemInfo::getMountState(const QString &dev)
+{
+	QStringList mountList = getProcMounts();
+	foreach (QString l, mountList) {
+		QStringList words = l.split(' ');
+		if (words.size() < 4)
+			continue;
+		if (words.at(0) != dev)
+			continue;
+		QStringList flags = words.at(3).split(',');
+		if (flags.contains("ro"))
+			return READ_ONLY;
+		if (flags.contains("rw"))
+			return READ_WRITE;
+		if (flags.contains("wo"))
+			return WRITE_ONLY;
+	}
+	return UMOUNT;
+}
+
+int SystemInfo::remountState(const QString &dev, SystemInfo::PathMountState state)
+{
+	if (!QFile(dev).exists())
+		return -ENOTDIR;
+	QProcess p;
+	if (state == UMOUNT) {
+		return -ENOLINK;
+	} else {
+		QStringList params;
+		params << "-o";
+		QString remount = "remount,";
+		if (state == READ_WRITE)
+			params << remount.append("rw");
+		else if (state == WRITE_ONLY)
+			params << remount.append("wo");
+		else
+			params << remount.append("ro");
+		params << dev;
+		p.start("mount", params);
+	}
+	p.waitForFinished();
+	if (p.readAllStandardOutput().size())
+		return -EBUSY;
+	::sync();
+	return 0;
+}
+
+int SystemInfo::mount(const QString &dev, const QString &dest, SystemInfo::PathMountState state)
+{
+	if (!QFile(dev).exists() || !QFile(dest).exists())
+		return -ENOTDIR;
+	QProcess p;
+	if (state == UMOUNT) {
+		return -ENOLINK;
+	} else {
+		QStringList params;
+		params << dev << dest << "-o";
+		if (state == READ_WRITE)
+			params << "rw";
+		else if (state == WRITE_ONLY)
+			params << "wo";
+		else
+			params << "ro";
+		p.start("mount", params);
+	}
+	p.waitForFinished();
+	if (p.readAllStandardOutput().size())
+		return -EBUSY;
+	::sync();
+	return 0;
+}
+
+int SystemInfo::umount(const QString &dest)
+{
+	QProcess p;
+	p.start("umount", QStringList() << dest);
+	p.waitForFinished();
+	if (p.readAllStandardOutput().size())
+		return -EBUSY;
+	::sync();
+	return 0;
 }

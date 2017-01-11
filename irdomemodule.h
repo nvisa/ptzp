@@ -455,6 +455,8 @@ public:
 	void setCmdInterval(int interval);
 	int getCmdInterval();
 
+	int setZoomLookUp (const QStringList &zoomRatioList);
+
 public slots:
 	int writePort(const char *command, int len, bool rec = false);
 	void updatePosition();
@@ -496,6 +498,8 @@ private:
 	float yTiltRate;
 	bool hPole;
 	bool vPole;
+
+	QList<int> zoomRatio;
 
 	QElapsedTimer seriPortElapse;
 	int cmdInterval;

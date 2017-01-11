@@ -11,6 +11,12 @@ class SystemInfo : public QObject
 {
 	Q_OBJECT
 public:
+	enum PathMountState {
+		READ_ONLY,
+		WRITE_ONLY,
+		READ_WRITE,
+		UMOUNT
+	};
 	static int getFreeMemory();
 	static int getTVPVersion();
 	static int getTVP5158Version(int addr);
@@ -18,6 +24,10 @@ public:
 	static int getTFP410DevId();
 	static int getUptime();
 	static int getCpuLoad();
+	static SystemInfo::PathMountState getMountState(const QString &dev);
+	static int remountState(const QString &dev, SystemInfo::PathMountState state);
+	static int mount(const QString &dev, const QString &dest, SystemInfo::PathMountState state);
+	static int umount(const QString &dest);
 signals:
 	
 public slots:

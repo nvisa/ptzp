@@ -18,25 +18,19 @@ Pattern::Pattern(int writeState, QString pattFilename, int pattLimit, QObject *p
 	patternT.start();
 }
 
-Pattern::~Pattern()
-{
-
-}
-
 int Pattern::start(int ind)
 {
 	if ((!writeAble) || (ind >= patternLimit))
 		return -ENOSTR;
 	mDebug("pattern start");
-	if (patternStates.at(ind) == NO_RUN_RECORD) {
-		patternStates.replace(ind, RECORD);
-		patternCmds.clear();
-		const cmdAndTime key = {ind, KEYWORDS};
-		patternCmds.append(key);
-		patternT.restart();
-		return 1;
-	}
-	return -ENODATA;
+	if (patternStates.at(ind) != NO_RUN_RECORD)
+		return -ENODATA;
+	patternStates.replace(ind, RECORD);
+	patternCmds.clear();
+	cmdAndTime key ((qint64)ind, QByteArray(KEYWORDS));
+	patternCmds.append(key);
+	patternT.restart();
+	return 1;
 }
 
 int Pattern::stop(int ind)
@@ -45,20 +39,21 @@ int Pattern::stop(int ind)
 		return -ENOSTR;
 	mDebug("pattern stop");
 	QString filename = QString("%1%2%3").arg(patternFile).arg(ind).arg(FILETAIL);
-	QFile *runPatternFile = new QFile(filename);
-	if (runPatternFile->open(QIODevice::ReadWrite)) {
-		QDataStream patternStream(runPatternFile);
-		patternStream.setByteOrder(QDataStream::LittleEndian);
-		for (int i = 0; i < patternCmds.size(); i++) {
-			patternStream << patternCmds.at(i).cmd;
-			patternStream << patternCmds.at(i).time;
-		}
-		runPatternFile->close();
-		patternCmds.clear();
-		patternStates.replace(ind, SAVED);
-		return 1;
+	QFile runPatternFile(filename);
+	if (!runPatternFile.open(QIODevice::ReadWrite)) {
+		patternStates.replace(ind, NO_RUN_RECORD);
+		return -ENOSTR;
 	}
-	return -ENOSTR;
+	QDataStream patternStream(&runPatternFile);
+	patternStream.setByteOrder(QDataStream::LittleEndian);
+	for (int i = 0; i < patternCmds.size(); i++) {
+		patternStream << patternCmds.at(i).cmd;
+		patternStream << patternCmds.at(i).time;
+	}
+	runPatternFile.close();
+	patternCmds.clear();
+	patternStates.replace(ind, SAVED);
+	return 1;
 }
 
 int Pattern::deletePat(int ind)
@@ -76,50 +71,59 @@ int Pattern::deletePat(int ind)
 	return 1;
 }
 
+int Pattern::readPatternFile(int ind)
+{
+	QString filename = QString("%1%2%3").arg(patternFile).arg(ind).arg(FILETAIL);
+	QFile runPatternFile(filename);
+	if (!runPatternFile.open(QIODevice::ReadWrite)) {
+		mDebug("pattern not open");
+		return -ENODATA;
+	}
+	if (!runPatternFile.size()) {
+		mDebug("pattern empty or wrong data");
+		runPatternFile.resize(0);
+		runPatternFile.close();
+		return -ENODATA;
+	}
+
+	QDataStream patternStream(&runPatternFile);
+	patternStream.setByteOrder(QDataStream::LittleEndian);
+	cmdAndTime cmdKey;
+	patternStream >> cmdKey.cmd;
+	patternStream >> cmdKey.time;
+
+	if (cmdKey.cmd != KEYWORDS) {
+		mDebug("pattern empty or wrong data");
+		runPatternFile.resize(0);
+		runPatternFile.close();
+		return -ENODATA;
+	}
+
+	while (!patternStream.atEnd()) {
+		patternStream >> cmdKey.cmd;
+		patternStream >> cmdKey.time;
+		patternCmds.append(cmdKey);
+	}
+	return 0;
+}
+
 int Pattern::run(int ind)
 {
 	if ((!writeAble) || (ind >= patternLimit))
 		return -ENOSTR;
-	mDebug("pattern run %d", ind) ;
 	for (int i = 0; i < patternLimit; i++)
-		if (patternStates.at(i) == RUN) {
+		if (patternStates.at(i) == RUN)
 			return -ENODATA;
-		}
-	QString filename = QString("%1%2%3").arg(patternFile).arg(ind).arg(FILETAIL);
-	QFile *runPatternFile = new QFile(filename);
-	if (runPatternFile->open(QIODevice::ReadWrite)) {
-		if (runPatternFile->size()) {
-			QDataStream patternStream(runPatternFile);
-			patternStream.setByteOrder(QDataStream::LittleEndian);
-			cmdAndTime cmdKey;
-			patternStream >> cmdKey.cmd;
-			patternStream >> cmdKey.time;
-			if (cmdKey.cmd == KEYWORDS) {
-				patternStates.replace(ind, RUN);
-				while (!patternStream.atEnd()) {
-					patternStream >> cmdKey.cmd;
-					patternStream >> cmdKey.time;
-					patternCmds.append(cmdKey);
-				}
-				if (patternCmds.size()) {
-					emit nextCmd(patternCmds.at(0).cmd.constData(), patternCmds.at(0).cmd.size());
-					patternCmds.removeFirst();
-				}
-				if (patternCmds.size()) {
-					mDebug("pattern next command time %lld", patternCmds.at(0).time);
-					QTimer::singleShot(patternCmds.at(0).time, this, SLOT(timeout()));
-				}
-				return 1;
-			} else {
-				mDebug("pattern empty or wrong data");
-				runPatternFile->resize(0);
-				runPatternFile->close();
-				return -ENODATA;
-			}
-		}
-	}
-	mDebug("pattern not found");
-	return -ENODATA;
+	mDebug("pattern run %d", ind);
+
+	readPatternFile(ind);
+	if (!patternCmds.size())
+		return -ENODATA;
+
+	patternStates.replace(ind, RUN);
+	cmdIndex = 0;
+	timeout();
+	return 1;
 }
 
 int Pattern::patternInit()
@@ -131,21 +135,20 @@ int Pattern::patternInit()
 		QString filename = QString("%1%2%3").arg(patternFile).arg(i).arg(FILETAIL);
 		QFile patternFile;
 		patternFile.setFileName(filename);
-		if (patternFile.open(QIODevice::ReadWrite)) {
-			QDataStream patternStream(&patternFile);
-			patternStream.setByteOrder(QDataStream::LittleEndian);
-			struct cmdAndTime key;
-			patternStream >> key.cmd;
-			if (patternFile.size() && (key.cmd == KEYWORDS)) {
-				patternStates.replace(i, SAVED);
-			} else {
-				patternStates.replace(i, NO_RUN_RECORD);
-				patternFile.resize(0);
-			}
-			patternFile.close();
+		if (!patternFile.open(QIODevice::ReadWrite))
+			break;
+		QDataStream patternStream(&patternFile);
+		patternStream.setByteOrder(QDataStream::LittleEndian);
+		struct cmdAndTime key;
+		patternStream >> key.cmd;
+		if (patternFile.size() && (key.cmd == KEYWORDS)) {
+			patternStates.replace(i, SAVED);
+		} else {
+			patternStates.replace(i, NO_RUN_RECORD);
+			patternFile.resize(0);
 		}
+		patternFile.close();
 	}
-	patternT.start();
 	return 1;
 }
 
@@ -155,12 +158,10 @@ int Pattern::record(const char *command, int len)
 		return -ENOSTR;
 	for (int i = 0; i < patternLimit; i++) {
 		if (patternStates.at(i) == RECORD) {
-			struct cmdAndTime rec;
-			rec.cmd = QByteArray(command, len);
-			rec.time = patternT.elapsed();
+			qint64 time = patternT.elapsed();
 			if (patternCmds.size() < 2)
-				rec.time = 1;
-			patternCmds.append(rec);
+				time = 1;
+			patternCmds.append(cmdAndTime(time ,QByteArray(command, len)));
 			patternT.restart();
 			return 1;
 		}
@@ -183,25 +184,25 @@ void Pattern::timeout()
 {
 	if ((!writeAble))
 		return;
-	for (int i = 0; i < patternLimit; i++) {
-		if (patternStates.at(i) == RUN) {
-			mDebug("pattern %d", i);
-			if (patternCmds.size()) {
-				emit nextCmd(patternCmds.at(0).cmd.constData(), patternCmds.at(0).cmd.size());
-				patternCmds.removeFirst();
-			}
-			if (patternCmds.size()) {
-				mDebug("pattern next command time %lld", patternCmds.at(0).time);
-				QTimer::singleShot(patternCmds.at(0).time, this, SLOT(timeout()));
-				return;
-			} else {
-				patternStates.replace(i, SAVED);
-				patternCmds.clear();
-				run(i);
-				return;
-			}
-		}
+	int i = 0;
+	for (; i < patternLimit; i++) {
+		if (patternStates.at(i) == RUN)
+			break;
 	}
-	mDebug("pattern fin");
-	patternCmds.clear();
+	if (i >= patternLimit)
+		return;
+
+	const cmdAndTime *t = &patternCmds.at(cmdIndex);
+	emit nextCmd(t->cmd.constData(), t->cmd.size());
+
+	if (cmdIndex < patternCmds.size() - 1)
+		cmdIndex++;
+	else
+		cmdIndex = 0;
+
+	t = &patternCmds.at(cmdIndex);
+
+	mDebug("%d pattern next command time %lld",i , t->time);
+
+	QTimer::singleShot(t->time, this, SLOT(timeout()));
 }
