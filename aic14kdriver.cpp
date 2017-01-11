@@ -17,7 +17,7 @@ AIC14KDriver::AIC14KDriver(QObject *parent) :
 	regCache[0x60] = 0x02;
 }
 
-int AIC14KDriver::init()
+int AIC14KDriver::init(bool setRegisters)
 {
 	fd = openDevice(0x40);
 	if (fd < 0)
@@ -25,16 +25,20 @@ int AIC14KDriver::init()
 
 	syncReg4();
 	syncReg5();
-	/* set 1.35V, 8 khz */
-	i2cWrite(0x01, 0x49);
-	i2cWrite(0x02, 0x20);
-	i2cWrite(0x03, 0x09);
-	i2cWrite(0x04, 3 << 3);
-	i2cWrite(0x04, 0x84);
-	i2cWrite(0x05, 0x2A);
-	i2cWrite(0x05, 0x6A);
-	i2cWrite(0x05, 0xBC);
-	i2cWrite(0x05, 0xC0);
+
+	if (setRegisters) {
+		/* set 1.35V, 8 khz */
+		i2cWrite(0x01, regCache[0x10]);
+		i2cWrite(0x02, regCache[0x20]);
+		i2cWrite(0x03, regCache[0x30]);
+		i2cWrite(0x04, regCache[0x41]);
+		i2cWrite(0x04, regCache[0x42]);
+		i2cWrite(0x05, regCache[0x51]);
+		i2cWrite(0x05, regCache[0x52]);
+		i2cWrite(0x05, regCache[0x53]);
+		i2cWrite(0x05, regCache[0x54]);
+		i2cWrite(0x06, regCache[0x60]);
+	}
 
 	return 0;
 }

@@ -11,7 +11,7 @@ class AIC14KDriver : public I2CDevice
 public:
 	explicit AIC14KDriver(QObject *parent = 0);
 
-	int init();
+	int init(bool setRegisters = true);
 	void dumpRegisters();
 	int getRate(int mclk);
 
