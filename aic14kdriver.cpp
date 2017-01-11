@@ -5,6 +5,16 @@
 AIC14KDriver::AIC14KDriver(QObject *parent) :
 	I2CDevice(parent)
 {
+	regCache[0x10] = 0x49;
+	regCache[0x20] = 0x20;
+	regCache[0x30] = 0x09;
+	regCache[0x41] = 3 << 3;
+	regCache[0x42] = 0x84;
+	regCache[0x51] = 0x2A;
+	regCache[0x52] = 0x6A;
+	regCache[0x53] = 0xBC;
+	regCache[0x54] = 0xC0;
+	regCache[0x60] = 0x02;
 }
 
 int AIC14KDriver::init()
@@ -32,9 +42,20 @@ int AIC14KDriver::init()
 void AIC14KDriver::setCommonMode(bool internal)
 {
 	if (internal)
-		i2cWrite(0x06, 0x2);
+		updateRegister(0x60, 0x02);
 	else
-		i2cWrite(0x06, 0x4);
+		updateRegister(0x60, 0x04);
+}
+
+void AIC14KDriver::updateRegister(int reg)
+{
+	i2cWrite(reg >> 4, regCache[reg]);
+}
+
+void AIC14KDriver::updateRegister(int reg, uchar val)
+{
+	regCache[reg] = val;
+	i2cWrite(reg >> 4, val);
 }
 
 void AIC14KDriver::syncReg4()

@@ -3,6 +3,8 @@
 
 #include <ecl/drivers/i2cdevice.h>
 
+#include <QHash>
+
 class AIC14KDriver : public I2CDevice
 {
 	Q_OBJECT
@@ -18,8 +20,12 @@ signals:
 
 public slots:
 protected:
+	void updateRegister(int reg);
+	void updateRegister(int reg, uchar val);
 	void syncReg4();
 	void syncReg5();
+
+	QHash<int, uchar> regCache;
 };
 
 #endif // AIC14KDRIVER_H
