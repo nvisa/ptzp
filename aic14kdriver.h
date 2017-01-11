@@ -19,6 +19,7 @@ signals:
 public slots:
 protected:
 	void syncReg4();
+	void syncReg5();
 };
 
 #endif // AIC14KDRIVER_H

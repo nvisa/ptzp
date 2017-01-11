@@ -14,10 +14,17 @@ int AIC14KDriver::init()
 		return fd;
 
 	syncReg4();
-	/* set 1.35V */
-	i2cWrite(0x01, i2cRead(0x01) | 0x8);
-
+	syncReg5();
+	/* set 1.35V, 8 khz */
+	i2cWrite(0x01, 0x49);
+	i2cWrite(0x02, 0x20);
+	i2cWrite(0x03, 0x09);
 	i2cWrite(0x04, 3 << 3);
+	i2cWrite(0x04, 0x84);
+	i2cWrite(0x05, 0x2A);
+	i2cWrite(0x05, 0x6A);
+	i2cWrite(0x05, 0xBC);
+	i2cWrite(0x05, 0xC0);
 
 	return 0;
 }
@@ -35,6 +42,15 @@ void AIC14KDriver::syncReg4()
 	uchar reg = i2cRead(4);
 	if (reg == 0x84)
 		i2cRead(4);
+}
+
+void AIC14KDriver::syncReg5()
+{
+	uchar reg = i2cRead(0x05);
+	while (reg != 0x2a)
+		reg = i2cRead(0x05);
+	i2cRead(5);
+	/* normally we would do 2 more reads from this register but tests show that we shouldn't */
 }
 
 void AIC14KDriver::dumpRegisters()
