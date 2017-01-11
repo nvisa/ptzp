@@ -72,7 +72,7 @@ void AIC14KDriver::syncReg4()
 void AIC14KDriver::syncReg5()
 {
 	uchar reg = i2cRead(0x05);
-	while (reg != 0x2a)
+	while ((reg & 0xc0) != 0x00)
 		reg = i2cRead(0x05);
 	i2cRead(5);
 	/* normally we would do 2 more reads from this register but tests show that we shouldn't */
