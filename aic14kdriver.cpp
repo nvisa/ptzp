@@ -116,3 +116,30 @@ int AIC14KDriver::getRate(int mclk)
 	mDebug("m=%d p=%d n=%d", m, p, n);
 	return mclk / (16 * m * n * p);
 }
+
+/**
+ * @brief AIC14KDriver::setInputGain
+ * @param gain ADC gain value between 20db and -42db
+ */
+void AIC14KDriver::setInputGain(int gain)
+{
+	if (gain > 20)
+		gain = 20;
+	if (gain < -42)
+		gain = -42;
+	gain += 42;
+	updateRegister(0x51, gain & 0x3F);
+}
+
+/**
+ * @brief AIC14KDriver::getInputGain
+ * @return Returns ADC gain value in decibels.
+ */
+int AIC14KDriver::getInputGain()
+{
+	int gain = i2cRead(0x05);
+	i2cRead(0x05);
+	i2cRead(0x05);
+	i2cRead(0x05);
+	return gain - 42;
+}

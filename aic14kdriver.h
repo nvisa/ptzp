@@ -14,6 +14,8 @@ public:
 	int init(bool setRegisters = true);
 	void dumpRegisters();
 	int getRate(int mclk);
+	void setInputGain(int gain);
+	int getInputGain();
 
 	void setCommonMode(bool internal);
 signals:
