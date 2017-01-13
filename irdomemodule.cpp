@@ -38,6 +38,7 @@ IrDomeModule::IrDomeModule(QextSerialPort *port, int readWrite, QString presetFi
 	presetLimit = presetLimitNo;
 	presetSaveFile = presetFilename;
 	Positions temp = {0,0,0};
+	homePos = temp;
 	for(int i = 0; i < presetLimit; i++)
 		preset.append(QPair<bool, Positions>(0, temp));
 	seriPortElapse.start();
