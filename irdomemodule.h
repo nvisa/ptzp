@@ -380,7 +380,7 @@ public:
 	int pGetPosZoom();
 
 	int pStop();
-	QPair<int, int> sSetPos(uint posH, uint posV);
+	int sSetPos(uint posH, uint posV);
 	QPair<int, int> sGetPos();
 	QPair<int, int> getPosMem();
 

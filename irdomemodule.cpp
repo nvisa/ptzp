@@ -1031,12 +1031,14 @@ int IrDomeModule::pStop()
 	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_CMD_STOP, 0, 0), 7, true);
 }
 
-QPair <int,int> IrDomeModule::sSetPos(uint posH, uint posV)
+int IrDomeModule::sSetPos(uint posH, uint posV)
 {
 	if (!lastV.panTitlSupport)
-		return QPair <int,int> (-EPROTONOSUPPORT, -EPROTONOSUPPORT);
+		return -EPROTONOSUPPORT;
 	if (posH >= 36000 || posV >= 9000)
-		return QPair <int,int> (-1, -1);
+		return -1;
+	return writePort(getSpecialCommand(IrDomeModule::SPECIAL_SET_COOR, posH, posV), 9, true);
+	/* that command dont responsed  by dome camera which firmware versionu V1.0 2016 12 03,
 	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_SET_COOR, posH, posV), 9, 9, true);
 	if (ba.size() == 9) {
 		uchar *bytes = (uchar*) ba.constData();
@@ -1048,6 +1050,7 @@ QPair <int,int> IrDomeModule::sSetPos(uint posH, uint posV)
 		}
 	}
 	return QPair <int,int> (-1, -1);
+	*/
 }
 
 QPair <int,int> IrDomeModule::sGetPos()
@@ -1141,10 +1144,8 @@ uint IrDomeModule::getZoomRatio ()
 
 int IrDomeModule::sSetAbsolute(uint posH, uint posV, uint zoomPos)
 {
-	int zoom = vSetZoom(zoomPos);
-	QPair <int,int> pos = sSetPos(posH, posV);
-	if (pos.first < 0 || pos.second < 0 || zoom < 0)
-		return -1;
+	vSetZoom(zoomPos);
+	sSetPos(posH, posV);
 	return 1;
 }
 
@@ -1156,10 +1157,12 @@ QString IrDomeModule::dVersion()
 		const uchar* const reply1 = (const uchar*)ba.data();
 		const uchar* const reply2 = reply1 + 7;
 		if (reply1[6] == checksum((uchar*)reply1, 6) && reply2[6] == checksum((uchar*)reply2, 6)) {
-			QString verInfo = QString("V%1.%2 %3").arg(reply1[4] & 0xE0).arg(reply1[4] & 0x1F).arg(reply1[5] + 2000);
-			if (reply2[4] < 10)
-				verInfo += '0';
-			verInfo += QString("%1%2").arg(reply2[4]).arg(reply2[5]);
+			QString verInfo = QString("V%1.%2_%3%4%5")
+					.arg((reply1[4] & 0xF0) >> 4)
+					.arg(reply1[4] & 0x0F, 2, 10, QChar('0'))
+					.arg(reply1[5] + 2000)
+					.arg(reply2[4], 2, 10, QChar('0'))
+					.arg(reply2[5], 2, 10, QChar('0'));
 			return verInfo;
 		}
 	}
