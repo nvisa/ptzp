@@ -29,7 +29,7 @@ int GpioController::requestGpio(int gpio, Direction d)
 		return err;
 
 	QFile *f = new QFile(QString("/sys/class/gpio/gpio%1/value").arg(gpio));
-	if (!f->open(QIODevice::ReadWrite)) {
+	if (!f->open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
 		f->deleteLater();
 		return -EPERM;
 	}
@@ -101,6 +101,7 @@ int GpioController::getGpioValue(int gpio)
 	if (!requested.contains(gpio))
 		return -ENOENT;
 	Gpio *g = requested[gpio];
+	g->h->seek(0);
 	g->h->write("0\n");
 	return QString::fromUtf8(g->h->readAll()).trimmed().toInt();
 }
