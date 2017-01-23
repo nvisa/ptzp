@@ -1488,10 +1488,9 @@ IrDomeModule::ModuleType IrDomeModule::getModel(QextSerialPort *port)
 int IrDomeModule::writePort(const char *command, int len, bool rec)
 {
 	int t = seriPortElapse.elapsed();
-	if (t < cmdInterval) {
-		if (t > cmdInterval)
-			t = 0;
+	while (t < cmdInterval) {
 		mySleep(cmdInterval - t);
+		t = seriPortElapse.elapsed();
 	}
 	seriPortElapse.restart();
 	if(rec)
@@ -1500,7 +1499,6 @@ int IrDomeModule::writePort(const char *command, int len, bool rec)
 		record(command, len);
 	irPort->write(command, len);
 	emit seriPortWrote();
-	seriPortElapse.restart();
 	usleep(1000000 / irPort->baudRate() * len);
 	return len;
 }
