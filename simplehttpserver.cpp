@@ -129,10 +129,6 @@ bool SimpleHttpServer::parsePostData(QTcpSocket *sock)
 	QByteArray *postData = &socketVar[sock].postData;
 	int err = -1;
 	if (postSize > 3 * 1024 * 1024) {
-		if (postDataFile == NULL) {
-			postDataFile = new QFile(QString("%1/simpleHttp%2.tmp").arg(temporaryDir).arg(rand()));
-			connect(sock, SIGNAL(disconnected()), postDataFile, SLOT(deleteLater()));
-		}
 		if (!postDataFile->isOpen()) {
 			if (!postDataFile->open(QIODevice::WriteOnly)) {
 				sock->readAll();
@@ -174,9 +170,11 @@ void SimpleHttpServer::newConnection()
 	while (server->hasPendingConnections()) {
 		QTcpSocket *sock = server->nextPendingConnection();
 		socketVar.insert(sock, SocketVariables());
-		socketVar[sock].postDataFile = NULL;
+		socketVar[sock].postDataFile = new QFile (QString("%1/simpleHttp%2.tmp").arg(temporaryDir).arg(rand()));
 		mInfo("new connection from '%s'", qPrintable(sock->peerAddress().toString()));
 		connect(sock, SIGNAL(readyRead()), SLOT(readMessage()));
+		connect(sock, SIGNAL(disconnected()), socketVar[sock].postDataFile, SLOT(deleteLater()));
+		connect(sock, SIGNAL(disconnected()), SLOT(deleteSocketVariables()));
 		connect(sock, SIGNAL(disconnected()), sock, SLOT(deleteLater()));
 	}
 }
@@ -236,6 +234,14 @@ void SimpleHttpServer::readMessage()
 		//sock->deleteLater();
 	}
 	setSocketVar(sock);
+}
+
+void SimpleHttpServer::deleteSocketVariables()
+{
+	QTcpSocket *sock = (QTcpSocket *)sender();
+	if (socketVar.contains(sock)) {
+		socketVar.remove(sock);
+	}
 }
 
 bool SimpleHttpServer::isAuthenticated()

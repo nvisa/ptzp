@@ -23,6 +23,7 @@ protected:
 private slots:
 	void newConnection();
 	void readMessage();
+	void deleteSocketVariables();
 protected:
 	bool isAuthenticated();
 	bool isAuthenticated(const QString &username);
