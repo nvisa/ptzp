@@ -125,6 +125,8 @@ QStringList SimpleHttpServer::addCustomGetHeaders(const QString &filename)
 bool SimpleHttpServer::parsePostData(QTcpSocket *sock)
 {
 	int postSize = postHeaders["Content-Length:"].toInt();
+	QFile *postDataFile = socketVar[sock].postDataFile;
+	QByteArray *postData = &socketVar[sock].postData;
 	int err = -1;
 	if (postSize > 3 * 1024 * 1024) {
 		if (postDataFile == NULL) {
@@ -134,7 +136,7 @@ bool SimpleHttpServer::parsePostData(QTcpSocket *sock)
 		if (!postDataFile->isOpen()) {
 			if (!postDataFile->open(QIODevice::WriteOnly)) {
 				sock->readAll();
-				postData.clear();
+				postData->clear();
 				err = 400;
 			}
 		}
@@ -146,10 +148,10 @@ bool SimpleHttpServer::parsePostData(QTcpSocket *sock)
 			}
 		}
 	} else {
-		postData.append(sock->readAll());
-		if (postData.size() >= postSize) {
-			err = handlePostDataAuth(postData);
-			postData.clear();
+		postData->append(sock->readAll());
+		if (postData->size() >= postSize) {
+			err = handlePostDataAuth(*postData);
+			postData->clear();
 		}
 	}
 	if (err >= 0) {
@@ -268,8 +270,6 @@ void SimpleHttpServer::getSocketVar(QTcpSocket *sock)
 {
 	postHeaders = socketVar[sock].postHeaders;
 	getHeaders = socketVar[sock].getHeaders;
-	postData = socketVar[sock].postData;
-	postDataFile = socketVar[sock].postDataFile;
 	getUrl = socketVar[sock].getUrl;
 	state = socketVar[sock].state;
 }
@@ -278,8 +278,6 @@ void SimpleHttpServer::setSocketVar(QTcpSocket *sock)
 {
 	socketVar[sock].postHeaders = postHeaders;
 	getHeaders = socketVar[sock].getHeaders = getHeaders;
-	socketVar[sock].postData = postData;
-	socketVar[sock].postDataFile = postDataFile;
 	socketVar[sock].getUrl = getUrl;
 	socketVar[sock].state = state;
 }

@@ -52,8 +52,6 @@ protected:
 	QHash<QString, QString> mimeTypesByExtension;
 	QHash<QString, QString> postHeaders;
 	QHash<QString, QString> getHeaders;
-	QByteArray postData;
-	QFile *postDataFile;
 	bool useAuthentication;
 	QString authenticatedUserName;
 	bool useCustomAuth;
