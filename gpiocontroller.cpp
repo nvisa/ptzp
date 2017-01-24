@@ -102,7 +102,6 @@ int GpioController::getGpioValue(int gpio)
 		return -ENOENT;
 	Gpio *g = requested[gpio];
 	g->h->seek(0);
-	g->h->write("0\n");
 	return QString::fromUtf8(g->h->readAll()).trimmed().toInt();
 }
 
