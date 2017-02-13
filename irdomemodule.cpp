@@ -342,6 +342,27 @@ IrDomeModule::FocusMode IrDomeModule::getFocusMode()
 		return FOCUS_UNDEFINED;
 }
 
+int IrDomeModule::setZoomTrigger(bool stat)
+{
+	char mode = 0x01;
+	if (stat == true)
+		mode = 0x02;
+	const char buf[] = { 0x81, 0x01, 0x04, 0x57,mode, 0xFF };
+	return writePort(buf, sizeof(buf));
+}
+
+int IrDomeModule::getZoomTrigger()
+{
+	const char buf[] = {0x81, 0x09, 0x04, 0x57, 0xff};
+	QByteArray ba = readPort(buf, sizeof(buf), 4);
+	if (ba.at(2) == 0x01)
+		return 0;
+	else if (ba.at(2) == 0x02)
+		return 1;
+	else
+		return -1;
+}
+
 int IrDomeModule::setOnePushAF()
 {
 	const char buf[] = { 0x81, 0x01, 0x04, 0x18, 0x01, 0xff };
@@ -392,7 +413,7 @@ IrDomeModule::RotateMode IrDomeModule::getDisplayRotation()
 	QByteArray ba = readPort(flipInq, sizeof(flipInq), 4);
 	flip = (ba.at(2) == 0x02) ? true : false;
 	ba = readPort(mirrorInq, sizeof(mirrorInq), 4);
-	flip = (ba.at(2) == 0x02) ? true : false;
+	mirror = (ba.at(2) == 0x02) ? true : false;
 	if (flip && !mirror)
 		return REVERSE_MODE;
 	else if (!flip && mirror)
@@ -494,6 +515,65 @@ int IrDomeModule::setShutterLimit(int upLim, int downLim)
 	return 	writePort(shutLim, sizeof(shutLim));
 }
 
+/**
+ * @brief IrDomeModule::setMinShutter
+ * @param on
+ * @return
+ */
+int IrDomeModule::setMinShutter(bool on)
+{
+	char state = 0x02;
+	if (!on)
+		state = 0x03;
+	const char buf[] = { 0x81, 0x01, 0x04, 0x12, state, 0xff };
+	return 	writePort(buf, sizeof(buf));
+}
+
+/**
+ * @brief IrDomeModule::getMinShutter
+ * @return
+ */
+int IrDomeModule::getMinShutter()
+{
+	const char inq[] = { 0x81, 0x09, 0x04, 0x12, 0xff };
+	QByteArray ba = readPort(inq, sizeof(inq), 4);
+	if(ba.size() != 4)
+		return -2;
+	if (ba.at(2) == 0x02)
+		return 1;
+	else
+		return 0;
+}
+
+/**
+ * @brief IrDomeModule::setMinShutterLimit
+ * @param lim
+ * @return
+ */
+int IrDomeModule::setMinShutterLimit(IrDomeModule::ShutterSpeed lim)
+{
+	if(lim < SH_SPD_1_OV_30 || lim > SH_SPD_1_OV_6000)
+		return -1;
+	const char minLimit[] = { 0x81, 0x01, 0x04, 0x13, 0x00, 0x00, (lim & 0xf0) >> 4, (lim & 0x0f), 0xff };
+	return writePort(minLimit, sizeof(minLimit));
+
+}
+
+/**
+ * @brief IrDomeModule::getMinShutterLimit
+ * @return
+ */
+IrDomeModule::ShutterSpeed IrDomeModule::getMinShutterLimit()
+{
+	const char inq[] = { 0x81, 0x09, 0x04, 0x13, 0xff };
+	QByteArray ba = readPort(inq, sizeof(inq), 7);
+	if(ba.size() != 7)
+		return SH_SPD_UNDEFINED;
+	uchar p = ba.at(4);
+	uchar q = ba.at(5);
+	return (ShutterSpeed)((p << 4) + q);
+}
+
 int IrDomeModule::setExposureValue(ExposureValue val)
 {
 	int exVal = (int)val;
@@ -524,6 +604,62 @@ int IrDomeModule::setExposureTarget(int val)
 	return 	writePort(buf, sizeof(buf));
 }
 
+/**
+ * @brief IrDomeModule::setExpCompMode
+ * @param on
+ * @return
+ */
+int IrDomeModule::setExpCompMode(bool on)
+{
+	char state = 0x02;
+	if (!on)
+		state = 0x03;
+	const char buf[] = { 0x81, 0x01, 0x04, 0x3E, state, 0xff };
+	return 	writePort(buf, sizeof(buf));
+}
+
+/**
+ * @brief IrDomeModule::getExpCompMode
+ * @return
+ */
+int IrDomeModule::getExpCompMode()
+{
+	const char inq[] = { 0x81, 0x09, 0x04, 0x3e, 0xff };
+	QByteArray ba = readPort(inq, sizeof(inq), 4);
+	if(ba.size() != 4)
+		return -2;
+	if (ba.at(2) == 0x02)
+		return 1;
+	else
+		return 0;
+}
+
+/**
+ * @brief IrDomeModule::setExpCompValue
+ * @param on
+ * @return
+ */
+int IrDomeModule::setExpCompValue(ExposureComp val)
+{
+	const char buf[] = { 0x81, 0x01, 0x04, 0x4E, 0x00, 0x00, (val & 0xf0) >> 4, (val & 0x0f), 0xff };
+	return 	writePort(buf, sizeof(buf));
+}
+
+/**
+ * @brief IrDomeModule::getExpCompValue
+ * @return
+ */
+IrDomeModule::ExposureComp IrDomeModule::getExpCompValue()
+{
+	const char inq[] = { 0x81, 0x09, 0x04, 0x4e, 0xff };
+	QByteArray ba = readPort(inq, sizeof(inq), 7);
+	if(ba.size() != 7)
+		return EXP_COMP_ERROR;
+	uchar p = ba.at(4);
+	uchar q = ba.at(5);
+	return (ExposureComp)((p << 4) + q);
+}
+
 int IrDomeModule::setGainValue(GainValue val)
 {
 	const char gainVal[] = { 0x81, 0x01, 0x04, 0x4c, 0x00, 0x00, (val & 0xf0) >> 4, (val & 0x0f), 0xff };
@@ -534,9 +670,41 @@ IrDomeModule::GainValue IrDomeModule::getGainValue()
 {
 	const char gainInq[] = { 0x81, 0x09, 0x04, 0x4c, 0xff };
 	QByteArray ba = readPort(gainInq, sizeof(gainInq), 7);
+	if (ba.size() != 7)
+		return GAIN_UNDEFINED;
 	return (GainValue)((ba.at(4) << 4) | (ba.at(5)));
 }
 
+/**
+ * @brief IrDomeModule::setGainLimit
+ * @param limit
+ * @return
+ */
+int IrDomeModule::setGainLimit(GainLimit limit)
+{
+	const char gainLim[] = { 0x81, 0x01, 0x04, 0x2c, (limit + 4) & 0x0f, 0xff };
+	return writePort(gainLim, sizeof(gainLim));
+}
+
+/**
+ * @brief IrDomeModule::getGainLimit
+ * @return
+ */
+IrDomeModule::GainLimit IrDomeModule::getGainLimit()
+{
+	const char gainInq[] = { 0x81, 0x09, 0x04, 0x2c, 0xff };
+	QByteArray ba = readPort(gainInq, sizeof(gainInq), 4);
+	if (ba.size() != 4)
+		return GAIN_LIM_ERROR;
+	return GainLimit(ba[2] - 4);
+}
+
+/**
+ * @brief IrDomeModule::setGainLimit [Sony modules don't support]
+ * @param upLim
+ * @param downLim
+ * @return
+ */
 int IrDomeModule::setGainLimit(int upLim, int downLim)
 {
 	const char gainLimit[] = { 0x81, 0x01, 0x04, 0x40, 0x05,
@@ -574,6 +742,41 @@ bool IrDomeModule::getWDRstat()
 	const char wdr[] = { 0x81, 0x09, 0x04, 0x3d, 0xff };
 	QByteArray ba = readPort(wdr, sizeof(wdr), 4);
 	return (ba.at(2) == 0x02) ? true : false;
+}
+
+/**
+ * @brief IrDomeModule::setWDRParameter
+ * @param level : Display Brightness Level
+ * @param selection : Brightness compensation selection
+ * @param compen : Compensation Level
+ * @return
+ */
+int IrDomeModule::setWDRParameter(int level, int selection, int compen)
+{
+	if (level > 6 || level < 0)
+		return -1;
+	if (selection > 3 || selection < 0)
+		return -1;
+	if (compen > 2 || compen < 0)
+		return -1;
+	const char buf[] = { 0x81, 0x01, 0x04, 0x2d, 0x00,
+						 level, selection, compen,
+						 0x00, 0x00, 0x00, 0x00, 0xff };
+	return writePort(buf, sizeof(buf));
+}
+
+/**
+ * @brief IrDomeModule::getWDRParameter
+ * @return <Display Brightness Level>,<Brightness compensation selection>,<Compensation Level>
+ */
+QString IrDomeModule::getWDRParameter()
+{
+	const char inq[] = { 0x81, 0x09, 0x04, 0x2D, 0xff };
+	QByteArray ba = readPort(inq, sizeof(inq), 11);
+	if (ba.size() != 11)
+		return QString();
+	return QString("%1,%2,%3").arg(int(ba.at(3)))
+			.arg(int(ba.at(4))).arg(int(ba.at(5)));
 }
 
 int IrDomeModule::setGamma(int val)
@@ -1477,6 +1680,8 @@ IrDomeModule::ModuleType IrDomeModule::getModel(QextSerialPort *port)
 			modType = MODULE_TYPE_PV6403_F12D;
 		} else if ((ba.at(4) == 0x04) && (ba.at(5) == 0x6f)) {
 			modType = MODULE_TYPE_FCB_EV7500;
+		} else if ((ba.at(4) == 0x04) && (ba.at(5) == 0x5f)) {
+			modType = MODULE_TYPE_FCB_EV7520;
 		} else if ((ba.at(4) == 0x04) && (ba.at(5) == 0x67)) {
 			modType = MODULE_TYPE_PV8430_F2D;
 		}

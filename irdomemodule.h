@@ -68,6 +68,7 @@ public:
 		MODULE_TYPE_PV6403_F12D,
 		MODULE_TYPE_FCB_EV7500,
 		MODULE_TYPE_PV8430_F2D,
+		MODULE_TYPE_FCB_EV7520,
 	};
 
 	enum FocusMode {
@@ -123,8 +124,8 @@ public:
 		EXP_F2_0,
 		EXP_F2_4,
 		EXP_F2_8,
+		EXP_F3_4,
 		EXP_F4_0,
-		EXP_F4_4,
 		EXP_F4_8,
 		EXP_F5_6,
 		EXP_F6_8,
@@ -245,6 +246,41 @@ public:
 		TITLE_BLUE
 	};
 
+	enum ExposureComp {
+		EXP_COMP_N10_5,
+		EXP_COMP_N9,
+		EXP_COMP_N7_5,
+		EXP_COMP_N6,
+		EXP_COMP_N4_5,
+		EXP_COMP_N3,
+		EXP_COMP_N1_5,
+		EXP_COMP_0,
+		EXP_COMP_P1_5,
+		EXP_COMP_P3,
+		EXP_COMP_P4_5,
+		EXP_COMP_P6,
+		EXP_COMP_P7_5,
+		EXP_COMP_P9,
+		EXP_COMP_P10_5,
+		EXP_COMP_ERROR,
+	};
+
+	enum GainLimit {
+		GAIN_LIM_10_7,
+		GAIN_LIM_14_3,
+		GAIN_LIM_17_8,
+		GAIN_LIM_21_4,
+		GAIN_LIM_25,
+		GAIN_LIM_28_6,
+		GAIN_LIM_32_1,
+		GAIN_LIM_35_7,
+		GAIN_LIM_39_3,
+		GAIN_LIM_42_8,
+		GAIN_LIM_46_4,
+		GAIN_LIM_50,
+		GAIN_LIM_ERROR
+	};
+
 	enum SupportDevice {
 		PANTILT = 1,
 		NIGHTVISION
@@ -298,6 +334,8 @@ public:
 	int stopFocus();
 	int setFocusMode(FocusMode mode);
 	FocusMode getFocusMode();
+	int setZoomTrigger(bool stat);
+	int getZoomTrigger();
 
 	int setOnePushAF();
 
@@ -319,13 +357,23 @@ public:
 	int setShutterSpeed(ShutterSpeed val);
 	ShutterSpeed getShutterSpeed();
 	int setShutterLimit(int upLim, int downLim);
+	int setMinShutter(bool on);
+	int getMinShutter();
+	int setMinShutterLimit(ShutterSpeed lim);
+	ShutterSpeed getMinShutterLimit();
 
 	int setExposureValue(ExposureValue val);
 	ExposureValue getExposureValue();
 	int setExposureTarget(int val);
+	int setExpCompMode(bool on);
+	int getExpCompMode();
+	int setExpCompValue(ExposureComp val);
+	ExposureComp getExpCompValue();
 
 	int setGainValue(GainValue val);
 	GainValue getGainValue();
+	int setGainLimit(GainLimit limit);
+	GainLimit getGainLimit();
 	int setGainLimit(int upLim, int downLim);
 
 	int setNoiseReduction(int val);
@@ -333,6 +381,8 @@ public:
 
 	int setWDRstat(bool stat);
 	bool getWDRstat();
+	int setWDRParameter(int level, int selection, int compen);
+	QString getWDRParameter();
 
 	int setGamma(int val);
 	int getGamma();
