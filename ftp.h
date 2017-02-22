@@ -17,7 +17,7 @@ public:
 	void direction(QString rename, QString oldname, QString newname);
 	void direction(QString command);
 	void getFile(QString path);
-	void putFile(QString filePath, QString location);
+	int putFile(QString filePath, QString location);
 	void ftpClose(void);
 
 public slots:

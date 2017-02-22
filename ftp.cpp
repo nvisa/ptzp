@@ -63,14 +63,14 @@ void Ftp::getFile(QString path)
 	this->get(path);
 }
 
-void Ftp::putFile(QString filePath,QString location)
+int Ftp::putFile(QString filePath,QString location)
 {
 	QFile *file = new QFile(filePath, this);
 	if (file->open(QIODevice::ReadWrite))
 		mDebug ("file is open");
 	else
 		mDebug ("file not open");
-	this->put(file,location);
+	return this->put(file,location);
 }
 
 void Ftp::ftpClose()
