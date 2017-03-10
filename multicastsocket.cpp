@@ -13,6 +13,12 @@
 MulticastSocket::MulticastSocket(QObject *parent) :
 	QUdpSocket(parent)
 {
+	ttl = 5;
+}
+
+void MulticastSocket::setTTLValue(int val)
+{
+	ttl = val;
 }
 
 bool MulticastSocket::joinMulticastGroupLinux(const QHostAddress &groupAddress, const QHostAddress &ifaceIp)
@@ -23,7 +29,6 @@ bool MulticastSocket::joinMulticastGroupLinux(const QHostAddress &groupAddress, 
 	char loopch = 0;
 	setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loopch, sizeof(loopch));
 	/* adjust ttl */
-	u_char ttl = 5;
 	setsockopt(sd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl));
 	/* set target interface */
 	struct in_addr localInterface;
