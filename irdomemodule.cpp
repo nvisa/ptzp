@@ -1872,18 +1872,15 @@ int IrDomeModule::maskSetPTZ(uint maskID, int pan, int tilt, uint zoom)
 		return -ENODATA;
 	if (maskRanges.yMax == maskRanges.yMin)
 		return -ENODATA;
+
 	if (hPole)
-		pan = -pan;
+		pan = maskRanges.pMax - pan;
 	if (vPole)
-		tilt = -tilt;
-	if (tilt > 180)
-		tilt -= 360;
-	if (tilt < -180)
-		tilt += 360;
-	if (pan > 180)
-		pan -= 360;
-	if (pan < -180)
-		pan += 360;
+		tilt = maskRanges.tMax - tilt;
+
+	if (tilt > 9000)
+		tilt += 18000;
+
 	tilt = tilt * yTiltRate + maskRanges.yMin;
 	pan = pan * xPanRate + maskRanges.xMin;
 	const char cmdMask[] = {0x81, 0x01, 0x04, 0x7B, maskID,
@@ -1900,20 +1897,18 @@ int IrDomeModule::maskSetPanTiltAngle(int pan, int tilt)
 		return -ENODATA;
 	if (maskRanges.tMax == maskRanges.tMin)
 		return -ENODATA;
+
 	if (hPole)
-		pan = -pan;
+		pan = maskRanges.pMax - pan;
 	if (vPole)
-		tilt = -tilt;
-	if (tilt > 180)
-		tilt -= 360;
-	if (tilt < -180)
-		tilt += 360;
-	if (pan > 180)
-		pan -= 360;
-	if (pan < -180)
-		pan += 360;
+		tilt = maskRanges.tMax - tilt;
+
+	if (tilt > 9000)
+		tilt += 18000;
+
 	tilt = tilt * yTiltRate + maskRanges.yMin;
 	pan = pan * xPanRate + maskRanges.xMin;
+
 	const char cmdMask[] = {0x81, 0x01, 0x04, 0x79,
 							(0xf00 & pan) >> 8, (0xf0 & pan) >> 4, (0xf & pan),
 							(0xf00 & tilt) >> 8, (0xf0 & tilt) >> 4, (0xf & tilt), 0xFF};

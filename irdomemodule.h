@@ -487,6 +487,7 @@ public:
 	int maskSetPTZ(uint maskID, int pan, int tilt, uint zoom);
 	int maskSetPanTiltAngle(int pan, int tilt);
 	int maskSetRanges(int panMax, int panMin, int xMax, int xMin, int tiltMax, int tiltMin, int yMax, int yMin, bool hConvert, bool vConvert);
+	int getDisplayMask() { return maskBits; }
 
 	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);
 	int maskGrid(MaskGrid onOff);
