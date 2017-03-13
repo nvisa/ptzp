@@ -1952,10 +1952,19 @@ int IrDomeModule::maskSetRanges(int panMax, int panMin, int xMax, int xMin, int 
 
 int IrDomeModule::maskDisplay (uint maskID, bool onOff)
 {
+
+	if (maskID > 17)
+		maskID += 6;
+	else if (maskID > 11)
+		maskID += 4;
+	else if (maskID > 5)
+		maskID += 2;
+
 	if (onOff)
 		maskBits |= (1 << maskID);
 	else
 		maskBits &= ~(1 << maskID);
+	maskBits &= 0x3F3F3F3F;
 	const char buf[] = {0x81, 0x01, 0x04, 0x77, (maskBits & 0xff000000) >> 24,
 						(maskBits & 0xff0000) >> 16, (maskBits & 0xff00) >> 8,
 						(maskBits & 0xff), 0xff };
