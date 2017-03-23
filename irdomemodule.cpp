@@ -1635,7 +1635,7 @@ const QByteArray IrDomeModule::readPort(const char *command, int wrlen, int rdle
 int IrDomeModule::writePort(QextSerialPort* port, const char *command, int len)
 {
 	port->write(command, len);
-	usleep(1000000 / port->baudRate() * len);
+	usleep(10000000 / port->baudRate() * len);
 	return len;
 }
 
@@ -1704,7 +1704,6 @@ int IrDomeModule::writePort(const char *command, int len, bool rec)
 		record(command, len);
 	irPort->write(command, len);
 	emit seriPortWrote();
-	usleep(1000000 / irPort->baudRate() * len);
 	return len;
 }
 
