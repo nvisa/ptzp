@@ -1332,7 +1332,6 @@ void IrDomeModule::setZoomMem(int z)
 /**
  * @brief IrDomeModule::getZoomRatio
  * @return
- * this function for sony(30x zoom)
  */
 uint IrDomeModule::getZoomRatio ()
 {
@@ -1343,6 +1342,21 @@ uint IrDomeModule::getZoomRatio ()
 		if ((zoomRatio.at(i-1) < lastV.zoom) && (zoomRatio.at(i) >= lastV.zoom))
 			return (uint)i;
 	return zoomRatio.size();
+}
+
+/**
+ * @brief IrDomeModule::getZoomRatioFloat
+ * @return
+ */
+float IrDomeModule::getZoomRatioFloat()
+{
+	if (lastV.zoom == 0 || zoomRatio.size() == 0)
+		return 1;
+
+	for (int i = 1; i < zoomRatio.size(); i++ )
+		if ((zoomRatio.at(i-1) < lastV.zoom) && (zoomRatio.at(i) >= lastV.zoom))
+			return float(i) + float((lastV.zoom - zoomRatio.at(i-1))) / (zoomRatio.at(i) - zoomRatio.at(i-1));
+	return float(zoomRatio.size());
 }
 
 int IrDomeModule::sSetAbsolute(uint posH, uint posV, uint zoomPos)

@@ -403,6 +403,7 @@ public:
 	int vGetZoom();
 	int vSetZoom(uint zoomPos);
 	uint getZoomRatio();
+	float getZoomRatioFloat();
 
 	int pPanLeft(uchar speedPan);
 	int pPanRight(uchar speedPan);
