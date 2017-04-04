@@ -902,8 +902,6 @@ int IrDomeModule::vGetZoom()
 
 int IrDomeModule::vSetZoom(uint zoomPos)
 {
-	if (zoomPos > 0x7AC0)
-		return -1;
 	const char opZoom[] = { 0x81, 0x01, 0x04, 0x47, ((zoomPos & 0XF000) >> 12),
 							((zoomPos & 0XF00) >> 8), ((zoomPos & 0XF0) >> 4),
 							(zoomPos & 0XF), 0xff };
@@ -1089,8 +1087,6 @@ int IrDomeModule::pSetPan(uint pos)
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	if (pos >= 36000)
-		return -1;
 	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_SET_PAN_POS, (pos >> 8) & 0xFF, pos & 0xFF), 7, true);
 }
 
@@ -1104,8 +1100,6 @@ int IrDomeModule::pSetTilt(uint pos)
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	if (pos >= 9000)
-		return -1;
 	return writePort(getPelcod(PELCOD_ADD, IrDomeModule::PELCOD_SET_TILT_POS, (pos >> 8) & 0xFF, pos & 0xFF), 7, true);
 }
 
@@ -1238,8 +1232,6 @@ int IrDomeModule::sSetPos(uint posH, uint posV)
 {
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
-	if (posH >= 36000 || posV >= 9000)
-		return -1;
 	return writePort(getSpecialCommand(IrDomeModule::SPECIAL_SET_COOR, posH, posV), 9, true);
 	/* that command dont responsed  by dome camera which firmware versionu V1.0 2016 12 03,
 	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_SET_COOR, posH, posV), 9, 9, true);
@@ -1286,8 +1278,6 @@ QPair<int, int> IrDomeModule::getPosMem()
  */
 int IrDomeModule::sSetZoom(uint zoomPos)
 {
-	if (zoomPos > 0x7AC0)
-		return -1;
 	QByteArray ba = readPort(getSpecialCommand(IrDomeModule::SPECIAL_ZOOM_POS, zoomPos, 0), 9, 9);
 	if (ba.size() == 9) {
 		uchar *bytes = (uchar*) ba.constData();
