@@ -186,14 +186,15 @@ int SystemInfo::getProcFreeMemInfo()
 	int free = 0;
 	foreach (const QString line, lines) {
 		/*
-		 * 2 fields are important, MemFree and Cached
+		 * 4 fields are important, MemFree, Cached, SReclaimable, Shmem
 		 */
-		if (line.startsWith("MemFree:"))
+		if (line.startsWith("MemFree:")
+				|| line.startsWith("Cached:")
+				|| line.startsWith("SReclaimable:")
+				)
 			free += line.split(" ", QString::SkipEmptyParts)[1].toInt();
-		else if (line.startsWith("Cached:")) {
-			free += line.split(" ", QString::SkipEmptyParts)[1].toInt();
-			break;
-		}
+		else if (line.startsWith("Shmem:"))
+			free -= line.split(" ", QString::SkipEmptyParts)[1].toInt();
 	}
 	memtime.restart();
 	/* prevent false measurements */
