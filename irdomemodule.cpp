@@ -1527,6 +1527,7 @@ int IrDomeModule::patternCancel(int ind)
 	if (!lastV.panTitlSupport)
 		return -EPROTONOSUPPORT;
 	pStop();
+	stopZoom();
 	return cancelPat(ind);
 }
 
