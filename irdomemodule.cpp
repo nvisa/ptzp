@@ -1444,6 +1444,17 @@ int IrDomeModule::presetSave(int ind)
 	return -1;
 }
 
+int IrDomeModule::presetSave(int ind, Positions prePos)
+{
+	if (!lastV.panTitlSupport)
+		return -EPROTONOSUPPORT;
+	if (ind < presetLimit) {
+		preset.replace(ind, QPair<bool, Positions>(1, prePos));
+		return specialPosition2File();
+	}
+	return -1;
+}
+
 int IrDomeModule::presetDelete(int ind)
 {
 	if (!lastV.panTitlSupport)
@@ -1565,6 +1576,12 @@ int IrDomeModule::homeSave()
 	homePos.posHor = lastV.position.first;
 	homePos.posVer = lastV.position.second;
 	homePos.posZoom = lastV.zoom;
+	return specialPosition2File();
+}
+
+int IrDomeModule::homeSave(Positions pos)
+{
+	homePos = pos;
 	return specialPosition2File();
 }
 

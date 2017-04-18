@@ -449,6 +449,7 @@ public:
 
 	int presetCall(int ind);
 	int presetSave(int ind);
+	int presetSave(int ind, Positions prePos);
 	int presetDelete(int ind);
 	int presetState(int ind);
 	Positions presetPos(int ind);
@@ -466,6 +467,7 @@ public:
 	struct Positions getAllPos ();
 
 	int homeSave();
+	int homeSave(Positions pos);
 	int homeGoto();
 	const Positions getHomePos();
 	const QString getHomePosString();
