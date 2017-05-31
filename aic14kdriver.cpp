@@ -72,8 +72,14 @@ void AIC14KDriver::syncReg4()
 void AIC14KDriver::syncReg5()
 {
 	uchar reg = i2cRead(0x05);
-	while ((reg & 0xc0) != 0x00)
+	int count = 0;
+	while ((reg & 0xc0) != 0x00) {
 		reg = i2cRead(0x05);
+		if (count++ > 100) {
+			mDebug("too many sync tries, giving-up");
+			break;
+		}
+	}
 	i2cRead(5);
 	/* normally we would do 2 more reads from this register but tests show that we shouldn't */
 }
