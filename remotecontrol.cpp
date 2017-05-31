@@ -106,7 +106,7 @@ int RemoteControl::setSetting(const QString &setting, const QVariant &value)
 {
 	QVariant var = getSetting(setting);
 	QVariant next = value;
-	if (!next.convert(var.type()))
-		return -EIO;
+	if (next.canConvert(var.type()))
+		next.convert(var.type());
 	return ApplicationSettings::instance()->setm(setting, next);
 }
