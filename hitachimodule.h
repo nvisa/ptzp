@@ -286,6 +286,7 @@ protected:
 	};
 	settings s;
 
+	static QextSerialPort * initPort();
 	float zoomAuto(float val, int step, float tolerance = 0);
 	void zoomInOut(float val, float curr, int step);
 	int setZoomFocusType(TypeAB val);

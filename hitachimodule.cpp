@@ -16,6 +16,8 @@
 HitachiModule::HitachiModule(QextSerialPort *port, QObject *parent) :
 	QObject(parent)
 {
+	if (!port)
+		port = initPort();
 	hiPort = port;
 	timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), SLOT(timeout()));
@@ -36,6 +38,31 @@ int HitachiModule::writePort( const QString &command)
 	const int succ = hiPort->write(command.toLatin1()) == command.size() ? 0 : -EIO;
 	usleep(command.size() * 210);
 	return succ;
+}
+
+QextSerialPort *HitachiModule::initPort()
+{
+	QextSerialPort *port = new QextSerialPort("/dev/ttyS0", QextSerialPort::Polling);
+	port->setBaudRate(BAUD4800);
+	port->setFlowControl(FLOW_OFF);
+	port->setParity(PAR_EVEN);
+	port->setDataBits(DATA_8);
+	port->setStopBits(STOP_1);
+
+	/*port->setBaudRate(AbstractSerial::BaudRate4800);
+	port->setDataBits(AbstractSerial::DataBits8);
+	port->setParity(AbstractSerial::ParityEven);
+	port->setStopBits(AbstractSerial::StopBits1);
+	port->setFlowControl(AbstractSerial::FlowControlOff);
+	port->setCharIntervalTimeout(5000);*/
+
+	//port->setDeviceName("/dev/ttyS0");
+	while (!port->open(QIODevice::ReadWrite)) {
+		fDebug("error opening serial port '%s': %s", qPrintable(port->portName()), strerror(errno));
+	}
+	usleep(100 * 1000);
+
+	return port;
 }
 
 QString HitachiModule::readPort( const QString &command)
@@ -684,17 +711,26 @@ HitachiModule::FocusMode HitachiModule::getFocusMode()
 
 QString HitachiModule::getModelString(QextSerialPort *port)
 {
+	if (!port)
+		port = initPort();
 	return readPort(port, ":RE1ED00");
 }
 
 HitachiModule::ModuleType HitachiModule::getModel(QextSerialPort *port)
 {
+	if (!port)
+		port = initPort();
+
 	port->flush();
 	port->readAll();
 	/* some modules may be in AFP command mode */
 	writePort(port, "SFD0101T");
-	port->flush();
 	usleep(100000);
+	writePort(port, "SFD0101T");
+	usleep(100000);
+	port->readAll();
+	port->flush();
+
 	int model = readReg(port, 0xe1ed);
 	if (model == 0x21)
 		return MODULE_TYPE_SC110;
@@ -915,13 +951,15 @@ int HitachiModule::initializeRAM()
 
 void HitachiModule::timeout()
 {
-	mDebug("current shutter value: %d", readRegW(hiPort, 0xffda));
-	mDebug("current exposure value: %d", readRegW(hiPort, 0xffdc));
-	mDebug("current gain value: %f", getAGCgain());
+	qDebug() << QDateTime::currentDateTime().toString()  \
+			 << "shutter 1/X: " << pow(10, ((readRegW(hiPort, 0xffda) - 960.0) / 640.0)) * 25.0 \
+			 << "exposure F_X: " << pow(10, (readRegW(hiPort, 0xffdc) / 1280.0)) * 1.4 \
+			 << "gain (dB): " << getAGCgain();
 }
 
 int HitachiModule::readRegW(QextSerialPort *port, int reg)
 {
+	usleep(50*1000);
 	QString str = QString(":R%1%2").arg(reg, 4, 16, QChar('0')).arg("0000").toUpper();
 	str = readPort(port, str.replace(":R", ":r"));
 	return str.mid(str.size() - 4).toInt(0, 16);
@@ -929,18 +967,22 @@ int HitachiModule::readRegW(QextSerialPort *port, int reg)
 
 int HitachiModule::writeRegW(QextSerialPort *port,int reg, int val)
 {
+	usleep(50*1000);
 	QString str = QString(":W%1%2").arg(reg, 4, 16, QChar('0')).arg(val, 4, 16, QChar('0')).toUpper();
 	return writePort(port, str.replace(":W", ":w"));
 }
 
 int HitachiModule::readReg(QextSerialPort *port, int reg)
-{	QString str = QString(":R%1%2").arg(reg, 4, 16, QChar('0')).arg("00").toUpper();
+{
+	usleep(50*1000);
+	QString str = QString(":R%1%2").arg(reg, 4, 16, QChar('0')).arg("00").toUpper();
 	str = readPort(port, str);
 	return str.mid(str.size() - 2).toInt(0, 16);
 }
 
 int HitachiModule::writeReg(QextSerialPort *port, int reg, int val)
 {
+	usleep(50*1000);
 	QString str = QString(":W%1%2").arg(reg, 4, 16, QChar('0')).arg(val, 2, 16, QChar('0')).toUpper();
 	return writePort(port, str);
 }
