@@ -62,7 +62,7 @@ protected:
 	void setSocketVar(QTcpSocket *sock);
 private:
 	QString temporaryDir;
-	bool parsePostData(QTcpSocket *sock);
+	virtual bool parsePostData(QTcpSocket *sock);
 	bool shouldRead(QTcpSocket *sock);
 	virtual int handlePostDataAuth(const QByteArray &ba);
 	virtual int handlePostDataFileAuth(const QString &ba);
