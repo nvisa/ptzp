@@ -40,7 +40,7 @@ bool MulticastSocket::joinMulticastGroupLinux(const QHostAddress &groupAddress, 
 	mreq.imr_multiaddr.s_addr = inet_addr(qPrintable(groupAddress.toString()));
 	mreq.imr_interface.s_addr = inet_addr(qPrintable(ifaceIp.toString()));
 	if (setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
-		ffDebug() << "error joining multicast group";
+		ffDebug() << "error joining multicast group" << groupAddress << ifaceIp;
 		return false;
 	}
 	memset(&mreq, 0, sizeof(ip_mreq));
