@@ -58,7 +58,7 @@ void RemoteControl::dataReady()
 		if (mes.isEmpty())
 			continue;
 		QStringList flds = mes.split(" ");
-		mInfo("%s:%s < %s", qPrintable(sock->peerAddress().toString()), qPrintable(QString::number(sock->peerPort())), qPrintable(mes));
+		mDebug("%s:%s < %s", qPrintable(sock->peerAddress().toString()), qPrintable(QString::number(sock->peerPort())), qPrintable(mes));
 		if (flds.size() < 2) {
 			sock->write(QString("error:no enough arguments\n").toUtf8());
 			continue;
@@ -81,7 +81,7 @@ void RemoteControl::dataReady()
 const QString RemoteControl::processUdpMessage(const QString &mes)
 {
 	QUdpSocket *udpSock = (QUdpSocket *)sender();
-	mInfo("%s:%s < %s", qPrintable(udpSock->peerAddress().toString()), qPrintable(QString::number(udpSock->peerPort())), qPrintable(mes));
+	mDebug("%s:%s < %s", qPrintable(udpSock->peerAddress().toString()), qPrintable(QString::number(udpSock->peerPort())), qPrintable(mes));
 	if (mes.trimmed().isEmpty())
 		return "";
 	QString resp;
