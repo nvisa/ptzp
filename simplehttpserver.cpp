@@ -77,7 +77,8 @@ void SimpleHttpServer::sendGetResponse(QTcpSocket *sock)
 		resp << "Expires: 0";
 		resp << addCustomGetHeaders(getHeaders["filename"]);
 		resp << "\r\n";
-		sock->write(resp.join("\r\n").toUtf8().append(ba));
+		sock->write(resp.join("\r\n").toUtf8());
+		sock->write(ba);
 	} else {
 		QStringList resp;
 		resp << "HTTP/1.1 404 Not Found";
