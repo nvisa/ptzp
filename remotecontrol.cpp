@@ -8,9 +8,10 @@
 
 #include <errno.h>
 
-RemoteControl::RemoteControl(QObject *parent) :
+RemoteControl::RemoteControl(QObject *parent, KeyValueInterface *iface) :
 	QObject(parent)
 {
+	kviface = iface;
 }
 
 bool RemoteControl::listen(const QHostAddress &address, quint16 port)
@@ -81,7 +82,7 @@ void RemoteControl::dataReady()
 const QString RemoteControl::processUdpMessage(const QString &mes)
 {
 	QUdpSocket *udpSock = (QUdpSocket *)sender();
-	mDebug("%s:%s < %s", qPrintable(udpSock->peerAddress().toString()), qPrintable(QString::number(udpSock->peerPort())), qPrintable(mes));
+	mInfo("%s:%s < %s", qPrintable(udpSock->peerAddress().toString()), qPrintable(QString::number(udpSock->peerPort())), qPrintable(mes));
 	if (mes.trimmed().isEmpty())
 		return "";
 	QString resp;
@@ -99,11 +100,15 @@ const QString RemoteControl::processUdpMessage(const QString &mes)
 
 const QVariant RemoteControl::getSetting(const QString &setting)
 {
+	if (kviface)
+		return kviface->get(setting);
 	return ApplicationSettings::instance()->getm(setting);
 }
 
 int RemoteControl::setSetting(const QString &setting, const QVariant &value)
 {
+	if (kviface)
+		return kviface->set(setting, value);
 	QVariant var = getSetting(setting);
 	QVariant next = value;
 	if (next.canConvert(var.type()))

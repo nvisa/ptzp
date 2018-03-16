@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QHostAddress>
 
+#include <ecl/interfaces/keyvalueinterface.h>
+
 class QTcpServer;
 class QUdpSocket;
 class ApplicationSettings;
@@ -13,7 +15,7 @@ class RemoteControl : public QObject
 {
 	Q_OBJECT
 public:
-	explicit RemoteControl(QObject *parent = 0);
+	explicit RemoteControl(QObject *parent = 0, KeyValueInterface *iface = 0);
 
 	bool listen(const QHostAddress &address, quint16 port);
 signals:
@@ -30,6 +32,7 @@ protected:
 
 	QTcpServer *serv;
 	QUdpSocket *sock;
+	KeyValueInterface *kviface;
 };
 
 #endif // REMOTECONTROL_H
