@@ -260,9 +260,10 @@ int SystemInfo::CpuInfo::getInstLoadFromProc()
 			+ list[9].toInt()
 			;
 	int idle = list[5].toInt();
-	int load = 100 * (nonIdle - lastNonIdle) / (nonIdle + idle - lastNonIdle - lastIdle);
+	int total = idle + nonIdle;
+	int load = 100 * ((total - prevTotal) - (idle - lastIdle)) / (total - prevTotal);
 	lastIdle = idle;
-	lastNonIdle = nonIdle;
+	prevTotal = total;
 	return load;
 }
 
