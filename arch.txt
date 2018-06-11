@@ -1,0 +1,77 @@
+FAQ
+---
+
+1. PTZ+ kafasi nedir?
+
+PTZ+ kafasi asagidaki ozelliklerden birini veya bir kacini destekleyen fiziksel/mekaniksel sistemlerdir:
+
+- Pan yetenegi
+- Tilt yetenegi
+- Zoom yetenegi
+- Gelismis yetenekler, mesela exposure, shutter, IR filtre gibi ozellikler (+_isaretinin anlami)
+
+2. PTZ+ erisim noktasi nedir?
+
+Fiziksel olarak PTZ+ kafasinin bagli oldugu, programlanabilir elektronik sistem erisim noktasi olarak nitelendirilmektedir. Buna gore PTZ+ erisim noktasi bizim kontrol yazilimlarimizin calistigi elektronik kart olarak nitelendirilebilir.
+
+3. PTZ+ baglantisi (transport) nedir?
+
+PTZ+ kafasinin, PTZ+ erisim noktasina olan baglanti tipine PTZ+ baglantisi denilmektedir. Ornegin PTZ+ kafasi ile erisim noktasi birbirine seri port, IP, I2C gibi farkli haberlesme baglantilari ile bagli olabilir.
+
+4. PTZ+ kontrol noktasi nedir?
+
+PTZ+ kontrol noktasi, PTZ+ erisim noktasina uzaktan baglanip, PTZ ozelliklerinin kontrolunun yapildigi bilgisyara verilen isimdir. PTZ+ kontrol noktasi bir kullanici bilgisayari, kurulumlar icin kullanilan operator ekrani ve ya mobil bir kontrol cihazi olabilir.
+
+5. PTZ+ API ve ya PTZ+ arayuzu nedir?
+
+PTZ+ kontrol noktasinin, PTZ+ erisim noktasi kontrol edebilmesini saglayan arayuzlere PTZ+ API ismi verilmektedir. Farkli kontrol noktalari farkli arayuz ihtiyaclarina sahip olabilir.
+
+PTZ+ uygulama catisi
+--------------------
+
+PTZ+ uygulamalari icin bir uygulama catisi gelistirilmesi onerilmektedir. Butun sistemleri kapsayabilecek bir PTZ+ uygulama catisinin asagidaki ozellikleri desteklemesi gereklidir:
+
+	* Coklu PTZ+ kafasi destegi
+	* Farkli PTZ+ transport destekleri ile calisabilme
+		- RS-232, RS-485 uyumlu seri baglantilar (ekinoks kameralar, tx1/tx2)
+		- TCP/IP transport (Orion 1. jenerasyon, Moxa NPort destekli sistemler)
+		- I2C transport, (lazer PTZ)
+	* PTZ+ kafalarinin fiziksel olarak sundugu en dusuk gecikmeyi yakalayabilme
+	* Farkli PTZ+ erisim noktalarini destekleme
+		- Ekinoks ailesi
+		- NVIDIA TK1, TX1/TX2 aileri
+	* Farkli PTZ+ API destekleri
+		- Web arayuzleri icin rest API
+		- Gercek zamanli web arayuzleri icin websocket
+		- Masaustu uygulamalari icin gercek-zamanli kontrol arayuzleri (mesela RPC, TCP, v.b.)
+	* PTZ+ kafalari uzerinde pattern, patrol yonetim destekleri
+
+Bu yukarida sayilan ozellikleri destekleyen bir uygulama catisinin gelistirilmesi su acilardan onem arz etmektedir:
+
+	* Bir uygulama catisi ile farkli platformlari yonetebilme ve tekil bir API sunabilme
+	* Her platform icin ayri ayri ayni ozelliklerin tekrar tekrar yapilmasi, test edilmesi, dokumante edilmesi gibi zaman kaybina yol acan muhendislik faaliyetlerinin en aza indirilmesi
+	* Yeni donanimlarin ve sistemlerin gelistirilmesinin hizlandirilmasi.
+
+Kod Yapisi
+----------
+
+[Bu calisma henuz hala tasarim asamasinda oldugu icin API degisebilir durumdadir]
+
+Yeni 3 temel abstract sinif uzerine kurulmustur:
+
+	- PtzpHead                 : Farkli ptz kafalarini yonetmek icin gerekli kodlarin oldugu siniflar.
+	- PtzpTransport            : Farkli haberlesme baglantilarini (transport)  yonetmek icin gerekli olan siniflar.
+	- PtzpDriver               : Ozel bir PTZ cihazini yoneten, icinde birden fazla kafa ve baglantiya ait bilgiler bulunduran surucu kodlari.
+
+Bu siniflardan turetilen butun ptzp siniflari su sekilde listelenebilir:
+
+	- IRDomePTHead             : Ekinoks ailesi pan-tilt kafasina ait suruculerin oldugu sinif, temel olarak pelco-d komutlarini yonetir.
+	- OemModuleHead            : Sony ailesi visca tabanli goruntu modullerini yoneten sinif.
+	- MgeoThermalHead          : MGEO uretimi thermal kafalara ait suruculerin oldugu sinif.
+	- PtzpSerialTransport      : Seri haberlesme kanalini yoneten kodlarin oldugu sinif.
+	- PtzpTcpTransport         : TCP haberlesme kodlarinin oldugu sinif.
+	- IRDomeDriver             : Ekinoks ailesi pan-tilt dome kameranin surucu kodlari, alt tarafta IRDomePTHead, OemModuleHead ve PtzpSerialTransport kullanmaktadir.
+
+Genel calisma prensibi olarak, giris noktasi olarak PtzpDriver dusunulebilir. Bir driver alt tarafta kullanilacak kafalari ve transportlari baslatir. Kafalara PtzpHead::setTransport() fonksiyonu ile
+kullanilacak transportlarin set edilmesi gereklidir. Bu noktada kafalar PtzpTransport::addReadyCallback ve PtzpTransport::addQueueFreeCallback fonksiyonlari ile kendilerini haberlesme mesajlarina
+register ederler. Bundan sonra butun kafalar ilgili transport uzerinde gelen mesajlardan haberdar olurlar ve ilgili transport uzerinden mesaj gonderebilirler.
