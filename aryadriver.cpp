@@ -12,6 +12,8 @@ AryaDriver::AryaDriver(QObject *parent)
 	tcp1 = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	state = INIT;
+	defaultPTHead = aryapt;
+	defaultModuleHead = thermal;
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
