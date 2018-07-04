@@ -108,6 +108,13 @@ int PtzpHead::getZoom()
 	return 0;
 }
 
+int PtzpHead::panTiltGoPos(float ppos, float tpos)
+{
+	Q_UNUSED(ppos);
+	Q_UNUSED(tpos);
+	return 0;
+}
+
 int PtzpHead::getErrorCount(uint err)
 {
 	if (err == IOE_NONE) {
@@ -161,3 +168,14 @@ uint PtzpHead::getRegister(uint reg)
 	return registers[reg];
 }
 
+uint PtzpHead::getProperty(uint r)
+{
+	Q_UNUSED(r);
+	return 0;
+}
+
+void PtzpHead::setProperty(uint r, uint x)
+{
+	Q_UNUSED(r);
+	Q_UNUSED(x);
+}

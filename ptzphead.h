@@ -43,6 +43,9 @@ public:
 	virtual float getPanAngle();
 	virtual float getTiltAngle();
 	virtual int getZoom();
+	virtual int panTiltGoPos(float ppos, float tpos);
+	virtual uint getProperty(uint r);
+	virtual void setProperty(uint r, uint x);
 
 	int getErrorCount(uint err);
 
