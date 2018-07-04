@@ -5,6 +5,7 @@
 
 enum Commands {
 	C_CUSTOM_PAN_TILT_POS,		//0
+	C_CUSTOM_GO_TO_POS,
 
 	/* pelco-d commands */
 	C_PAN_LEFT,					//1
@@ -25,6 +26,7 @@ enum Commands {
 static uchar protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	/* custom commands */
 	{0x09, 0x09, 0x3a, 0xff, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5c},
+	{0x09, 0x09, 0x3a, 0xff, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5c},
 
 	/* pelco-d commands */
 	{0x07, 0x00, 0xff, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00},
@@ -53,7 +55,7 @@ IRDomePTHead::IRDomePTHead()
 
 int IRDomePTHead::getCapabilities()
 {
-	return CAP_PAN | CAP_TILT;
+	return PtzpHead::CAP_PAN | PtzpHead::CAP_TILT;
 }
 
 int IRDomePTHead::panLeft(float speed)
@@ -117,6 +119,17 @@ int IRDomePTHead::panTiltStop()
 	return panTilt(C_PELCOD_STOP, 0, 0);
 }
 
+void setCustomCommandParameters(uchar *p, uint cmd, int arg1, int arg2)
+{
+	if (cmd == C_CUSTOM_GO_TO_POS) {
+		p[5] = (arg1 >> 8) & 0xff;
+		p[6] = arg1 & 0xff;
+		p[7] = (arg2 >> 8) & 0xff;
+		p[8] = arg2 & 0xff;
+		p[9] = checksum(p + 2, 7);
+	}
+}
+
 int IRDomePTHead::panTilt(uint cmd, int pspeed, int tspeed)
 {
 	/*
@@ -129,9 +142,13 @@ int IRDomePTHead::panTilt(uint cmd, int pspeed, int tspeed)
 	else
 		transport->setQueueFreeCallbackMask(0xfffffffe);
 	unsigned char *p = protoBytes[cmd];
-	p[4 + 2] = pspeed;
-	p[5 + 2] = tspeed;
-	p[6 + 2] = checksum(p + 2, 6);
+	if (p[2] == 0x3a) {
+		setCustomCommandParameters(p, cmd, pspeed, tspeed);
+	} else {
+		p[4 + 2] = pspeed;
+		p[5 + 2] = tspeed;
+		p[6 + 2] = checksum(p + 2, 6);
+	}
 	return transport->send(QByteArray((const char *)p + 2, p[0]));
 }
 
@@ -179,3 +196,8 @@ QByteArray IRDomePTHead::transportReady()
 	return QByteArray();
 }
 
+int IRDomePTHead::panTiltGoPos(float ppos, float tpos)
+{
+	panTilt(C_CUSTOM_GO_TO_POS, ppos*100, tpos*100);
+	return 0;
+}

@@ -26,6 +26,7 @@ public:
 	int panTiltStop();
 	float getPanAngle();
 	float getTiltAngle();
+	int panTiltGoPos(float ppos, float tpos);
 
 protected:
 	int dataReady(const unsigned char *bytes, int len);

@@ -40,6 +40,11 @@ public:
 		R_PROGRAM_AE_MODE,//35 //td:nd
 		R_FLIP,
 		R_MIRROR,
+		R_DISPLAY_ROT,
+		R_DIGI_ZOOM_POS,
+		R_OPTIC_ZOOM_POS,
+		R_PT_SPEED,
+		R_ZOOM_SPEED,
 
 		R_COUNT
 	};
@@ -52,8 +57,13 @@ public:
 	int startZoomOut(int speed);
 	int stopZoom();
 	int getZoom();
+	uint getProperty(uint r);
+	void setProperty(int r, uint x);
+
 
 	void enableSyncing(bool en);
+	void setDeviceDefinition(QString definition);
+	QString getDeviceDefinition();
 
 protected:
 	int syncNext();
@@ -64,6 +74,7 @@ protected:
 	uint nextSync;
 	QElapsedTimer syncTime;
 	bool syncEnabled;
+	QString deviceDefinition;
 };
 
 #endif // OEMMODULEHEAD_H
