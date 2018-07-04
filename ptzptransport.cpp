@@ -1,11 +1,64 @@
 #include "ptzptransport.h"
 #include "debug.h"
 
+class BufferedProto : public PtzpTransport::LineProto
+{
+public:
+	void dataReady(const QByteArray &ba)
+	{
+		buf.append(ba);
+
+		int readlen = 0;
+		do {
+			readlen = processNewFrame((const uchar *)buf.constData(), buf.size());
+			if (readlen > 0)
+				buf = buf.mid(readlen);
+		} while (readlen > 0 && buf.size());
+	}
+
+	QByteArray buf;
+};
+
+class StringProto : public PtzpTransport::LineProto
+{
+public:
+	void dataReady(const QByteArray &ba)
+	{
+		buf.append(QString::fromUtf8(ba));
+
+		while (buf.contains(">")) {
+			int off = buf.indexOf(">");
+			QString mes = buf.left(off + 1);
+			processNewFrame((const uchar *)mes.toUtf8().constData(), mes.length());
+			buf = buf.mid(off + 1);
+		}
+	}
+
+protected:
+	QString buf;
+};
+
 PtzpTransport::PtzpTransport()
 {
 	queueFreeEnabled = false;
 	queueFreeEnabledTimeout = 0;
 	queueFreeCallbackMask = 0xffffffff;
+	lineProto = PROTO_BUFFERED;
+	protocol = new StringProto;
+	protocol->transport = this;
+}
+
+PtzpTransport::PtzpTransport(PtzpTransport::LineProtocol proto)
+{
+	queueFreeEnabled = false;
+	queueFreeEnabledTimeout = 0;
+	queueFreeCallbackMask = 0xffffffff;
+	lineProto = proto;
+	if (proto == PROTO_STRING_DELIM)
+		protocol = new StringProto;
+	else if (proto == PROTO_BUFFERED)
+		protocol = new BufferedProto;
+	protocol->transport = this;
 }
 
 int PtzpTransport::send(const QByteArray &ba)
@@ -84,3 +137,13 @@ QByteArray PtzpTransport::queueFreeCallback()
 	return QByteArray();
 }
 
+
+int PtzpTransport::LineProto::processNewFrame(const unsigned char *bytes, int len)
+{
+	for (int i = 0; i < transport->dataReadyCallbacks.size(); i++) {
+		int read = transport->dataReadyCallbacks[i](bytes, len, transport->dataReadyCallbackPrivs[i]);
+		if (read > 0)
+			return read;
+	}
+	return -1;
+}

@@ -6,10 +6,17 @@
 #include <QByteArray>
 #include <QElapsedTimer>
 
+class LineProto;
+
 class PtzpTransport
 {
 public:
+	enum LineProtocol {
+		PROTO_STRING_DELIM,
+		PROTO_BUFFERED,
+	};
 	PtzpTransport();
+	PtzpTransport(LineProtocol proto);
 	typedef int (*dataReady)(const unsigned char *bytes, int len, void *priv);
 	typedef QByteArray (*queueFree)(void *priv);
 
@@ -26,7 +33,15 @@ public:
 	static int dataReadyCallback(const unsigned char *bytes, int len, void *priv);
 	static QByteArray queueFreeCallback(void *priv);
 
+	class LineProto
+	{
+	public:
+		PtzpTransport *transport;
+		virtual void dataReady(const QByteArray &ba) = 0;
+		int processNewFrame(const unsigned char *bytes, int len);
+	};
 protected:
+
 	int dataReadyCallback(const unsigned char *bytes, int len);
 	QByteArray queueFreeCallback();
 
@@ -38,6 +53,9 @@ protected:
 	QList<queueFree> queueFreeCallbacks;
 	QList<void *> dataReadyCallbackPrivs;
 	QList<void *> queueFreeCallbackPrivs;
+	LineProtocol lineProto;
+	LineProto *protocol;
+	friend class LineProto;
 };
 
 #endif // PTZPTRANSPORT_H
