@@ -56,6 +56,15 @@ protected:
 	LineProtocol lineProto;
 	LineProto *protocol;
 	friend class LineProto;
+	/*
+	 * In case of programming bugs, our input buffer may accumulate
+	 * too much data. To prevent this, we introduce a mechanism for
+	 * cleaning-up input data at some point. By default, this feature
+	 * is off. You can set 'maxBufferLength' in your transport implementation
+	 * to some sane default value to enable this feature
+	 */
+	int maxBufferLength;
+
 };
 
 #endif // PTZPTRANSPORT_H

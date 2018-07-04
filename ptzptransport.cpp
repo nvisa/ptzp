@@ -40,6 +40,7 @@ protected:
 
 PtzpTransport::PtzpTransport()
 {
+	maxBufferLength = INT_MAX;
 	queueFreeEnabled = false;
 	queueFreeEnabledTimeout = 0;
 	queueFreeCallbackMask = 0xffffffff;
@@ -50,6 +51,7 @@ PtzpTransport::PtzpTransport()
 
 PtzpTransport::PtzpTransport(PtzpTransport::LineProtocol proto)
 {
+	maxBufferLength = INT_MAX;
 	queueFreeEnabled = false;
 	queueFreeEnabledTimeout = 0;
 	queueFreeCallbackMask = 0xffffffff;
@@ -115,6 +117,13 @@ int PtzpTransport::dataReadyCallback(const unsigned char *bytes, int len)
 		int read = dataReadyCallbacks[i](bytes, len, dataReadyCallbackPrivs[i]);
 		if (read > 0)
 			return read;
+	}
+	if (len > maxBufferLength) {
+		int plen = qMin(32, len);
+		for (int j = 0; j < plen; j++)
+			fDebug("accumulation!: %d %d", j, bytes[j]);
+		/* clean-up inbut buffer */
+		return len;
 	}
 	return -1;
 }
