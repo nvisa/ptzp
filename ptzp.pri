@@ -8,7 +8,9 @@ HEADERS += \
     ptzp/ptzpserialtransport.h \
     ptzp/ptzptcptransport.h \
     ptzp/ptzptransport.h \
-    ptzp/irdomedriver.h
+    ptzp/irdomedriver.h \
+    ptzp/aryadriver.h \
+    ptzp/aryapthead.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -19,4 +21,6 @@ SOURCES += \
     ptzp/ptzpserialtransport.cpp \
     ptzp/ptzptcptransport.cpp \
     ptzp/ptzptransport.cpp \
-    ptzp/irdomedriver.cpp
+    ptzp/irdomedriver.cpp \
+    ptzp/aryadriver.cpp \
+    ptzp/aryapthead.cpp
