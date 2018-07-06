@@ -11,7 +11,8 @@ public:
 
 	PtzpHead * getHead(int index);
 	int setTarget(const QString &targetUri);
-
+	QVariant get(const QString &key);
+	int set(const QString &key, const QVariant &value);
 protected slots:
 	void timeout();
 

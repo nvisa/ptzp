@@ -3,6 +3,8 @@
 
 #include <ecl/ptzp/ptzphead.h>
 
+#include "QStringList"
+
 class AryaPTHead : public PtzpHead
 {
 public:
