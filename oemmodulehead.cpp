@@ -497,6 +497,17 @@ void OemModuleHead::setProperty(int r,uint x)
 	} else if (r == 23){
 		setRegister(R_ZOOM_SPEED, (int)x);
 	}
+
+	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0){
+		setRegister(R_DISPLAY_ROT,0);
+	} else if (getRegister(R_FLIP) == 0 && getRegister(R_MIRROR) == 1){
+		setRegister(R_DISPLAY_ROT,1);
+	} else if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 1){
+		setRegister(R_DISPLAY_ROT,2);
+	} else if (getRegister(R_FLIP) == 0 && getRegister(R_MIRROR) == 0){
+		setRegister(R_DISPLAY_ROT,3);
+		getRegister(R_DISPLAY_ROT);
+	}
 }
 uint OemModuleHead::getProperty(uint r)
 {
