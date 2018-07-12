@@ -3,6 +3,10 @@
 
 #include <ecl/ptzp/ptzpdriver.h>
 
+class IRDomePTHead;
+class OemModuleHead;
+class PtzpSerialTransport;
+
 class IRDomeDriver : public PtzpDriver
 {
 	Q_OBJECT
@@ -24,8 +28,8 @@ protected:
 		NORMAL,
 	};
 
-	PtzpHead * headModule;
-	PtzpHead * headDome;
+	OemModuleHead * headModule;
+	IRDomePTHead * headDome;
 	PtzpTransport *transport;
 	DriverState state;
 };

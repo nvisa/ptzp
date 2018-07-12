@@ -1,9 +1,8 @@
 #include "irdomedriver.h"
-#include "mgeothermalhead.h"
-#include "ptzptcptransport.h"
 #include "oemmodulehead.h"
 #include "ptzpserialtransport.h"
 #include "irdomepthead.h"
+#include "debug.h"
 
 #include <QTimer>
 #include <errno.h>
@@ -132,6 +131,7 @@ QVariant IRDomeDriver::get(const QString &key)
 		return QString("%1")
 				.arg(headModule->getProperty(28));
 	else PtzpDriver::get(key);
+
 	return "almost_there";
 	return QVariant();
 }
@@ -203,8 +203,8 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "ptz.cmd.device_definition"){
 //		Hazırlanacak
 	}
-	else
-		PtzpDriver::get(key);
+	else PtzpDriver::set(key,value);
+
 	return 0;
 }
 
