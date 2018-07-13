@@ -143,63 +143,63 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "ptz.cmd.gain_value"){
 		headModule->setProperty(1,value.toUInt());
 	} else if (key == "ptz.cmd.exp_compmode") {
-		headModule->setProperty(2,value.toUInt());
-	} else if (key == "ptz.cmd.exp_compvalue") {
 		headModule->setProperty(3,value.toUInt());
-	} else if (key == "ptz.cmd.gain_lim") {
+	} else if (key == "ptz.cmd.exp_compvalue") {
 		headModule->setProperty(4,value.toUInt());
-	} else if (key == "ptz.cmd.noise_reduct") {
-		headModule->setProperty(6,value.toUInt());
-	} else if (key == "ptz.cmd.shutter"){
+	} else if (key == "ptz.cmd.gain_lim") {
 		headModule->setProperty(5,value.toUInt());
-	} else if (key == "ptz.cmd.wdr_stat"){
+	} else if (key == "ptz.cmd.noise_reduct") {
 		headModule->setProperty(7,value.toUInt());
-	} else if (key == "ptz.cmd.gamma") {
+	} else if (key == "ptz.cmd.shutter"){
+		headModule->setProperty(6,value.toUInt());
+	} else if (key == "ptz.cmd.wdr_stat"){
 		headModule->setProperty(8,value.toUInt());
-	} else if (key == "ptz.cmd.awb_mode"){
+	} else if (key == "ptz.cmd.gamma") {
 		headModule->setProperty(9,value.toUInt());
-	} else if (key == "ptz.cmd.defog_mode"){
+	} else if (key == "ptz.cmd.awb_mode"){
 		headModule->setProperty(10,value.toUInt());
-	} else if (key == "ptz.cmd.digi_zoom"){
+	} else if (key == "ptz.cmd.defog_mode"){
 		headModule->setProperty(11,value.toUInt());
-	} else if (key == "ptz.cmd.zoom_type"){
+	} else if (key == "ptz.cmd.digi_zoom"){
 		headModule->setProperty(12,value.toUInt());
-	} else if (key == "ptz.cmd.focus_mode"){
+	} else if (key == "ptz.cmd.zoom_type"){
 		headModule->setProperty(13,value.toUInt());
-	} else if (key == "ptz.cmd.zoom_trig"){
+	} else if (key == "ptz.cmd.focus_mode"){
 		headModule->setProperty(14,value.toUInt());
-	} else if (key == "ptz.cmd.blc_stat"){
+	} else if (key == "ptz.cmd.zoom_trig"){
 		headModule->setProperty(15,value.toUInt());
-	} else if (key == "ptz.cmd.ırcf_stat"){
+	} else if (key == "ptz.cmd.blc_stat"){
 		headModule->setProperty(16,value.toUInt());
-	} else if (key == "ptz.cmd.auto_icr"){
+	} else if (key == "ptz.cmd.ırcf_stat"){
 		headModule->setProperty(17,value.toUInt());
-	} else if (key == "ptz.cmd.program_ae_mode"){
+	} else if (key == "ptz.cmd.auto_icr"){
 		headModule->setProperty(18,value.toUInt());
-	} else if (key == "ptz.cmd.flip"){
+	} else if (key == "ptz.cmd.program_ae_mode"){
 		headModule->setProperty(19,value.toUInt());
-	} else if (key == "ptz.cmd.mirror"){
+	} else if (key == "ptz.cmd.flip"){
 		headModule->setProperty(20,value.toUInt());
-	} else if (key == "ptz.cmd.one_push_af"){
+	} else if (key == "ptz.cmd.mirror"){
 		headModule->setProperty(21,value.toUInt());
+	} else if (key == "ptz.cmd.one_push_af"){
+			headModule->setProperty(22,value.toUInt());
 	} else if (key == "ptz.cmd.display_rot"){
-		if (value.toInt() == 0){
-			headModule->setProperty(19, 1);
-			headModule->setProperty(20, 0);
-		} else if (value.toInt() == 1){
-			headModule->setProperty(19, 0);
-			headModule->setProperty(20, 1);
-		} else if (value.toInt() == 2){
-			headModule->setProperty(19, 1);
-			headModule->setProperty(20, 1);
-		} else if (value.toInt() == 3){
-			headModule->setProperty(19, 0);
-			headModule->setProperty(20, 0);
-		}
+	if (value.toInt() == 0){
+		headModule->setProperty(20, 1);
+		headModule->setProperty(21, 0);
+	} else if (value.toInt() == 1){
+		headModule->setProperty(20, 0);
+		headModule->setProperty(21, 1);
+	} else if (value.toInt() == 2){
+		headModule->setProperty(20, 1);
+		headModule->setProperty(21, 1);
+	} else if (value.toInt() == 3){
+		headModule->setProperty(20, 0);
+		headModule->setProperty(21, 0);
+	}
 	} else if (key == "ptz.cmd.setPtSpeed"){
-		headModule->setProperty(22,value.toUInt());
-	} else if (key == "ptz.cmd.setZoomSpeed"){
 		headModule->setProperty(23,value.toUInt());
+	} else if (key == "ptz.cmd.setZoomSpeed"){
+		headModule->setProperty(24,value.toUInt());
 	} else if (key == "ptz.cmd.device_definition"){
 //		Hazırlanacak
 	}

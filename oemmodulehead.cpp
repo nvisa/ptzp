@@ -101,6 +101,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x39, 0x00, 0xff },//set program AE mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x66, 0x00, 0xff }, //set flip mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x61, 0x00, 0xff },//set Mirror mode
+	{0x06, 0x00, 0x81, 0x01, 0x04, 0x18, 0x01, 0xff },//set One Push
 	{0x05, 0x07, 0x81, 0x09, 0x04, 0x47, 0xff},
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x20, 0xff},
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x30, 0xff},
@@ -279,6 +280,9 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 
 	if (sendcmd == C_VISCA_GET_EXPOSURE) {
 		uint exVal = ((p[4] << 4) | p[5]);
+		if (exVal == 0)			//Açıklama için setProperty'de exposure kısmına bakın!
+			exVal = 13;
+		else exVal = 17 - exVal;
 		setRegister(R_EXPOSURE_VALUE , exVal);
 	} else if(sendcmd == C_VISCA_GET_GAIN) {
 		setRegister(R_GAIN_VALUE , (p[4] << 4 | p[5]));
@@ -371,8 +375,18 @@ void OemModuleHead::setProperty(int r,uint x)
 	if (r == C_VISCA_SET_EXPOSURE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE];
 		hist->add(C_VISCA_SET_EXPOSURE );
-		p[6 + 2] = x >> 4;
-		p[7 + 2] = x & 0x0f;
+		uint val;
+		/***
+		 * FCB-EV7500 dökümanında(Visca datasheet) sayfa 9'da bulunan Iris priority bölümünde bulunan tabloya göre
+		 * exposure (iris priorty) değerleri 0 ile 17 arasında değişmekte fakat 14 adet bilgi bulunmaktadır.
+		 * Bu değerlerin 0-13 arasına çekilip web sayfası tarafındada düzgün bir görüntüleme sağmabilmesi açısından
+		 * aşağıdaki işlem uygulanmıştır.
+		 */
+		if (x == 13)
+			val = 0;
+		else val = 17- x;
+		p[6 + 2] = val >> 4;
+		p[7 + 2] = val & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXPOSURE_VALUE, (int)x);
 	} else if (r == C_VISCA_SET_NOISE_REDUCT) {
