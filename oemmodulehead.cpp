@@ -17,6 +17,7 @@ enum Commands {
 	/* visca commands */
 	C_VISCA_SET_EXPOSURE,		//14 //td:nd // exposure_value
 	C_VISCA_SET_GAIN,			//15 //td:nd // gainvalue
+	C_VISCA_SET_ZOOM_POS,
 	C_VISCA_SET_EXP_COMPMODE,	//16 //td:nd
 	C_VISCA_SET_EXP_COMPVAL,	//17 //td:nd
 	C_VISCA_SET_GAIN_LIM,		//18 //td:nd
@@ -80,6 +81,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	/* visca commands */
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x4b, 0x00, 0x00, 0x00, 0x0f, 0xff},	//set_exposure_value
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x4c, 0x00, 0x00, 0xf0, 0x0f, 0xff },	//set gain value
+	{0x09, 0x00, 0x81, 0x01, 0x04, 0x47, 0x00, 0x00, 0x00, 0x00, 0xff },	//set zoom pos
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x3E,0x00, 0xff },	//set exp comp mode
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x4E, 0x00, 0x00, 0xf0, 0x0f, 0xff },	//set exp comp val
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x2c, 0x0f, 0xff },	//set gain limit
@@ -206,6 +208,17 @@ int OemModuleHead::stopZoom()
 int OemModuleHead::getZoom()
 {
 	return getRegister(R_ZOOM_POS);
+}
+
+int OemModuleHead::setZoom(uint pos)
+{
+	unsigned char *p = protoBytes[C_VISCA_SET_ZOOM_POS];
+	hist->add(C_VISCA_SET_ZOOM_POS);
+	p[4 + 2] = (pos & 0XF000) >> 12;
+	p[4 + 3] = (pos & 0XF00) >> 8;
+	p[4 + 4] = (pos & 0XF0) >> 4;
+	p[4 + 5] = pos & 0XF;
+	return transport->send((const char *)p + 2, p[0]);
 }
 
 void OemModuleHead::enableSyncing(bool en)

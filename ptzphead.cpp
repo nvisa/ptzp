@@ -109,6 +109,12 @@ int PtzpHead::getZoom()
 	return 0;
 }
 
+int PtzpHead::setZoom(uint pos)
+{
+	Q_UNUSED(pos);
+	return 0;
+}
+
 int PtzpHead::panTiltGoPos(float ppos, float tpos)
 {
 	Q_UNUSED(ppos);

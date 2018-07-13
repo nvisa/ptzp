@@ -57,6 +57,7 @@ public:
 	int startZoomOut(int speed);
 	int stopZoom();
 	int getZoom();
+	int setZoom(uint pos);
 	uint getProperty(uint r);
 	void setProperty(int r, uint x);
 
