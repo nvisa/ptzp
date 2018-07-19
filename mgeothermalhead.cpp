@@ -125,9 +125,11 @@ int MgeoThermalHead::getZoom()
 
 int MgeoThermalHead::getHeadStatus()
 {
-	if (nextSync == C_COUNT)
+	if (nextSync != C_COUNT)
+		return ST_SYNCING;
+	if (pingTimer.elapsed() < 1500)
 		return ST_NORMAL;
-	return ST_SYNCING;
+	return ST_ERROR;
 }
 
 int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
