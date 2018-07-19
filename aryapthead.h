@@ -9,6 +9,7 @@ public:
 	AryaPTHead();
 
 	int getCapabilities();
+	int getHeadStatus();
 
 	virtual int panLeft(float speed);
 	virtual int panRight(float speed);

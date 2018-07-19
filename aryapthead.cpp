@@ -84,6 +84,13 @@ int AryaPTHead::getCapabilities()
 	return CAP_PAN | CAP_TILT;
 }
 
+int AryaPTHead::getHeadStatus()
+{
+	if (pingTimer.elapsed() < 1500)
+		return ST_NORMAL;
+	return ST_ERROR;
+}
+
 int AryaPTHead::panLeft(float speed)
 {
 	int pspeed = qAbs(speed) * MaxSpeed;
@@ -173,6 +180,7 @@ int AryaPTHead::dataReady(const unsigned char *bytes, int len)
 		QString value = data.split(":").last().split(";").first();
 		panPos = value.split(",").first().toInt();
 		tiltPos = value.split(",").last().toInt();
+		pingTimer.restart();
 	}
 
 	return len;
