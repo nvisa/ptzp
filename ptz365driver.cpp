@@ -377,7 +377,7 @@ int Ptz365Driver::getTiltPosition()
 
 int Ptz365Driver::readPosition(int &pan, int &tilt)
 {
-	char mes[] = {0x3a, 0xff, 0x82, 0x00, 0, 0, 0, 0x81, 0x5c};
+	char mes[23];// = {0x3a, 0xff, 0x82, 0x00, 0, 0, 0, 0x81, 0x5c};
 	QByteArray ba = writeRead(QByteArray(mes, 9), 100);
 	const uchar *buf = (const uchar *)ba.constData();
 	if (ba.size() < 9) {
