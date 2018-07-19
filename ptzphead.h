@@ -25,6 +25,7 @@ public:
 	enum HeadStatus {
 		ST_SYNCING,
 		ST_NORMAL,
+		ST_ERROR,
 	};
 
 	virtual int getCapabilities() = 0;
