@@ -2,6 +2,7 @@
 #include "debug.h"
 
 #include <QTcpSocket>
+#include <QHostAddress>
 
 PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 	: QObject(parent),
