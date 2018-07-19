@@ -20,6 +20,7 @@ static const char ioErrorStr[][256] = {
 PtzpHead::PtzpHead()
 {
 	transport = NULL;
+	pingTimer.start();
 }
 
 int PtzpHead::setTransport(PtzpTransport *tport)

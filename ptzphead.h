@@ -6,6 +6,7 @@
 #include <QHash>
 #include <QMutex>
 #include <QByteArray>
+#include <QElapsedTimer>
 
 class PtzpTransport;
 
@@ -63,6 +64,7 @@ protected:
 	QHash<uint, uint> registers;
 	QMutex rlock;
 	QHash<uint, uint> errorCount;
+	QElapsedTimer pingTimer;
 };
 
 #endif // PTZPHEAD_H
