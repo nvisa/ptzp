@@ -27,6 +27,7 @@ enum Commands {
 	C_CONTRAST_CHANGE,
 	C_RETICLE_CHANGE,
 	C_NUC,
+	C_IBIT,
 	C_IPM_CHANGE,
 	C_HPF_GAIN_CHANGE,
 	C_HPF_SPATIAL_CHANGE,
@@ -53,6 +54,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x35, 0x0a, 0xbe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xc3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	{0x35, 0x0a, 0xca, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xd7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xd8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xd9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -132,6 +134,125 @@ int MgeoThermalHead::getHeadStatus()
 	return ST_ERROR;
 }
 
+void MgeoThermalHead::setProperty(int r, uint x)
+{
+/*
+ * p[0]		p[1]		p[2]		p[3]		p[4]		p[5]		p[6]		p[7]		p[8]		p[9]
+ * 35		0A		(OPCODE)		(DATA1)		(DATA2)		(DATA3)		(DATA4)		(DATA5)		(DATA6)		CHECKSUM
+ */
+	if (r == C_BRIGHTNESS) {
+		unsigned char *p = protoBytes[C_BRIGHTNESS];
+		p[4] = x;
+		sendCommand(C_BRIGHTNESS, 0x01, p[4]);
+		setRegister(R_BRIGHTNESS, x);
+	} else if(r == C_CONTRAST) {
+		unsigned char *p = protoBytes[C_CONTRAST];
+		p[4] = x;
+		sendCommand(C_CONTRAST,0x01, p[4]);
+		setRegister(R_CONTRAST, x);
+	} else if(r == C_FOV) {
+		unsigned char *p = protoBytes[C_FOV];
+		p[3] = x;
+		sendCommand(C_FOV, p[3]);
+		setRegister(R_FOV, x);
+	} else if(r == C_CONT_ZOOM) {
+		unsigned char *p = protoBytes[C_CONT_ZOOM];
+		if(x == 0)
+			p[3] = 0x00; //zoom stop
+		else if(x == 1)
+			p[3] = 0x01; //zoom in
+		else if (x == 2)
+			p[3] = 0xFF; //zoom out
+		sendCommand(C_CONT_ZOOM, p[3]);
+	} else if(r == C_FOCUS) {
+		unsigned char *p = protoBytes[C_FOCUS];
+		if(x == 0)
+			p[3] = 0x00; //focus stop
+		else if(x == 1)
+			p[3] = 0x01; //focus far
+		else if (x == 2)
+			p[3] = 0xFF; //focus near
+		sendCommand(C_FOCUS, p[3]);
+	} else if(r == C_NUC_SELECT) {
+		unsigned char *p = protoBytes[C_NUC_SELECT];
+		p[3] = x;
+		sendCommand(C_NUC_SELECT, p[3]);
+		setRegister(R_NUC_TABLE, x);
+	} else if(r == C_POL_CHANGE) {
+		unsigned char *p = protoBytes[C_POL_CHANGE];
+		p[3] = x;
+		sendCommand(C_POL_CHANGE, p[3]);
+		setRegister(R_POLARITY, x);
+	} else if(r == C_RETICLE_ONOFF) {
+		unsigned char *p = protoBytes[C_RETICLE_ONOFF];
+		p[3] = x;
+		sendCommand(C_RETICLE_ONOFF, p[3]);
+		setRegister(R_RETICLE, x);
+	} else if(r == C_DIGITAL_ZOOM) {
+		unsigned char *p = protoBytes[C_DIGITAL_ZOOM];
+		p[3] = x ? 0x00 : 0x01;
+		sendCommand(C_DIGITAL_ZOOM, p[3]);
+		setRegister(R_DIGITAL_ZOOM, x);
+	} else if(r == C_FREEZE_IMAGE) {
+		unsigned char *p = protoBytes[C_FREEZE_IMAGE];
+		p[3] = x ? 0x00 : 0x01;
+		sendCommand(C_FREEZE_IMAGE, p[3]);
+		setRegister(R_IMAGE_FREEZE, x);
+	} else if (r == C_AGC_SELECT) {
+		unsigned char *p = protoBytes[C_AGC_SELECT];
+		p[3] = x ? 0x00 : 0x01;
+		sendCommand(C_AGC_SELECT,p[3]);
+		setRegister(R_AGC, x);
+	}else if(r == C_BRIGHTNESS_CHANGE) {
+		unsigned char *p = protoBytes[C_BRIGHTNESS_CHANGE];
+		p[3] = x;
+		sendCommand(C_BRIGHTNESS_CHANGE, p[3]);
+	} else if(r == C_CONTRAST_CHANGE) {
+		unsigned char *p = protoBytes[C_CONTRAST_CHANGE];
+		p[3] = x;
+		sendCommand(C_CONTRAST_CHANGE, p[3]);
+	} else if(r == C_RETICLE_CHANGE) {
+		unsigned char *p = protoBytes[C_RETICLE_CHANGE];
+		p[3] = x;
+		sendCommand(C_RETICLE_CHANGE, p[3]);
+		setRegister(R_RETICLE_INTENSITY, x);
+	} else if(r == C_NUC) {
+		sendCommand(C_NUC);
+	} else if(r == C_IBIT) {
+		sendCommand(C_IBIT);
+	} else if(r == C_IPM_CHANGE) {
+		unsigned char *p = protoBytes[C_IPM_CHANGE];
+		p[3] = x;
+		sendCommand(C_IPM_CHANGE, p[3]);
+		setRegister(R_IPM, x);
+	} else if(r == C_HPF_GAIN_CHANGE) {
+		unsigned char *p = protoBytes[C_HPF_GAIN_CHANGE];
+		p[3] = x;
+		sendCommand(C_HPF_GAIN_CHANGE, p[3]);
+		setRegister(R_HPF_GAIN, x);
+	} else if(r == C_HPF_SPATIAL_CHANGE) {
+		unsigned char *p = protoBytes[C_HPF_SPATIAL_CHANGE];
+		p[3] = x;
+		sendCommand(C_HPF_SPATIAL_CHANGE, p[3]);
+		setRegister(R_HPF_SPATIAL, x);
+	} else if(r == C_FLIP) {
+		unsigned char *p = protoBytes[C_FLIP];
+		p[3] = x;
+		sendCommand(C_FLIP, p[3]);
+		setRegister(R_FLIP, x);
+	} else if(r == C_IMAGE_UPDATE_SPEED) {
+		unsigned char *p = protoBytes[C_IMAGE_UPDATE_SPEED];
+		p[3] = x;
+		sendCommand(C_IMAGE_UPDATE_SPEED, p[3]);
+		setRegister(R_IMAGE_UPDATE_SPEED, x);
+	}
+}
+
+uint MgeoThermalHead::getProperty(uint r)
+{
+	return getRegister(r);
+}
+
 int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 {
 	if (bytes[0] != 0xca)
@@ -203,7 +324,7 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_CONTRAST, p[0]);
 	} else if (opcode == 0xb5) {
 		//reticle
-		setRegister(R_INTENSITY, p[0]);
+		setRegister(R_RETICLE_INTENSITY, p[0]);
 	} else if (opcode == 0xa2) {
 		//one-point
 		setRegister(R_NUC, p[0]);
@@ -235,6 +356,7 @@ int MgeoThermalHead::syncNext()
 		return sendCommand(C_CONTRAST, 0x02);
 	if (cmd == C_GET_ZOOM_FOCUS)
 		return sendCommand(C_GET_ZOOM_FOCUS);
+
 	return -ENOENT;
 }
 

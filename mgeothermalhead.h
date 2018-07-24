@@ -4,6 +4,7 @@
 #include <ecl/ptzp/ptzphead.h>
 
 #include <QStringList>
+#include <QElapsedTimer>
 
 class MgeoThermalHead : public PtzpHead
 {
@@ -12,6 +13,8 @@ public:
 
 	enum Registers {
 		R_COOLED_DOWN,
+		R_BRIGHTNESS,
+		R_CONTRAST,
 		R_FOV,
 		R_ZOOM,
 		R_FOCUS,
@@ -22,14 +25,13 @@ public:
 		R_DIGITAL_ZOOM,
 		R_IMAGE_FREEZE,
 		R_AGC,
-		R_BRIGHTNESS,
-		R_CONTRAST,
-		R_INTENSITY,
+		R_RETICLE_INTENSITY,
 		R_NUC,
 		R_IBIT,
 		R_IPM,
 		R_HPF_GAIN,
 		R_HPF_SPATIAL,
+		R_FLIP,
 		R_IMAGE_UPDATE_SPEED,
 
 		R_COUNT,
@@ -43,6 +45,8 @@ public:
 	virtual int stopZoom();
 	virtual int getZoom();
 	virtual int getHeadStatus();
+	virtual void setProperty(int r, uint x);
+	virtual uint getProperty(uint r);
 
 protected:
 	int sendCommand(const QString &key);
@@ -52,6 +56,7 @@ protected:
 	QStringList ptzCommandList;
 	int panPos;
 	int tiltPos;
+	QElapsedTimer pingTimer;
 	int nextSync;
 	QList<uint> syncList;
 
