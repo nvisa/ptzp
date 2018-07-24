@@ -5,6 +5,7 @@
 
 class AryaPTHead;
 class MgeoThermalHead;
+class MgeoGunGorHead;
 class PtzpTcpTransport;
 
 class AryaDriver : public PtzpDriver
@@ -30,8 +31,10 @@ protected:
 	DriverState state;
 	MgeoThermalHead *thermal;
 	AryaPTHead *aryapt;
+	MgeoGunGorHead *gungor;
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
+	PtzpTcpTransport *tcp3;
 };
 
 #endif // ARYADRIVER_H
