@@ -206,10 +206,8 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 		thermal->setProperty(21, value.toUInt());
 	else if (key == "ptz.cmd.focus_stop")
 		thermal->setProperty(5, value.toUInt());
-	else if (key == "ptz.cmd.gungor.open_cam")
+	else if (key == "ptz.cmd.gungor.cam_stat")
 		gungor->setProperty(0, value.toUInt());
-	else if (key == "ptz.cmd.gungor.close_cam")
-		gungor->setProperty(1, value.toUInt());
 	else if (key == "ptz.cmd.gungor.zoom_in")
 		gungor->setProperty(2, value.toUInt());
 	else if (key == "ptz.cmd.gungor.zoom_stop")
@@ -228,12 +226,9 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 		gungor->setProperty(9, value.toUInt());
 	else if (key == "ptz.cmd.gungor.auto_focus")
 		gungor->setProperty(10, value.toUInt());
-	else if (key == "ptz.cmd.gungor.digi_zoom_on")
+	else if (key == "ptz.cmd.gungor.digi_zoom")
 		gungor->setProperty(12, value.toUInt());
-	else if (key == "ptz.cmd.gungor.digi_zoom_off")
-		gungor->setProperty(13, value.toUInt());
 
-
-	else PtzpDriver::set(key, value);
+	return PtzpDriver::set(key, value);
 	return 0;
 }

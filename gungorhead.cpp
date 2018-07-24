@@ -73,8 +73,11 @@ int MgeoGunGorHead::getCapabilities()
 void MgeoGunGorHead::setProperty(int r, uint x)
 {
 	if (r == C_SET_OPEN) {
-		sendCommand(r);
-		setRegister(R_CAM_STATUS, 1);
+		if (x == 1)
+			sendCommand(C_SET_OPEN);
+		else if (x == 0)
+			sendCommand(C_SET_CLOSE);
+		setRegister(R_CAM_STATUS, x);
 	} else if (r == C_SET_CLOSE) {
 		sendCommand(r);
 		setRegister(R_CAM_STATUS, 0);
