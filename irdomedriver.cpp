@@ -130,7 +130,7 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "ptz.get_zoom_speed")
 		return QString("%1")
 				.arg(headModule->getProperty(28));
-	else PtzpDriver::get(key);
+	return PtzpDriver::get(key);
 
 	return "almost_there";
 	return QVariant();
@@ -203,7 +203,7 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "ptz.cmd.device_definition"){
 //		Hazırlanacak
 	}
-	else PtzpDriver::set(key,value);
+	return PtzpDriver::set(key,value);
 
 	return 0;
 }

@@ -17,6 +17,7 @@ public:
 
 	virtual int setTarget(const QString &targetUri) = 0;
 	virtual PtzpHead * getHead(int index) = 0;
+	virtual int getHeadCount();
 
 	void startSocketApi(quint16 port);
 	virtual QVariant get(const QString &key);
@@ -24,6 +25,7 @@ public:
 
 protected slots:
 	virtual void timeout();
+	QVariant headInfo(const QString &key, PtzpHead *head);
 
 protected:
 	QTimer *timer;

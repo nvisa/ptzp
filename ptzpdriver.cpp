@@ -20,6 +20,13 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	defaultModuleHead = NULL;
 }
 
+int PtzpDriver::getHeadCount()
+{
+	int count = 0;
+	while (getHead(count++)) {}
+	return count;
+}
+
 void PtzpDriver::startSocketApi(quint16 port)
 {
 	RemoteControl *rcon = new RemoteControl(this, this);
@@ -36,8 +43,22 @@ QVariant PtzpDriver::get(const QString &key)
 				.arg(defaultPTHead->getPanAngle())
 				.arg(defaultPTHead->getTiltAngle())
 				.arg(defaultModuleHead->getZoom());
-
-	return QVariant();
+//	else if (key == "ptz.head.count")
+//		return getHeadCount();
+//	else if (key.startsWith("ptz.head.")) {
+//		QStringList fields = key.split(".");
+//		if (fields.size() <= 2)
+//			return -EINVAL;
+//		int index = fields[2].toInt();
+//		fields.removeFirst();
+//		fields.removeFirst();
+//		fields.removeFirst();
+//		if (index < 0 || index >= getHeadCount())
+//			return -ENONET;
+//		return headInfo(fields.join("."), getHead(index));
+//	}
+//	return "almost_there";
+//	return QVariant();
 }
 
 int PtzpDriver::set(const QString &key, const QVariant &value)
@@ -76,4 +97,11 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 
 void PtzpDriver::timeout()
 {
+}
+
+QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
+{
+	if (key == "status")
+		return head->getHeadStatus();
+	return QVariant();
 }
