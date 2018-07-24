@@ -22,12 +22,16 @@ public:
 class StringProto : public PtzpTransport::LineProto
 {
 public:
+	StringProto()
+	{
+		delim = ">";
+	}
 	void dataReady(const QByteArray &ba)
 	{
 		buf.append(QString::fromUtf8(ba));
 
-		while (buf.contains(">")) {
-			int off = buf.indexOf(">");
+		while (buf.contains(delim)) {
+			int off = buf.indexOf(delim);
 			QString mes = buf.left(off + 1);
 			processNewFrame((const uchar *)mes.toUtf8().constData(), mes.length());
 			buf = buf.mid(off + 1);
@@ -36,6 +40,7 @@ public:
 
 protected:
 	QString buf;
+	QString delim;
 };
 
 PtzpTransport::PtzpTransport()
