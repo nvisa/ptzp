@@ -108,10 +108,9 @@ void MgeoGunGorHead::setProperty(int r, uint x)
 			sendCommand(C_SET_AUTO_FOCUS_OFF);
 		setRegister(R_AUTO_FOCUS_STATUS, x);
 	} else if (r == C_SET_DIGI_ZOOM_ON) {
-		if (x == 1)
-			sendCommand(C_SET_DIGI_ZOOM_ON);
-		else if (x == 0)
+		if (x == 0)
 			sendCommand(C_SET_DIGI_ZOOM_OFF);
+		else sendCommand(C_SET_DIGI_ZOOM_ON, x);
 		setRegister(R_DIGI_ZOOM_STATUS, x);
 	}
 }
@@ -163,7 +162,7 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 			syncNext();
 	}
 
-	uchar opcode = bytes[2];
+	uchar opcode = bytes[1];
 	const uchar *p = bytes + 2;
 
 	if (opcode == 0x0a)
