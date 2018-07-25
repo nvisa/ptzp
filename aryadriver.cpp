@@ -47,12 +47,13 @@ void AryaDriver::timeout()
 {
 	switch (state) {
 	case INIT:
-		state = SYNC_THERMAL_MODULE;
+		state = SYNC_ALL_MODULES;
 		thermal->syncRegisters();
 		gungor->syncRegisters();
 		break;
-	case SYNC_THERMAL_MODULE:
-		if (thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
+	case SYNC_ALL_MODULES:
+		if (thermal->getHeadStatus() == PtzpHead::ST_NORMAL
+				|| gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
 		}
 		break;
@@ -138,10 +139,11 @@ QVariant AryaDriver::get(const QString &key)
 	else if (key == "ptz.head.2.focus")
 		return QString("%1")
 				.arg(gungor->getProperty(1));
-	else if (key == "ptz.head.2.chip")
-		return QString("%1")
-				.arg(gungor->getProperty(2));
-	else if (key == "ptz.head.2.digi_zoom")
+	else if (key == "ptz.head.2.chip") {
+		QString vrsn = QString::number(gungor->getProperty(2));
+		vrsn = "V0" + vrsn[0] + "." +vrsn[1] +vrsn[2];
+		return vrsn;
+	} else if (key == "ptz.head.2.digi_zoom")
 		return QString("%1")
 				.arg(gungor->getProperty(5));
 	else if (key == "ptz.head.2.cam_status")
@@ -162,6 +164,7 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 {
 	if (key == "ptz.cmd.brightness") {
 		thermal->setProperty(0, value.toUInt());
+
 	} else if (key == "ptz.cmd.contrast")
 		thermal->setProperty(1, value.toUInt());
 	else if (key == "ptz.cmd.fov_change")

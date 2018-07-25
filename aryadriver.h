@@ -25,7 +25,7 @@ protected:
 	enum DriverState {
 		INIT,
 		NORMAL,
-		SYNC_THERMAL_MODULE,
+		SYNC_ALL_MODULES,
 	};
 
 	DriverState state;

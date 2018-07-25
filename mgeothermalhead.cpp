@@ -309,13 +309,20 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_RETICLE, p[0]);
 	} else if (opcode == 0xa9) {
 		//digital zoom
-		setRegister(R_DIGITAL_ZOOM, p[0]);
+		int x = 0;
+		if (p[0] == 1)
+			x = 0;
+		else if (p[0] == 2)
+			x = 1;
+		setRegister(R_DIGITAL_ZOOM, x);
 	} else if (opcode == 0xaa) {
 		//image freeze
 		setRegister(R_IMAGE_FREEZE, p[0]);
 	} else if (opcode == 0xae) {
 		//contrast brightness auto/manual
-		setRegister(R_AGC, p[0]);
+		if (p[0] == 0 )
+			setRegister(R_AGC, 1);
+		else setRegister(R_AGC, 0);
 	} else if (opcode == 0xaf) {
 		//brightness change/get
 		setRegister(R_BRIGHTNESS, p[0]);
