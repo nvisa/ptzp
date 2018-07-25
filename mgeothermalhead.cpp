@@ -190,17 +190,17 @@ void MgeoThermalHead::setProperty(int r, uint x)
 		setRegister(R_RETICLE, x);
 	} else if(r == C_DIGITAL_ZOOM) {
 		unsigned char *p = protoBytes[C_DIGITAL_ZOOM];
-		p[3] = x ? 0x00 : 0x01;
+		p[3] = x ? 0x01 : 0x00;
 		sendCommand(C_DIGITAL_ZOOM, p[3]);
 		setRegister(R_DIGITAL_ZOOM, x);
 	} else if(r == C_FREEZE_IMAGE) {
 		unsigned char *p = protoBytes[C_FREEZE_IMAGE];
-		p[3] = x ? 0x00 : 0x01;
+		p[3] = x ? 0x01 : 0x00;
 		sendCommand(C_FREEZE_IMAGE, p[3]);
 		setRegister(R_IMAGE_FREEZE, x);
 	} else if (r == C_AGC_SELECT) {
 		unsigned char *p = protoBytes[C_AGC_SELECT];
-		p[3] = x ? 0x00 : 0x01;
+		p[3] = x ? 0x01 : 0x00;
 		sendCommand(C_AGC_SELECT,p[3]);
 		setRegister(R_AGC, x);
 	}else if(r == C_BRIGHTNESS_CHANGE) {
