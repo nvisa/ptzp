@@ -145,6 +145,13 @@ QByteArray PtzpHead::transportReady(void *priv)
 	return ((PtzpHead *)priv)->transportReady();
 }
 
+/**
+ * @brief PtzpHead::dataReady
+ * @param bytes = cihaz tarafında tanımlanan get komutlarının
+ * seri portvasıtasıyla okunan cevaplarını bir dizi şeklinde alır.
+ * @param len = dizinin uzunluk bilgisidir.
+ * @return cevapların uzunluğudur.
+ */
 int PtzpHead::dataReady(const unsigned char *bytes, int len)
 {
 	Q_UNUSED(bytes);
@@ -162,6 +169,14 @@ void PtzpHead::setIOError(int err)
 	errorCount[err]++;
 }
 
+/**
+ * @brief PtzpHead::setRegister
+ * @param reg = değiştirilmesi istenen registerin enum karşılık değerini alır.
+ * @param value = registera atanmak istenen değeri alır.
+ * @return 0 döndürür.
+ * @note Program bazında register değeri değiştirmek için kullanılır.
+ * Yani bu fonksiyonu kullanarak kamera üzerindeki değeri değiştiremezsiniz.
+ */
 int PtzpHead::setRegister(uint reg, uint value)
 {
 	QMutexLocker l(&rlock);
@@ -181,6 +196,14 @@ uint PtzpHead::getProperty(uint r)
 	return 0;
 }
 
+/**
+ * @brief PtzpHead::setProperty
+ * @param r = "enum Commands" içerisinde yer alan set işlemi yapan
+ * komut.(Her kafanın kendine özgü set komutları bulunmaktadır.)
+ * @param x = set işleminin yapılacağı komuta gönderilen değer.
+ * @note Donanım üzerinde değişiklik yapmak için kullanılır.
+ * Örneğin; shutter değerinin değiştirilmesi.
+ */
 void PtzpHead::setProperty(uint r, uint x)
 {
 	Q_UNUSED(r);
