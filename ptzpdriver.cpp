@@ -24,7 +24,7 @@ int PtzpDriver::getHeadCount()
 {
 	int count = 0;
 	while (getHead(count++)) {}
-	return count;
+	return count - 1;
 }
 
 void PtzpDriver::startSocketApi(quint16 port)
@@ -43,22 +43,26 @@ QVariant PtzpDriver::get(const QString &key)
 				.arg(defaultPTHead->getPanAngle())
 				.arg(defaultPTHead->getTiltAngle())
 				.arg(defaultModuleHead->getZoom());
-//	else if (key == "ptz.head.count")
-//		return getHeadCount();
-//	else if (key.startsWith("ptz.head.")) {
-//		QStringList fields = key.split(".");
-//		if (fields.size() <= 2)
-//			return -EINVAL;
-//		int index = fields[2].toInt();
-//		fields.removeFirst();
-//		fields.removeFirst();
-//		fields.removeFirst();
-//		if (index < 0 || index >= getHeadCount())
-//			return -ENONET;
-//		return headInfo(fields.join("."), getHead(index));
-//	}
-//	return "almost_there";
-//	return QVariant();
+	else if (key == "ptz.head.count")
+		return getHeadCount();
+	/*
+	 * head status kullanımı;
+	 * ptz.head.head_index(0,1,2 etc.).status
+	 */
+	else if (key.startsWith("ptz.head.")) {
+		QStringList fields = key.split(".");
+		if (fields.size() <= 2)
+			return -EINVAL;
+		int index = fields[2].toInt();
+		fields.removeFirst();
+		fields.removeFirst();
+		fields.removeFirst();
+		if (index < 0 || index >= getHeadCount())
+			return -ENONET;
+		return headInfo(fields.join("."), getHead(index));
+	}
+	return "almost_there";
+	return QVariant();
 }
 
 int PtzpDriver::set(const QString &key, const QVariant &value)

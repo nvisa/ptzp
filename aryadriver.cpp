@@ -40,7 +40,11 @@ PtzpHead *AryaDriver::getHead(int index)
 {
 	if (index == 0)
 		return aryapt;
-	return thermal;
+	else if (index == 1)
+		return thermal;
+	else if (index == 2)
+		return gungor;
+	return NULL;
 }
 
 void AryaDriver::timeout()

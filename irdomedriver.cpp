@@ -22,7 +22,9 @@ PtzpHead *IRDomeDriver::getHead(int index)
 {
 	if (index == 0)
 		return headModule;
-	return headDome;
+	else if (index == 1)
+		return headDome;
+	return NULL;
 }
 
 int IRDomeDriver::setTarget(const QString &targetUri)
