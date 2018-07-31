@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package ptzp;
+
+import "google/protobuf/empty.proto";
+
+service PTZService {
+	rpc GetPTZPosInfo (google.protobuf.Empty) returns (PTZPosInfo) {}
+	rpc PanLeft(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc PanRight(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc TiltUp(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc TiltDown(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc PanStop(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc PanTiltAbs(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc ZoomIn(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc ZoomOut(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc ZoomStop(PtzCmdPar) returns (PtzCommandResult) {}
+
+	rpc GetHeads(google.protobuf.Empty) returns (PtzHeadInfo) {}
+}
+
+message PtzHeadInfo {
+	repeated PtzHead list = 1;
+}
+
+message PtzHead {
+	enum Capability {
+		PAN = 0;
+		TILT = 1;
+		ZOOM = 2;
+		ADVANCED = 3;
+	}
+	enum Status {
+		SYNCING = 0;
+		NORMAL = 1;
+	}
+	repeated Capability capabilities = 1;
+	Status status = 2;
+	int32 head_id = 3;
+}
+
+message PtzCmdPar {
+	float pan_speed = 1;
+	float tilt_speed = 2;
+	float zoom_speed = 3;
+
+	float pan_abs = 4;
+	float tilt_abs = 5;
+
+	int32 head_id = 6;
+}
+
+message PtzCommandResult {
+	int32 err = 1;
+}
+
+message PTZInfoQ {
+	int32 dummy = 1;
+}
+
+message PTZPosInfo {
+	int32 pan_pos = 1;
+	int32 tilt_pos = 2;
+	int32 zoom_pos = 3;
+}

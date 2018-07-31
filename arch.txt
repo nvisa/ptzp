@@ -75,3 +75,10 @@ Bu siniflardan turetilen butun ptzp siniflari su sekilde listelenebilir:
 Genel calisma prensibi olarak, giris noktasi olarak PtzpDriver dusunulebilir. Bir driver alt tarafta kullanilacak kafalari ve transportlari baslatir. Kafalara PtzpHead::setTransport() fonksiyonu ile
 kullanilacak transportlarin set edilmesi gereklidir. Bu noktada kafalar PtzpTransport::addReadyCallback ve PtzpTransport::addQueueFreeCallback fonksiyonlari ile kendilerini haberlesme mesajlarina
 register ederler. Bundan sonra butun kafalar ilgili transport uzerinde gelen mesajlardan haberdar olurlar ve ilgili transport uzerinden mesaj gonderebilirler.
+
+Is-parcacik guvenligi
+--------------------
+ptzp siniflari farkli is-parcaciklarindan(thread) cagrilabilmektedir. Bunun icin ptzp siniflarinin
+thread-safe olmasi gereklidir. Ozellikle PtzpHead implementasyonlarinin thread-safe olmasi cok
+onemlidir.
+
