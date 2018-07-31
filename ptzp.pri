@@ -11,7 +11,7 @@ HEADERS += \
     ptzp/irdomedriver.h \
     ptzp/aryadriver.h \
     ptzp/aryapthead.h \
-    $$PWD/gungorhead.h
+    ptzp/gungorhead.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -25,4 +25,4 @@ SOURCES += \
     ptzp/irdomedriver.cpp \
     ptzp/aryadriver.cpp \
     ptzp/aryapthead.cpp \
-    $$PWD/gungorhead.cpp
+    ptzp/gungorhead.cpp
