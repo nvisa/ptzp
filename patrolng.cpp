@@ -2,6 +2,7 @@
 #include "debug.h"
 
 #include <QFile>
+#include <QDataStream>
 
 #include <errno.h>
 #include <ecl/drivers/presetng.h>
