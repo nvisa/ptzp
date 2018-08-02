@@ -15,7 +15,7 @@
 	PatternNg is not a PTZ controller on its own, instead it relies on
 	on other classes for doing PTZ operations. PatternNg implements
 	PtzPatternInterface interface and requires a class implementing
-	PtzControlInterface (if replaying functionaliry is neeeded).
+	PtzControlInterface (if replaying functionality is neeeded).
 
 	PatternNg records PTZ commands along with related position and
 	timing information. In replay mode, class re-plays recorded commands
@@ -23,7 +23,7 @@
 	both timing and position for implemeting patterns, it is more resilient
 	against delays and shifts.
 
-	PatternNg has 2 working modes, recording and replaying. It start recording
+	PatternNg has 2 working modes, recording and replaying. It starts recording
 	commands with issuing of first start() command. To stop recording, one should
 	issue stop(). Then save() function can be used to save recorded pattern to disk.
 	Recorded pattern can be loaded using load() function later. Replaying mode
