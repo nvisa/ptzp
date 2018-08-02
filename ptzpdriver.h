@@ -6,6 +6,7 @@
 #include <ecl/interfaces/keyvalueinterface.h>
 
 #ifdef HAVE_PTZP_GRPC_API
+#include <ecl/ptzp/grpc/ptzp.pb.h>
 #include <ecl/ptzp/grpc/ptzp.grpc.pb.h>
 #endif
 

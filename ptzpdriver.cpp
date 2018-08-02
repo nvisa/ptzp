@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "net/remotecontrol.h"
 
+#include <drivers/patternng.h>
 #include <ecl/ptzp/ptzphead.h>
 #include <ecl/ptzp/ptzptransport.h>
 
@@ -54,6 +55,7 @@ public:
 
 #endif
 
+PatternNg *ptrn;
 PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent)
 {
@@ -127,29 +129,47 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 	if (defaultPTHead == NULL || defaultModuleHead == NULL)
 		return -ENODEV;
 
-	if (key == "ptz.cmd.pan_left")
+	if (key == "ptz.cmd.pan_left") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),0, value.toInt(),NULL);
 		defaultPTHead->panLeft(value.toFloat());
-	else if (key == "ptz.cmd.pan_right")
+	} else if (key == "ptz.cmd.pan_right") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),1, value.toInt(),NULL);
 		defaultPTHead->panRight(value.toFloat());
-	else if (key == "ptz.cmd.tilt_down")
+	} else if (key == "ptz.cmd.tilt_down") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),2, value.toInt(),NULL);
 		defaultPTHead->tiltDown(value.toFloat());
-	else if (key == "ptz.cmd.tilt_up")
+	} else if (key == "ptz.cmd.tilt_up") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),3, value.toInt(),NULL);
 		defaultPTHead->tiltUp(value.toFloat());
-	else if (key == "ptz.cmd.pan_stop")
+	} else if (key == "ptz.cmd.pan_stop") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),9, value.toInt(),NULL);
 		defaultPTHead->panTiltAbs(0, 0);
-	else if (key == "ptz.cmd.pan_tilt_abs") {
+	} else if (key == "ptz.cmd.pan_tilt_abs") {
 		const QStringList &vals = value.toString().split(";");
 		if (vals.size() < 2)
 			return -EINVAL;
 		float pan = vals[0].toFloat();
 		float tilt = vals[1].toFloat();
 		defaultPTHead->panTiltAbs(pan, tilt);
-	} else if (key == "ptz.cmd.zoom_in")
+	} else if (key == "ptz.cmd.zoom_in") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),4, value.toInt(),NULL);
 		defaultModuleHead->startZoomIn(value.toInt());
-	else if (key == "ptz.cmd.zoom_out")
+	} else if (key == "ptz.cmd.zoom_out") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),5, value.toInt(),NULL);
 		defaultModuleHead->startZoomOut(value.toInt());
-	else if (key == "ptz.cmd.zoom_stop")
+	} else if (key == "ptz.cmd.zoom_stop") {
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+							defaultModuleHead->getZoom(),6, value.toInt(),NULL);
 		defaultModuleHead->stopZoom();
+	} else if (key == "ptz.cmd.pattern_start")
+		ptrn->start(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
 	else
 		return -ENOENT;
 
