@@ -23,6 +23,14 @@ PtzpHead::PtzpHead()
 	pingTimer.start();
 }
 
+/**
+ * @brief PtzpHead::setTransport
+ * transport türünün belirtildiği metod.
+ * @param tport = PtzpTcpTransport veya PtzpSerialTransport
+ * sınıflarından türetilmiş nesnelerdir.
+ * @return
+ */
+
 int PtzpHead::setTransport(PtzpTransport *tport)
 {
 	transport = tport;
@@ -36,10 +44,34 @@ int PtzpHead::syncRegisters()
 	return 0;
 }
 
+/**
+ * @brief PtzpHead::getHeadStatus
+ * İlgili kafaların durumlarını döndüren metod.
+ * @return 3 farklı bilgi içerebilir;
+ *0 ST_SYNCING
+ * 1 ST_NORMAL
+ * 2 ST_ERROR
+ * @note gövde içeriği her kafada tekrar yazılmalıdır.
+ */
+
 int PtzpHead::getHeadStatus()
 {
 	return ST_NORMAL;
 }
+
+/**
+ * @brief PtzpHead::panLeft
+ * @brief PtzpHead::panRight
+ * @brief PtzpHead::tiltUp
+ * @brief PtzpHead::tiltDown
+ *
+ * Pan ve tilt dönüşleri gerçekleştiren metodlar.
+ * @param speed = Hareket hızı (Kafa tipleri ve pan-tilt
+ * işlemlerine göre değişiklik göstermektedir.)
+ * @return
+ * @note Her bir bir metod ilgili PTHead içerisinde tekrar tanımlanmalı
+ * ve metod gövdesi ilgili kafaya göre tekrar doldurulmalıdır.
+ */
 
 int PtzpHead::panLeft(float speed)
 {
@@ -77,6 +109,17 @@ int PtzpHead::panTiltStop()
 	return -ENOENT;
 }
 
+/**
+ * @brief PtzpHead::startZoomIn
+ * @brief PtzpHead::startZoomOut
+ *
+ * Zoom işlemlerinin gerçekleştirildiği metod
+ * @param speed = Zoom hızı
+ * @return
+ * @note Her bir bir metod ilgili Head içerisinde tekrar tanımlanmalı
+ * ve metod gövdesi ilgili kafaya göre tekrar doldurulmalıdır.
+ */
+
 int PtzpHead::startZoomIn(int speed)
 {
 	Q_UNUSED(speed);
@@ -94,10 +137,24 @@ int PtzpHead::stopZoom()
 	return -ENOENT;
 }
 
+/**
+ * @brief PtzpHead::getPanAngle
+ * Pan açısının döndürüldüğü metod.
+ * @return Açısal, kesirli sonuç verir.
+ * @note Gövde her PTHead içinde tekrar yazılmalıdır.
+ */
+
 float PtzpHead::getPanAngle()
 {
 	return 0;
 }
+
+/**
+ * @brief PtzpHead::getTiltAngle
+ * Tilt açısının döndürüldüğü metod.
+ * @return Açısal, kesirli sonuç verir.
+ * @note Gövde her PTHead içinde tekrar yazılmalıdır.
+ */
 
 float PtzpHead::getTiltAngle()
 {

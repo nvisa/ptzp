@@ -74,6 +74,14 @@ int PtzpDriver::getHeadCount()
 	return count - 1;
 }
 
+/**
+ * @brief PtzpDriver::startSocketApi
+ * Kamerada soket bağlantısı için kullanılacak port numarasının
+ * bildirildiği metod.Bu projede bağlantı için genel olarak "8945"
+ * numaralı port kullanılmaktadır.
+ * @param port
+ */
+
 void PtzpDriver::startSocketApi(quint16 port)
 {
 	RemoteControl *rcon = new RemoteControl(this, this);
