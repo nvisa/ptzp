@@ -76,6 +76,31 @@ MgeoThermalHead::MgeoThermalHead()
 	syncList << C_CONTRAST;
 	syncList << C_GET_ZOOM_FOCUS;
 	nextSync = syncList.size();
+
+	settings = {
+		{"brightness", {C_BRIGHTNESS, R_BRIGHTNESS}},
+		{"contrast", {C_CONTRAST, R_CONTRAST}},
+		{"fov", {C_FOV, R_FOV}},
+		{"focus_in",{C_FOCUS, R_FOCUS}},
+		{"focus_out",{C_FOCUS, R_FOCUS}},
+		{"focus_stop",{C_FOCUS, R_FOCUS}},
+		{"angle", {NULL, R_ANGLE}},
+		{"nuc_table", {C_NUC_SELECT, R_NUC_TABLE}},
+		{"polarity", {C_POL_CHANGE, R_POLARITY}},
+		{"reticle", {C_RETICLE_ONOFF, R_RETICLE}},
+		{"digi_zoom_on", {C_DIGITAL_ZOOM, R_DIGITAL_ZOOM}},
+		{"digi_zoom_off", {C_DIGITAL_ZOOM, R_DIGITAL_ZOOM}},
+		{"image_freeze", {C_FREEZE_IMAGE, R_IMAGE_FREEZE}},
+		{"agc", {C_AGC_SELECT, R_AGC}},
+		{"reticle_intensity", {C_RETICLE_CHANGE, R_RETICLE_INTENSITY }},
+		{"nuc",{C_NUC, R_NUC}},
+		{"ibit", {C_IBIT, R_IBIT}},
+		{"ipm_change", {C_IPM_CHANGE, R_IPM}},
+		{"hpf_gain_change", {C_HPF_GAIN_CHANGE, R_HPF_GAIN}},
+		{"hpf_spatial_change", {C_HPF_SPATIAL_CHANGE, R_HPF_SPATIAL}},
+		{"flip", {C_FLIP, R_FLIP}},
+		{"image_update_speed", {C_IMAGE_UPDATE_SPEED, R_IMAGE_UPDATE_SPEED}},
+	};
 }
 
 int MgeoThermalHead::getCapabilities()

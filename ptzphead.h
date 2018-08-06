@@ -6,6 +6,7 @@
 #include <QHash>
 #include <QMutex>
 #include <QByteArray>
+#include <QVariantMap>
 #include <QElapsedTimer>
 
 class PtzpTransport;
@@ -49,11 +50,14 @@ public:
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
+	virtual QVariantMap getSettings();
+	virtual void setSettings(QVariantMap key);
 
 	int getErrorCount(uint err);
 
 	static int dataReady(const unsigned char *bytes, int len, void *priv);
 	static QByteArray transportReady(void *priv);
+	QHash<QString, QPair<int, int>> settings {};
 
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);

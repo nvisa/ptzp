@@ -266,3 +266,17 @@ void PtzpHead::setProperty(uint r, uint x)
 	Q_UNUSED(r);
 	Q_UNUSED(x);
 }
+
+QVariantMap PtzpHead::getSettings()
+{
+	QVariantMap map;
+	for (auto key : settings.keys())
+		map.insert(key,getProperty(settings[key].second));
+	return map;
+}
+
+void PtzpHead::setSettings(QVariantMap keyMap)
+{
+	for (auto key : keyMap.keys())
+		setProperty(settings[key].first, keyMap[key].toUInt());
+}

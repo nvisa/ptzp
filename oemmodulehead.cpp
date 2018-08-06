@@ -161,6 +161,35 @@ OemModuleHead::OemModuleHead()
 	hist = new CommandHistory;
 	nextSync = C_COUNT;
 	syncEnabled = true;
+	settings = {
+		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
+		{"gain_value", {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
+		{"exp_comp_mode", {C_VISCA_SET_EXP_COMPMODE, R_EXP_COMPMODE}},
+		{"exp_comp_val", {C_VISCA_SET_EXP_COMPVAL, R_EXP_COMPVAL}},
+		{"gain_limit", {C_VISCA_SET_GAIN_LIM,R_GAIN_LIM}},
+		{"shutter", {C_VISCA_SET_SHUTTER, R_SHUTTER}},
+		{"noise_reduct", {C_VISCA_SET_NOISE_REDUCT, R_NOISE_REDUCT}},
+		{"wdr_stat", {C_VISCA_SET_WDRSTAT, R_WDRSTAT}},
+		{"gamma", {C_VISCA_SET_GAMMA, R_GAMMA}},
+		{"awb_mode", {C_VISCA_SET_AWB_MODE, R_AWB_MODE}},
+		{"defog_mode", {C_VISCA_SET_DEFOG_MODE, R_DEFOG_MODE}},
+		{"digi_zoom_on", {C_VISCA_SET_DIGI_ZOOM_STAT, R_DIGI_ZOOM_STAT}},
+		{"digi_zoom_off", {C_VISCA_SET_DIGI_ZOOM_STAT, R_DIGI_ZOOM_STAT}},
+		{"zoom_type", {C_VISCA_SET_ZOOM_TYPE, R_ZOOM_TYPE}},
+		{"auto_focus_on", {C_VISCA_SET_FOCUS_MODE, R_FOCUS_MODE}},
+		{"auto_focus_off", {C_VISCA_SET_FOCUS_MODE, R_FOCUS_MODE}},
+		{"zoom_trigger", {C_VISCA_SET_ZOOM_TRIGGER, R_ZOOM_TRIGGER}},
+		{"blc_status", {C_VISCA_SET_BLC_STATUS, R_BLC_STATUS}},
+		{"ircf_status", {C_VISCA_SET_IRCF_STATUS, R_IRCF_STATUS}},
+		{"auto_icr", {C_VISCA_SET_AUTO_ICR, R_AUTO_ICR}},
+		{"program_ae_mode", {C_VISCA_SET_PROGRAM_AE_MODE, R_PROGRAM_AE_MODE}},
+		{"flip", {C_VISCA_SET_FLIP_MODE, R_FLIP}},
+		{"mirror", {C_VISCA_SET_MIRROR_MODE, R_MIRROR}},
+		{"one_push_af", {C_VISCA_SET_ONE_PUSH, NULL}},
+		{"display_rotation", {NULL, R_DISPLAY_ROT}},
+		{"digi_zoom_pos", {NULL, R_DIGI_ZOOM_POS}},
+		{"optic_zoom_pos", {NULL, R_OPTIC_ZOOM_POS}},
+	};
 }
 
 int OemModuleHead::getCapabilities()
