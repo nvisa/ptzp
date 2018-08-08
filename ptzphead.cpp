@@ -266,7 +266,7 @@ void PtzpHead::setProperty(uint r, uint x)
 	Q_UNUSED(r);
 	Q_UNUSED(x);
 }
-
+#ifdef HAVE_PTZP_GRPC_API
 QVariantMap PtzpHead::getSettings()
 {
 	QVariantMap map;
@@ -280,3 +280,4 @@ void PtzpHead::setSettings(QVariantMap keyMap)
 	for (auto key : keyMap.keys())
 		setProperty(settings[key].first, keyMap[key].toUInt());
 }
+#endif

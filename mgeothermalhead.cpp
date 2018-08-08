@@ -76,7 +76,7 @@ MgeoThermalHead::MgeoThermalHead()
 	syncList << C_CONTRAST;
 	syncList << C_GET_ZOOM_FOCUS;
 	nextSync = syncList.size();
-
+#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"brightness", {C_BRIGHTNESS, R_BRIGHTNESS}},
 		{"contrast", {C_CONTRAST, R_CONTRAST}},
@@ -101,6 +101,7 @@ MgeoThermalHead::MgeoThermalHead()
 		{"flip", {C_FLIP, R_FLIP}},
 		{"image_update_speed", {C_IMAGE_UPDATE_SPEED, R_IMAGE_UPDATE_SPEED}},
 	};
+#endif
 }
 
 int MgeoThermalHead::getCapabilities()

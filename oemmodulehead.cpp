@@ -161,6 +161,7 @@ OemModuleHead::OemModuleHead()
 	hist = new CommandHistory;
 	nextSync = C_COUNT;
 	syncEnabled = true;
+#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
 		{"gain_value", {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
@@ -190,6 +191,7 @@ OemModuleHead::OemModuleHead()
 		{"digi_zoom_pos", {NULL, R_DIGI_ZOOM_POS}},
 		{"optic_zoom_pos", {NULL, R_OPTIC_ZOOM_POS}},
 	};
+#endif
 }
 
 int OemModuleHead::getCapabilities()

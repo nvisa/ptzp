@@ -63,6 +63,7 @@ MgeoGunGorHead::MgeoGunGorHead()
 	for (int i = C_GET_ZOOM; i<=C_GET_DIGI_ZOOM; i++)
 		syncList << i;
 	nextSync = syncList.size();
+#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"focus_in", {C_SET_FOCUS_INC_START,R_FOCUS}},
 		{"focus_out", {C_SET_FOCUS_DEC_START,R_FOCUS}},
@@ -76,6 +77,7 @@ MgeoGunGorHead::MgeoGunGorHead()
 		{"digi_zoom_on", {C_SET_DIGI_ZOOM_ON, R_DIGI_ZOOM_STATUS}},
 		{"digi_zoom_off", {C_SET_DIGI_ZOOM_OFF, R_DIGI_ZOOM_STATUS}}
 	};
+#endif
 }
 
 int MgeoGunGorHead::getCapabilities()
