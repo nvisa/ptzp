@@ -12,6 +12,7 @@
 
 class QTimer;
 class PtzpHead;
+class PatternNg;
 class PtzpTransport;
 
 #ifdef HAVE_PTZP_GRPC_API
@@ -45,6 +46,7 @@ protected:
 	QTimer *timer;
 	PtzpHead *defaultPTHead;
 	PtzpHead *defaultModuleHead;
+	PatternNg *ptrn;
 };
 
 #endif // PTZPDRIVER_H

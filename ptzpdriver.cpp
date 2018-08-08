@@ -55,7 +55,6 @@ public:
 
 #endif
 
-PatternNg *ptrn;
 PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent)
 {
@@ -65,6 +64,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
+	ptrn = new PatternNg;
 }
 
 int PtzpDriver::getHeadCount()
