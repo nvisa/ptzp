@@ -581,3 +581,198 @@ QString OemModuleHead::getDeviceDefinition()
 {
 	return deviceDefinition;
 }
+
+/**
+ * @brief OemModuleHead::maskSet
+ * @param maskID : visca is have 24 mask ID, from 0 to 23
+ * @param nn : if 0 ,this mask is used one time after reset setting, if 1, setting is record
+ * @param width : width +-0x50
+ * @param height : height +-0x2d
+ * @return
+ */
+
+int OemModuleHead::maskSet(uint maskID, int width, int height, bool nn)
+{
+	if((maskID > 0x17) || (width > 0x50) || (width < -0x50) || (height > 0x2D) || (height < -0x2D))
+		return -ENODATA;
+	const char cmd[] = {0x81, 0x01, 0x04, 0x76, maskID & 0xFF,
+						 nn, (uchar(width) & 0xF0) >> 4, uchar(width) & 0x0F,
+						 (uchar(height) & 0xF0) >> 4, uchar(height) & 0x0F, 0xFF };
+	return transport->send(cmd, sizeof(cmd));
+}
+
+/**
+ * @brief OemModuleHead::maskSetNoninterlock
+ * @param  : visca is have 24 mask ID, from 0 to 23
+ * @param x : horizonal +-0x50
+ * @param y : vertical +-0x2d
+ * @param width : width +-0x50
+ * @param height : height +-0x2d
+ * @param nn : if 0 ,this mask is used one time after reset setting, if 1, setting is record
+ * @return
+ */
+
+int OemModuleHead::maskSetNoninterlock(uint maskID, int x, int y, int width, int height)
+{
+	if((maskID > 0x17) || (width > 0x50) || (width < -0x50) ||
+	   (height > 0x2D) || (height < -0x2D)||
+	   (x > 0x50) || (x < -0x50) ||
+	   (y > 0x2D) || (y < -0x2D))
+		return -ENODATA;
+	const char cmd[] = {0x81, 0x01, 0x04, 0x6F, maskID & 0xFF,
+						 (x & 0xF0) >> 4, x & 0x0F,
+						 (y & 0xF0) >> 4, y & 0x0F,
+						 (uchar(width) & 0xF0) >> 4, uchar(width) & 0x0F,
+						 (uchar(height) & 0xF0) >> 4, uchar(height) & 0x0F, 0xFF };
+	return transport->send(cmd, sizeof(cmd));
+}
+
+int OemModuleHead::maskSetPTZ(uint maskID, int pan, int tilt, uint zoom)
+{
+	if (maskRanges.pMax == maskRanges.pMin)
+		return -ENODATA;
+	if (maskRanges.tMax == maskRanges.tMin)
+		return -ENODATA;
+	if (maskRanges.xMax == maskRanges.xMin)
+		return -ENODATA;
+	if (maskRanges.yMax == maskRanges.yMin)
+		return -ENODATA;
+
+	if (hPole)
+		pan = maskRanges.pMax - pan;
+	if (vPole)
+		tilt = maskRanges.tMax - tilt;
+
+	if (tilt > 9000)
+		tilt += 18000;
+
+	tilt = tilt * yTiltRate + maskRanges.yMin;
+	pan = pan * xPanRate + maskRanges.xMin;
+	const char cmd[] = {0x81, 0x01, 0x04, 0x7B, maskID,
+						 uchar((0xf00 & pan) >> 8), uchar((0xf0 & pan) >> 4), uchar(0xf & pan),
+						 uchar((0xf00 & tilt) >> 8), uchar((0xf0 & tilt) >> 4), uchar(0xf & tilt),
+						 uchar((0xf000 & zoom) >> 16),uchar((0xf00 & zoom) >> 8), uchar((0xf0 & zoom) >> 4),
+						 uchar((0xf & zoom)), 0xFF};
+	return transport->send(cmd, sizeof(cmd));
+}
+
+int OemModuleHead::maskSetPanTiltAngle(int pan, int tilt)
+{
+	if (maskRanges.pMax == maskRanges.pMin)
+		return -ENODATA;
+	if (maskRanges.tMax == maskRanges.tMin)
+		return -ENODATA;
+
+	if (hPole)
+		pan = maskRanges.pMax - pan;
+	if (vPole)
+		tilt = maskRanges.tMax - tilt;
+
+	if (tilt > 9000)
+		tilt += 18000;
+
+	tilt = tilt * yTiltRate + maskRanges.yMin;
+	pan = pan * xPanRate + maskRanges.xMin;
+
+	const char cmd[] = {0x81, 0x01, 0x04, 0x79,
+						 uchar((0xf00 & pan) >> 8), uchar((0xf0 & pan) >> 4), uchar(0xf & pan),
+						 uchar((0xf00 & tilt) >> 8), uchar((0xf0 & tilt) >> 4), uchar((0xf & tilt)), 0xFF};
+	return transport->send(cmd, sizeof(cmd));
+}
+
+int OemModuleHead::maskSetRanges(int panMax, int panMin, int xMax, int xMin, int tiltMax, int tiltMin, int yMax, int yMin, bool hConvert, bool vConvert)
+{
+	if (panMax == panMin)
+		return -ENODATA;
+	maskRanges.pMax = panMax;
+	maskRanges.pMin = panMin;
+
+	if (tiltMax == tiltMin)
+		return -ENODATA;
+	maskRanges.tMax = tiltMax;
+	maskRanges.tMin = tiltMin;
+
+	if (xMax == xMin)
+		return -ENODATA;
+	maskRanges.xMax = xMax;
+	maskRanges.xMin = xMin;
+
+	if (yMax == yMin)
+		return -ENODATA;
+	maskRanges.yMax = yMax;
+	maskRanges.yMin = yMin;
+
+	hPole = hConvert;
+	vPole = vConvert;
+
+	xPanRate = (1.0 * maskRanges.xMax - 1.0 * maskRanges.xMin) / (1.0 * maskRanges.pMax - 1.0 * maskRanges.pMin);
+	yTiltRate = (1.0 * maskRanges.yMax - 1.0 * maskRanges.yMin) / (1.0 * maskRanges.tMax - 1.0 * maskRanges.tMin);
+	return 0;
+}
+
+int OemModuleHead::maskDisplay(uint maskID, bool onOff)
+{
+	if (maskID > 17)
+		maskID += 6;
+	else if (maskID > 11)
+		maskID += 4;
+	else if (maskID > 5)
+		maskID += 2;
+
+	if (onOff)
+		maskBits |= (1 << maskID);
+	else
+		maskBits &= ~(1 << maskID);
+	maskBits &= 0x3F3F3F3F;
+	const char cmd[] = {0x81, 0x01, 0x04, 0x77, (maskBits & 0xff000000) >> 24,
+						 (maskBits & 0xff0000) >> 16, (maskBits & 0xff00) >> 8,
+						 (maskBits & 0xff), 0xff };
+	return transport->send(cmd, sizeof(cmd));
+}
+
+void OemModuleHead::updateMaskPosition()
+{
+//	vGetZoom();
+//	if (!lastV.panTitlSupport)
+//		return;
+//	sGetPos();
+//	if (maskBits)
+//		maskSetPanTiltAngle(lastV.position.first, lastV.position.second);
+}
+
+/**
+ * @brief OemModuleHead::maskColor
+ * @param maskID
+ * @param color_0
+ * @param color_1
+ * @param colorChoose
+ * @return
+ * [china dome is not supported]
+ */
+
+int OemModuleHead::maskColor(uint maskID, OemModuleHead::MaskColor color_0, OemModuleHead::MaskColor color_1, bool colorChoose)
+{
+	uint maskBits = 0;
+	if (colorChoose == true)
+		maskBits |= (1 << maskID);
+	else
+		maskBits &= ~(1 << maskID);
+	const char cmd[] = {0x81, 0x01, 0x04, 0x78, (maskBits & 0xff000000) >> 24,
+						 (maskBits & 0xff0000) >> 16, (maskBits & 0xff00) >> 8,
+						 (maskBits & 0xff),(((int)color_0) & 0xff),
+						 (((int)color_1) & 0xff), 0xff };
+	return transport->send(cmd, sizeof(cmd));
+}
+
+/**
+ * @brief OemModuleHead::maskGrid
+ * @param onOffCenter
+ * [china dome is not supported]
+ * @return
+ */
+
+int OemModuleHead::maskGrid(OemModuleHead::MaskGrid onOffCenter)
+{
+	const char cmd[] = {0x81, 0x01, 0x04, 0x7C, onOffCenter, 0xff };
+	return transport->send(cmd, sizeof(cmd));
+}
