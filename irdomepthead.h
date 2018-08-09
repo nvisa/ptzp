@@ -27,12 +27,16 @@ public:
 	float getPanAngle();
 	float getTiltAngle();
 	int panTiltGoPos(float ppos, float tpos);
+	void enableSyncing(bool en);
+	void setSyncInterval(int interval);
 
 protected:
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
 	int panTilt(uint cmd, int pspeed, int tspeed);
 
+	bool syncEnabled;
+	int syncInterval;
 	QElapsedTimer syncTime;
 };
 

@@ -50,6 +50,8 @@ static uint checksum(const uchar *cmd, uint lenght)
 
 IRDomePTHead::IRDomePTHead()
 {
+	syncEnabled = true;
+	syncInterval = 20;
 	syncTime.start();
 }
 
@@ -187,7 +189,7 @@ int IRDomePTHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray IRDomePTHead::transportReady()
 {
-	if (syncTime.elapsed() > 20) {
+	if (syncEnabled && syncTime.elapsed() > syncInterval) {
 		unsigned char *p = protoBytes[C_CUSTOM_PAN_TILT_POS];
 		p[2 + 7]  = checksum(p + 2, 7);
 		syncTime.restart();
@@ -200,4 +202,14 @@ int IRDomePTHead::panTiltGoPos(float ppos, float tpos)
 {
 	panTilt(C_CUSTOM_GO_TO_POS, ppos*100, tpos*100);
 	return 0;
+}
+
+void IRDomePTHead::enableSyncing(bool en)
+{
+	syncEnabled = en;
+}
+
+void IRDomePTHead::setSyncInterval(int interval)
+{
+	syncInterval = interval;
 }

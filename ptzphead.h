@@ -55,6 +55,8 @@ public:
 	virtual void setSettings(QVariantMap key);
 #endif
 	int getErrorCount(uint err);
+	virtual void enableSyncing(bool en);
+	virtual void setSyncInterval(int interval);
 
 	static int dataReady(const unsigned char *bytes, int len, void *priv);
 	static QByteArray transportReady(void *priv);

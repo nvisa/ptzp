@@ -204,8 +204,10 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		headModule->setProperty(24,value.toUInt());
 	} else if (key == "ptz.cmd.device_definition"){
 //		Hazırlanacak
+	} else if (key == "ptz.cmd.zoom_point") {
+		headModule->setZoom(value.toUInt());
 	}
-	return PtzpDriver::set(key,value);
+	else return PtzpDriver::set(key,value);
 
 	return 0;
 }

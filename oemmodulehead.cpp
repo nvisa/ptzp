@@ -161,6 +161,7 @@ OemModuleHead::OemModuleHead()
 	hist = new CommandHistory;
 	nextSync = C_COUNT;
 	syncEnabled = true;
+	syncInterval = 40;
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -256,6 +257,11 @@ int OemModuleHead::setZoom(uint pos)
 void OemModuleHead::enableSyncing(bool en)
 {
 	syncEnabled = en;
+}
+
+void OemModuleHead::setSyncInterval(int interval)
+{
+	syncInterval = interval;
 }
 
 int OemModuleHead::syncNext()
@@ -393,7 +399,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray OemModuleHead::transportReady()
 {
-	if (syncEnabled && syncTime.elapsed() > 40) {
+	if (syncEnabled && syncTime.elapsed() > syncInterval) {
 		syncTime.restart();
 		const unsigned char *p = protoBytes[C_VISCA_GET_ZOOM];
 		hist->add(C_VISCA_GET_ZOOM);

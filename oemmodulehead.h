@@ -101,6 +101,7 @@ public:
 
 
 	void enableSyncing(bool en);
+	void setSyncInterval(int interval);
 	void setDeviceDefinition(QString definition);
 	QString getDeviceDefinition();
 
@@ -142,10 +143,11 @@ protected:
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
 
+	bool syncEnabled;
+	int syncInterval;
 	CommandHistory *hist;
 	uint nextSync;
 	QElapsedTimer syncTime;
-	bool syncEnabled;
 	QString deviceDefinition;
 };
 

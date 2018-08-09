@@ -192,6 +192,16 @@ int PtzpHead::getErrorCount(uint err)
 	return errorCount[err];
 }
 
+void PtzpHead::enableSyncing(bool en)
+{
+	Q_UNUSED(en);
+}
+
+void PtzpHead::setSyncInterval(int interval)
+{
+	Q_UNUSED(interval);
+}
+
 int PtzpHead::dataReady(const unsigned char *bytes, int len, void *priv)
 {
 	return ((PtzpHead *)priv)->dataReady(bytes, len);
