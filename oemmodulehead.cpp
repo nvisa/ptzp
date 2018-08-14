@@ -601,10 +601,10 @@ int OemModuleHead::maskSet(uint maskID, int width, int height, bool nn)
 {
 	if((maskID > 0x17) || (width > 0x50) || (width < -0x50) || (height > 0x2D) || (height < -0x2D))
 		return -ENODATA;
-	const char cmd[] = {0x81, 0x01, 0x04, 0x76, maskID & 0xFF,
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x76, maskID & 0xFF,
 						 nn, (uchar(width) & 0xF0) >> 4, uchar(width) & 0x0F,
 						 (uchar(height) & 0xF0) >> 4, uchar(height) & 0x0F, 0xFF };
-	return transport->send(cmd, sizeof(cmd));
+	return transport->send((const char *)cmd, sizeof(cmd));
 }
 
 /**
@@ -625,12 +625,12 @@ int OemModuleHead::maskSetNoninterlock(uint maskID, int x, int y, int width, int
 	   (x > 0x50) || (x < -0x50) ||
 	   (y > 0x2D) || (y < -0x2D))
 		return -ENODATA;
-	const char cmd[] = {0x81, 0x01, 0x04, 0x6F, maskID & 0xFF,
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x6F, maskID & 0xFF,
 						 (x & 0xF0) >> 4, x & 0x0F,
 						 (y & 0xF0) >> 4, y & 0x0F,
 						 (uchar(width) & 0xF0) >> 4, uchar(width) & 0x0F,
 						 (uchar(height) & 0xF0) >> 4, uchar(height) & 0x0F, 0xFF };
-	return transport->send(cmd, sizeof(cmd));
+	return transport->send((const char *)cmd, sizeof(cmd));
 }
 
 int OemModuleHead::maskSetPTZ(uint maskID, int pan, int tilt, uint zoom)
@@ -654,12 +654,12 @@ int OemModuleHead::maskSetPTZ(uint maskID, int pan, int tilt, uint zoom)
 
 	tilt = tilt * yTiltRate + maskRanges.yMin;
 	pan = pan * xPanRate + maskRanges.xMin;
-	const char cmd[] = {0x81, 0x01, 0x04, 0x7B, maskID,
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x7B, maskID,
 						 uchar((0xf00 & pan) >> 8), uchar((0xf0 & pan) >> 4), uchar(0xf & pan),
 						 uchar((0xf00 & tilt) >> 8), uchar((0xf0 & tilt) >> 4), uchar(0xf & tilt),
 						 uchar((0xf000 & zoom) >> 16),uchar((0xf00 & zoom) >> 8), uchar((0xf0 & zoom) >> 4),
 						 uchar((0xf & zoom)), 0xFF};
-	return transport->send(cmd, sizeof(cmd));
+	return transport->send((const char *)cmd, sizeof(cmd));
 }
 
 int OemModuleHead::maskSetPanTiltAngle(int pan, int tilt)
@@ -680,10 +680,10 @@ int OemModuleHead::maskSetPanTiltAngle(int pan, int tilt)
 	tilt = tilt * yTiltRate + maskRanges.yMin;
 	pan = pan * xPanRate + maskRanges.xMin;
 
-	const char cmd[] = {0x81, 0x01, 0x04, 0x79,
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x79,
 						 uchar((0xf00 & pan) >> 8), uchar((0xf0 & pan) >> 4), uchar(0xf & pan),
 						 uchar((0xf00 & tilt) >> 8), uchar((0xf0 & tilt) >> 4), uchar((0xf & tilt)), 0xFF};
-	return transport->send(cmd, sizeof(cmd));
+	return transport->send((const char *)cmd, sizeof(cmd));
 }
 
 int OemModuleHead::maskSetRanges(int panMax, int panMin, int xMax, int xMin, int tiltMax, int tiltMin, int yMax, int yMin, bool hConvert, bool vConvert)
@@ -730,10 +730,10 @@ int OemModuleHead::maskDisplay(uint maskID, bool onOff)
 	else
 		maskBits &= ~(1 << maskID);
 	maskBits &= 0x3F3F3F3F;
-	const char cmd[] = {0x81, 0x01, 0x04, 0x77, (maskBits & 0xff000000) >> 24,
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x77, (maskBits & 0xff000000) >> 24,
 						 (maskBits & 0xff0000) >> 16, (maskBits & 0xff00) >> 8,
 						 (maskBits & 0xff), 0xff };
-	return transport->send(cmd, sizeof(cmd));
+	return transport->send((const char *)cmd, sizeof(cmd));
 }
 
 void OemModuleHead::updateMaskPosition()
@@ -763,11 +763,11 @@ int OemModuleHead::maskColor(uint maskID, OemModuleHead::MaskColor color_0, OemM
 		maskBits |= (1 << maskID);
 	else
 		maskBits &= ~(1 << maskID);
-	const char cmd[] = {0x81, 0x01, 0x04, 0x78, (maskBits & 0xff000000) >> 24,
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x78, (maskBits & 0xff000000) >> 24,
 						 (maskBits & 0xff0000) >> 16, (maskBits & 0xff00) >> 8,
 						 (maskBits & 0xff),(((int)color_0) & 0xff),
 						 (((int)color_1) & 0xff), 0xff };
-	return transport->send(cmd, sizeof(cmd));
+	return transport->send((const char *)cmd, sizeof(cmd));
 }
 
 /**
@@ -779,6 +779,6 @@ int OemModuleHead::maskColor(uint maskID, OemModuleHead::MaskColor color_0, OemM
 
 int OemModuleHead::maskGrid(OemModuleHead::MaskGrid onOffCenter)
 {
-	const char cmd[] = {0x81, 0x01, 0x04, 0x7C, onOffCenter, 0xff };
-	return transport->send(cmd, sizeof(cmd));
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x7C, onOffCenter, 0xff };
+	return transport->send((const char *)cmd, sizeof(cmd));
 }

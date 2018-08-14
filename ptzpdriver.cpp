@@ -139,23 +139,23 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 
 	if (key == "ptz.cmd.pan_left") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),0, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),0, value.toInt(),0);
 		defaultPTHead->panLeft(value.toFloat());
 	} else if (key == "ptz.cmd.pan_right") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),1, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),1, value.toInt(),0);
 		defaultPTHead->panRight(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_down") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),2, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),2, value.toInt(),0);
 		defaultPTHead->tiltDown(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_up") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),3, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),3, value.toInt(),0);
 		defaultPTHead->tiltUp(value.toFloat());
 	} else if (key == "ptz.cmd.pan_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),9, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),9, value.toInt(),0);
 		defaultPTHead->panTiltAbs(0, 0);
 	} else if (key == "ptz.cmd.pan_tilt_abs") {
 		const QStringList &vals = value.toString().split(";");
@@ -166,15 +166,15 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 		defaultPTHead->panTiltAbs(pan, tilt);
 	} else if (key == "ptz.cmd.zoom_in") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),4, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),4, value.toInt(),0);
 		defaultModuleHead->startZoomIn(value.toInt());
 	} else if (key == "ptz.cmd.zoom_out") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),5, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),5, value.toInt(),0);
 		defaultModuleHead->startZoomOut(value.toInt());
 	} else if (key == "ptz.cmd.zoom_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),6, value.toInt(),NULL);
+							defaultModuleHead->getZoom(),6, value.toInt(),0);
 		defaultModuleHead->stopZoom();
 	} else if (key == "ptz.cmd.pattern_start")
 		ptrn->start(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
