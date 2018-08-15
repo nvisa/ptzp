@@ -31,6 +31,7 @@ protected:
 	OemModuleHead * headModule;
 	IRDomePTHead * headDome;
 	PtzpTransport *transport;
+	PtzpTransport *transport1;
 	DriverState state;
 };
 

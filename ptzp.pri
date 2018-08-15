@@ -11,8 +11,7 @@ HEADERS += \
     ptzp/irdomedriver.h \
     ptzp/aryadriver.h \
     ptzp/aryapthead.h \
-    ptzp/gungorhead.h \
-    ptzp/irdometgdriver.h
+    ptzp/gungorhead.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -26,8 +25,7 @@ SOURCES += \
     ptzp/irdomedriver.cpp \
     ptzp/aryadriver.cpp \
     ptzp/aryapthead.cpp \
-    ptzp/gungorhead.cpp \
-    ptzp/irdometgdriver.cpp
+    ptzp/gungorhead.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API

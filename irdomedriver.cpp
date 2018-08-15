@@ -13,6 +13,7 @@ IRDomeDriver::IRDomeDriver(QObject *parent)
 	headModule = new OemModuleHead;
 	headDome = new IRDomePTHead;
 	transport = new PtzpSerialTransport;
+	transport1 = new PtzpSerialTransport;
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
@@ -29,11 +30,26 @@ PtzpHead *IRDomeDriver::getHead(int index)
 
 int IRDomeDriver::setTarget(const QString &targetUri)
 {
-	headModule->setTransport(transport);
-	headDome->setTransport(transport);
-	int err = transport->connectTo(targetUri);
-	if (err)
-		return err;
+	defaultModuleHead->enableSyncing(false);
+	defaultPTHead->enableSyncing(false);
+	QStringList fields = targetUri.split(";");
+	foreach (const QString dstr, fields) {
+		if(dstr.startsWith("cammodule")) {
+			headModule->setTransport(transport);
+			QStringList targetCam = fields[0].split("//");
+			defaultModuleHead->enableSyncing(true);
+			int err = transport->connectTo(targetCam[1]);
+			if (err)
+				return err;
+		} else if (dstr.startsWith("ptmodule://")) {
+			headDome->setTransport(transport1);
+			QStringList targetDome = fields[1].split("//");
+			defaultPTHead->enableSyncing(true);
+			int err = transport1->connectTo(targetDome[1]);
+			if (err)
+				return err;
+		}
+	}
 	return 0;
 }
 
