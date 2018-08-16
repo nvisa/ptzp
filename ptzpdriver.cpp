@@ -102,6 +102,7 @@ int PtzpDriver::startGrpcApi(quint16 port)
 
 QVariant PtzpDriver::get(const QString &key)
 {
+	mInfo("Get func: %s", qPrintable(key));
 	if (defaultPTHead == NULL || defaultModuleHead == NULL)
 		return QVariant();
 
@@ -134,6 +135,7 @@ QVariant PtzpDriver::get(const QString &key)
 
 int PtzpDriver::set(const QString &key, const QVariant &value)
 {
+	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (defaultPTHead == NULL || defaultModuleHead == NULL)
 		return -ENODEV;
 
