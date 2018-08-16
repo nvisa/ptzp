@@ -49,6 +49,7 @@ PtzpHead *AryaDriver::getHead(int index)
 
 void AryaDriver::timeout()
 {
+	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
 		state = SYNC_ALL_MODULES;
@@ -77,6 +78,7 @@ void AryaDriver::timeout()
 
 QVariant AryaDriver::get(const QString &key)
 {
+	mInfo("Get func: %s", qPrintable(key));
 	if (key == "ptz.get_cooled_down")
 		return QString("%1")
 			.arg(thermal->getProperty(0));
@@ -166,6 +168,7 @@ QVariant AryaDriver::get(const QString &key)
 
 int AryaDriver::set(const QString &key, const QVariant &value)
 {
+	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (key == "ptz.cmd.brightness") {
 		thermal->setProperty(0, value.toUInt());
 
