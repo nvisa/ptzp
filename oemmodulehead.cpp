@@ -257,11 +257,13 @@ int OemModuleHead::setZoom(uint pos)
 void OemModuleHead::enableSyncing(bool en)
 {
 	syncEnabled = en;
+	mInfo("Sync status: %d", (int)syncEnabled);
 }
 
 void OemModuleHead::setSyncInterval(int interval)
 {
 	syncInterval = interval;
+	mInfo("Sync interval: %d", syncInterval);
 }
 
 int OemModuleHead::syncNext()
@@ -273,6 +275,8 @@ int OemModuleHead::syncNext()
 
 int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 {
+	for (int i = 0 ; i < len; i++)
+		mLogv("%d", bytes[i]);
 	const unsigned char *p = bytes;
 	if (p[0] != 0x90)
 		return -1;
@@ -309,6 +313,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	/* register sync support */
 	if (nextSync != C_COUNT) {
 		/* we are in sync mode, let's sync next */
+		mInfo("Next sync property: %d",nextSync);
 		if (++nextSync == C_COUNT) {
 			fDebug("Visca register syncing completed, activating auto-sync");
 		} else
@@ -320,50 +325,70 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		if (exVal == 0)			//Açıklama için setProperty'de exposure kısmına bakın!
 			exVal = 13;
 		else exVal = 17 - exVal;
+		mInfo("Exposure value synced");
 		setRegister(R_EXPOSURE_VALUE , exVal);
 	} else if(sendcmd == C_VISCA_GET_GAIN) {
+		mInfo("Gain Value synced");
 		setRegister(R_GAIN_VALUE , (p[4] << 4 | p[5]));
 	} else if(sendcmd == C_VISCA_GET_EXP_COMPMODE){
+		mInfo("Ex Comp Mode synced");
 		setRegister(R_EXP_COMPMODE , (p[2] == 0x02));
 	} else if(sendcmd == C_VISCA_GET_EXP_COMPVAL){
+		mInfo("Ex Comp Value synced");
 		setRegister(R_EXP_COMPVAL , ((p[4] << 4) + p[5]));
 	} else if(sendcmd == C_VISCA_GET_GAIN_LIM){
+		mInfo("Gain Limit synced");
 		setRegister(R_GAIN_LIM , (p[2] - 4));
 	} else if(sendcmd == C_VISCA_GET_SHUTTER){
+		mInfo("Shutter synced");
 		setRegister(R_SHUTTER , (p[4] << 4 | p[5]));
 	} else if(sendcmd == C_VISCA_GET_NOISE_REDUCT){
+		mInfo("Noise Reduct synced");
 		setRegister(R_NOISE_REDUCT , p[2]);
 	} else if(sendcmd == C_VISCA_GET_WDRSTAT){
+		mInfo("Wdr Status synced");
 		setRegister(R_WDRSTAT , (p[2] == 0x02));
 	} else if(sendcmd == C_VISCA_GET_GAMMA){
+		mInfo("Gamma synced");
 		setRegister(R_GAMMA , p[2]);
 	} else if(sendcmd == C_VISCA_GET_AWB_MODE){
+		mInfo("Awb Mode synced");
 		char val = p[2];
 		if (val > 0x03)
 			val -= 1;
 		setRegister(R_AWB_MODE , val);
 	} else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
+		mInfo("Defog Mode synced");
 		setRegister(R_DEFOG_MODE , (p[2] == 0x02));
 	} else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
+		mInfo("Digi Zoom Status synced");
 		setRegister(R_DIGI_ZOOM_STAT,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TYPE){
+		mInfo("Zoom Type synced");
 		setRegister(R_ZOOM_TYPE,p[2]);
 	} else if(sendcmd == C_VISCA_GET_FOCUS_MODE){
+		mInfo("Focus mode synced");
 		setRegister(R_FOCUS_MODE,p[2]);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TRIGGER){
+		mInfo("Zoom Trigger synced");
 		if (p[2] == 0x01)
 			setRegister(R_ZOOM_TRIGGER,0);
 		else if (p[2] == 0x02)
 			setRegister(R_ZOOM_TRIGGER,1);
 	} else if(sendcmd == C_VISCA_GET_BLC_STATUS){
+		mInfo("BLC status synced");
 		setRegister(R_BLC_STATUS,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_IRCF_STATUS){
+		mInfo("Ircf Status synced");
 		setRegister(R_IRCF_STATUS,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_AUTO_ICR){
+		mInfo("Auto Icr synced");
 		setRegister(R_AUTO_ICR,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_PROGRAM_AE_MODE){
+		mInfo("Program AE Mode synced");
 		setRegister(R_PROGRAM_AE_MODE,p[2]);
 	} else if(sendcmd == C_VISCA_GET_ZOOM){
+		mLogv("Zoom Position synced");
 		uint value =
 				((p[2] & 0x0F) << 12) +
 				((p[3] & 0x0F) << 8) +
@@ -371,15 +396,19 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 				((p[5] & 0x0F) << 0);
 		setRegister(R_ZOOM_POS, value);
 	} else if(sendcmd == C_VISCA_GET_FLIP_MODE){
+		mInfo("Flip Status synced");
 		setRegister(R_FLIP,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_MIRROR_MODE){
+		mInfo("Mirror status synced");
 		setRegister(R_MIRROR,(p[2] == 0x02) ? true : false);
 	}
 
 	if(getRegister(R_ZOOM_POS) >= 16384){
+		mLogv("Optic and digital zoom position synced");
 		setRegister(R_DIGI_ZOOM_POS,getRegister(R_ZOOM_POS)-16384);
 		setRegister(R_OPTIC_ZOOM_POS,16384);
 	} else if (getRegister(R_ZOOM_POS) < 16384){
+		mLogv("Optic and digital zoom position synced");
 		setRegister(R_OPTIC_ZOOM_POS,getRegister(R_ZOOM_POS));
 		setRegister(R_DIGI_ZOOM_POS,0);
 	}
@@ -400,6 +429,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 QByteArray OemModuleHead::transportReady()
 {
 	if (syncEnabled && syncTime.elapsed() > syncInterval) {
+		mLogv("Syncing zoom positon");
 		syncTime.restart();
 		const unsigned char *p = protoBytes[C_VISCA_GET_ZOOM];
 		hist->add(C_VISCA_GET_ZOOM);
@@ -409,6 +439,7 @@ QByteArray OemModuleHead::transportReady()
 }
 void OemModuleHead::setProperty(int r,uint x)
 {
+	mInfo("Set Property %d , value: %d", r, x);
 	if (r == C_VISCA_SET_EXPOSURE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE];
 		hist->add(C_VISCA_SET_EXPOSURE );
