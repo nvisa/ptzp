@@ -166,6 +166,8 @@ float IRDomePTHead::getTiltAngle()
 
 int IRDomePTHead::dataReady(const unsigned char *bytes, int len)
 {
+	for (int i = 0 ; i < len; i++)
+		mLogv("%d", bytes[i]);
 	const unsigned char *p = bytes;
 	if (p[0] != 0x3a)
 		return -1;
@@ -190,6 +192,7 @@ int IRDomePTHead::dataReady(const unsigned char *bytes, int len)
 QByteArray IRDomePTHead::transportReady()
 {
 	if (syncEnabled && syncTime.elapsed() > syncInterval) {
+		mLogv("Syncing pan and tilt pos");
 		unsigned char *p = protoBytes[C_CUSTOM_PAN_TILT_POS];
 		p[2 + 7]  = checksum(p + 2, 7);
 		syncTime.restart();
@@ -207,9 +210,11 @@ int IRDomePTHead::panTiltGoPos(float ppos, float tpos)
 void IRDomePTHead::enableSyncing(bool en)
 {
 	syncEnabled = en;
+	mInfo("Sync status: %d", (int)syncEnabled);
 }
 
 void IRDomePTHead::setSyncInterval(int interval)
 {
 	syncInterval = interval;
+	mInfo("Sync interval: %d", syncInterval);
 }
