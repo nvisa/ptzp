@@ -35,16 +35,20 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 	QStringList fields = targetUri.split(";");
 	foreach (const QString dstr, fields) {
 		if(dstr.startsWith("cammodule")) {
+			mDebug("cam module initializing.");
 			headModule->setTransport(transport);
 			QStringList targetCam = fields[0].split("//");
 			defaultModuleHead->enableSyncing(true);
+			mDebug("cam port target: %s",qPrintable(targetCam[1]));
 			int err = transport->connectTo(targetCam[1]);
 			if (err)
 				return err;
 		} else if (dstr.startsWith("ptmodule://")) {
+			mDebug ("pt module initializing.");
 			headDome->setTransport(transport1);
 			QStringList targetDome = fields[1].split("//");
 			defaultPTHead->enableSyncing(true);
+			mDebug("pt port target: %s",qPrintable(targetDome[1]));
 			int err = transport1->connectTo(targetDome[1]);
 			if (err)
 				return err;
@@ -55,6 +59,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 
 QVariant IRDomeDriver::get(const QString &key)
 {
+	mInfo("Get func: %s", qPrintable(key));
 	if (key.startsWith("ptz.module.reg.")) {
 		uint reg = key.split(".").last().toUInt();
 		return QString("%1").arg(headModule->getProperty(reg));
@@ -148,7 +153,7 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "ptz.get_zoom_speed")
 		return QString("%1")
 				.arg(headModule->getProperty(28));
-	return PtzpDriver::get(key);
+	else return PtzpDriver::get(key);
 
 	return "almost_there";
 	return QVariant();
@@ -156,6 +161,7 @@ QVariant IRDomeDriver::get(const QString &key)
 
 int IRDomeDriver::set(const QString &key, const QVariant &value)
 {
+	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (key == "ptz.cmd.exposure_val"){
 		headModule->setProperty(0,value.toUInt());
 	} else if (key == "ptz.cmd.gain_value"){
@@ -230,6 +236,7 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 
 void IRDomeDriver::timeout()
 {
+	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
 		headModule->syncRegisters();
