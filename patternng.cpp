@@ -75,6 +75,7 @@ PatternNg::PatternNg(PtzControlInterface *ctrl)
 void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 {
 	if (isRecording()) {
+		//pattern record
 		SpaceTime st;
 		st.pan = pan;
 		st.tilt = tilt;
@@ -84,13 +85,29 @@ void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 		QMutexLocker ml(&mutex);
 		geometry << st;
 	} else if (isReplaying()) {
+		//pattern replay
 		replayCurrent(pan, tilt, zoom);
+	} else if (patrolMap[currentPatrol].replay == true) {
+		//patrol replay
+		const patrol p = patrolMap[currentPatrol];
+		int elapsed = rtime.elapsed();
+		int currentTime = p.timeOrder[currentPreset].toInt()*1000;
+
+		if (elapsed > currentTime) {
+			currentPreset++;
+			if (currentPreset >= p.timeOrder.length())
+				currentPreset = 0;
+			rtime.start();
+			goToPreset(p.pSetOrder[currentPreset]);
+		}
 	}
 }
 
 void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, int par1, int par2)
 {
-	if (isRecording()) {
+	if (!isRecording()) {
+		return;
+	}
 	SpaceTime st;
 	st.pan = pan;
 	st.tilt = tilt;
@@ -102,7 +119,6 @@ void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, int par1, int 
 	fDebug("command=%d time=%lld", st.cmd, st.time);
 	QMutexLocker ml(&mutex);
 	geometry << st;
-	}
 }
 
 int PatternNg::start(int pan, int tilt, int zoom)
@@ -199,6 +215,60 @@ int PatternNg::load(const QString &filename)
 	return 0;
 }
 
+void PatternNg::addPreset(QString name, float panPos, float tiltPos, int zoomPos)
+{
+	presetMap[name].panPos = panPos;
+	presetMap[name].tiltPos = tiltPos;
+	presetMap[name].zoomPos = zoomPos;
+	presetMap[name].stat = true;
+}
+
+void PatternNg::goToPreset(QString name)
+{
+	if(!presetMap[name].stat) {
+		return;
+	}
+	ptzctrl->goToPosition( presetMap[name].panPos, presetMap[name].tiltPos, presetMap[name].zoomPos);
+}
+
+void PatternNg::deletePreset(QString name)
+{
+	presetMap[name].stat = false;
+}
+
+void PatternNg::addPatrol(QString name, QString pSet, QString time)
+{
+	patrolMap[name].stat =true;
+	QStringList prst = pSet.split(",");
+	for(int j = 0; j < prst.length(); j++)
+		patrolMap[name].pSetOrder << prst[j];
+
+	QStringList tme = time.split(",");
+	for(int j = 0; j < prst.length(); j++)
+		patrolMap[name].timeOrder << tme[j];
+}
+
+void PatternNg::runPatrol(QString name)
+{
+	if(!patrolMap[name].stat) {
+		return;
+	}
+	patrolMap[name].replay = true;
+	currentPatrol = name;
+	goToPreset(patrolMap[name].pSetOrder[0]);
+	rtime.start();
+}
+
+void PatternNg::deletePatrol(QString name)
+{
+	patrolMap[name].stat = false;
+}
+
+void PatternNg::stopPatrol(QString name)
+{
+	patrolMap[name].replay = false;
+}
+
 void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 {
 	const SpaceTime &st = geometry[current];
@@ -206,7 +276,7 @@ void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 	case RS_PAN_INIT: {
 		int pdiff = qAbs(st.pan - pan);
 		if (pdiff < rpars.panResolution) {
-			ptzctrl->sendCommand(9, 0, 0); //pan stop
+			ptzctrl->sendCommand(ptzctrl->C_PAN_TILT_STOP, 0, 0); //todo: pan stop
 			rs = RS_TILT_INIT;
 		} else {
 			int speed = rpars.approachSpeedUltraLow;
@@ -218,14 +288,14 @@ void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 				speed = rpars.approachSpeedLow;
 			else
 				speed = rpars.approachSpeedUltraLow;
-			ptzctrl->sendCommand(1, speed, 0); //pan_left, goto start position
+			ptzctrl->sendCommand(ptzctrl->C_PAN_LEFT, 0, 0); //pan_left, goto start position
 		}
 		break;
 	}
 	case RS_TILT_INIT: {
 		int tdiff = qAbs(st.tilt - tilt);
 		if (tdiff < rpars.tiltResolution) {
-			ptzctrl->sendCommand(9, 0, 0); //pan stop
+			ptzctrl->sendCommand(ptzctrl->C_PAN_TILT_STOP, 0, 0); //pan stop
 			rs = RS_ZOOM_INIT;
 		} else {
 			int speed = rpars.approachSpeedUltraLow;
@@ -237,7 +307,7 @@ void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 				speed = rpars.approachSpeedLow;
 			else
 				speed = rpars.approachSpeedUltraLow;
-			ptzctrl->sendCommand(3, 0, speed); //tilt_up, goto start position
+			ptzctrl->sendCommand(ptzctrl->C_TILT_UP, 0, speed); //tilt_up, goto start position
 		}
 		break;
 	}
