@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include <ecl/interfaces/keyvalueinterface.h>
+#include <ecl/interfaces/ptzcontrolinterface.h>
 
 #ifdef HAVE_PTZP_GRPC_API
 #include <ecl/ptzp/grpc/ptzp.pb.h>
@@ -18,7 +19,9 @@ class PtzpTransport;
 #ifdef HAVE_PTZP_GRPC_API
 class PtzpDriver : public QObject, public KeyValueInterface, public ptzp::PTZService::Service
 #else
-class PtzpDriver : public QObject, public KeyValueInterface
+class PtzpDriver : public QObject,
+		public KeyValueInterface,
+		public PtzControlInterface
 #endif
 {
 	Q_OBJECT
@@ -33,6 +36,8 @@ public:
 	int startGrpcApi(quint16 port);
 	virtual QVariant get(const QString &key);
 	virtual int set(const QString &key, const QVariant &value);
+	void goToPosition(float p, float t, int z);
+	void sendCommand(int c, float par1, int par2);
 
 #ifdef HAVE_PTZP_GRPC_API
 	grpc::Status GetHeads(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::PtzHeadInfo *response);

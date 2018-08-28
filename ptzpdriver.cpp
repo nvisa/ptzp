@@ -61,10 +61,9 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), SLOT(timeout()));
 	timer->start(10);
-
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
-	ptrn = new PatternNg;
+	ptrn = new PatternNg(this);
 }
 
 int PtzpDriver::getHeadCount()
@@ -141,23 +140,23 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 
 	if (key == "ptz.cmd.pan_left") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),0, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_PAN_LEFT, value.toInt(),0);
 		defaultPTHead->panLeft(value.toFloat());
 	} else if (key == "ptz.cmd.pan_right") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),1, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_PAN_RIGHT, value.toInt(),0);
 		defaultPTHead->panRight(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_down") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),2, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_TILT_DOWN, value.toInt(),0);
 		defaultPTHead->tiltDown(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_up") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),3, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_TILT_UP, value.toInt(),0);
 		defaultPTHead->tiltUp(value.toFloat());
 	} else if (key == "ptz.cmd.pan_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),9, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_PAN_TILT_STOP, value.toInt(),0);
 		defaultPTHead->panTiltAbs(0, 0);
 	} else if (key == "ptz.cmd.pan_tilt_abs") {
 		const QStringList &vals = value.toString().split(";");
@@ -168,22 +167,71 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 		defaultPTHead->panTiltAbs(pan, tilt);
 	} else if (key == "ptz.cmd.zoom_in") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),4, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_ZOOM_IN, value.toInt(),0);
 		defaultModuleHead->startZoomIn(value.toInt());
 	} else if (key == "ptz.cmd.zoom_out") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),5, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_ZOOM_OUT, value.toInt(),0);
 		defaultModuleHead->startZoomOut(value.toInt());
 	} else if (key == "ptz.cmd.zoom_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),6, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_ZOOM_STOP, value.toInt(),0);
 		defaultModuleHead->stopZoom();
-	} else if (key == "ptz.cmd.pattern_start")
+	} else if (key == "pattern_start")
 		ptrn->start(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
+	else if (key == "pattern_stop")
+		ptrn->stop(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
+	else if (key == "pattern_save")
+		ptrn->save(value.toString());
+	else if (key == "pattern_load")
+		ptrn->load(value.toString());
+	else if (key == "pattern_replay")
+		ptrn->replay();
+	else if (key == "preset_save")
+		ptrn->addPreset(value.toString(),defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
+	else if (key == "preset_delete")
+		ptrn->deletePreset(value.toString());
+	else if (key == "preset_goto")
+		ptrn->goToPreset(value.toString());
+	else if (key == "patrol_save"){
+		QStringList str = value.toString().split(".");
+		ptrn->addPatrol(str[0], str[1], str[2]);
+	} else if (key == "patrol_delete")
+		ptrn->deletePatrol(value.toString());
+	else if (key == "patrol_run")
+		ptrn->runPatrol(value.toString());
+	else if (key == "patrol_stop")
+		ptrn->stopPatrol(value.toString());
 	else
 		return -ENOENT;
 
 	return 0;
+}
+
+void PtzpDriver::goToPosition(float p, float t, int z)
+{
+	defaultModuleHead->setZoom(z) ;
+	defaultPTHead->panTiltGoPos(p, t);
+}
+
+void PtzpDriver::sendCommand(int c, float par1, int par2)
+{
+	if (c == C_PAN_LEFT)
+		defaultPTHead->panLeft(par1);
+	else if (c == C_PAN_RIGHT)
+		defaultPTHead->panRight(par1);
+	else if (c == C_TILT_DOWN)
+		defaultPTHead->tiltDown(par1);
+	else if (c == C_TILT_UP)
+		defaultPTHead->tiltUp(par1);
+	else if (c == C_ZOOM_IN)
+		defaultModuleHead->startZoomIn((int)par1);
+	else if (c == C_ZOOM_OUT)
+		defaultModuleHead->startZoomOut((int)par1);
+	else if (c == C_ZOOM_STOP)
+		defaultModuleHead->stopZoom();
+	else if (c == C_PAN_TILT_STOP)
+		defaultPTHead->panTiltStop();
 }
 
 #ifdef HAVE_PTZP_GRPC_API
@@ -204,6 +252,9 @@ grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context, const google::pr
 
 void PtzpDriver::timeout()
 {
+	ptrn->positionUpdate(defaultPTHead->getPanAngle(),
+						 defaultPTHead->getTiltAngle(),
+						 defaultModuleHead->getZoom());
 }
 
 QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
