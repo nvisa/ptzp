@@ -73,6 +73,11 @@ int PtzpDriver::getHeadCount()
 	return count - 1;
 }
 
+void PtzpDriver::configLoad(const QString filename)
+{
+	Q_UNUSED(filename);
+}
+
 /**
  * @brief PtzpDriver::startSocketApi
  * Kamerada soket bağlantısı için kullanılacak port numarasının

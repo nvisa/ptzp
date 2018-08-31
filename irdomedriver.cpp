@@ -4,7 +4,10 @@
 #include "irdomepthead.h"
 #include "debug.h"
 
+#include <QFile>
 #include <QTimer>
+#include <QJsonObject>
+#include <QJsonDocument>
 #include <errno.h>
 
 IRDomeDriver::IRDomeDriver(QObject *parent)
@@ -17,6 +20,7 @@ IRDomeDriver::IRDomeDriver(QObject *parent)
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
+	configLoad("config.json");
 }
 
 PtzpHead *IRDomeDriver::getHead(int index)
@@ -153,6 +157,21 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "ptz.get_zoom_speed")
 		return QString("%1")
 				.arg(headModule->getProperty(28));
+	else if (key == "camera.model")
+		return QString("%1")
+				.arg(config.model);
+	else if (key == "camera.type")
+		return QString("%1")
+				.arg(config.type);
+	else if (key == "camera.cam_module")
+		return QString("%1")
+				.arg(config.cam_module);
+	else if (key == "camera.pan_tilt_support")
+		return QString("%1")
+				.arg(config.ptSupport);
+	else if (key == "camera.ir_led_support")
+		return QString("%1")
+				.arg(config.irLedSupport);
 	else return PtzpDriver::get(key);
 
 	return "almost_there";
@@ -239,6 +258,22 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else return PtzpDriver::set(key,value);
 
 	return 0;
+}
+void IRDomeDriver::configLoad(const QString filename)
+{
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+		return ;
+	const QByteArray &json = f.readAll();
+	f.close();
+	const QJsonDocument &doc = QJsonDocument::fromJson(json);
+
+	QJsonObject root = doc.object();
+	config.model = root["model"].toString();
+	config.type = root["type"].toString();
+	config.cam_module = root["cam_module"].toString();
+	config.ptSupport = root["pan_tilt_support"].toInt();
+	config.irLedSupport = root["ir_led_support"].toInt();
 }
 
 void IRDomeDriver::timeout()

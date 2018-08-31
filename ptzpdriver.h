@@ -31,6 +31,7 @@ public:
 	virtual int setTarget(const QString &targetUri) = 0;
 	virtual PtzpHead * getHead(int index) = 0;
 	virtual int getHeadCount();
+	virtual void configLoad(const QString filename);
 
 	void startSocketApi(quint16 port);
 	int startGrpcApi(quint16 port);

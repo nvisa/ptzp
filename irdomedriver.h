@@ -7,6 +7,15 @@ class IRDomePTHead;
 class OemModuleHead;
 class PtzpSerialTransport;
 
+struct conf
+{
+	QString model;
+	QString type;
+	QString cam_module;
+	bool ptSupport;
+	bool irLedSupport;
+};
+
 class IRDomeDriver : public PtzpDriver
 {
 	Q_OBJECT
@@ -17,6 +26,8 @@ public:
 	int setTarget(const QString &targetUri);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
+	void configLoad(const QString filename);
+
 protected slots:
 	void timeout();
 
@@ -28,6 +39,7 @@ protected:
 		NORMAL,
 	};
 
+	conf config;
 	OemModuleHead * headModule;
 	IRDomePTHead * headDome;
 	PtzpTransport *transport;
