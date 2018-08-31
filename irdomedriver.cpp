@@ -228,8 +228,13 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 //		Hazırlanacak
 	} else if (key == "ptz.cmd.zoom_point") {
 		headModule->setZoom(value.toUInt());
-	}
-	else return PtzpDriver::set(key,value);
+	} else if (key == "mask.cmd.apply"){
+		QStringList str = value.toString().split(".");
+		headModule ->maskSet(str[0].toUInt(), str[1].toInt(), str[2].toInt());
+	} else if (key == "mask.cmd.display") {
+		QStringList str = value.toString().split(".");
+		headModule-> maskDisplay(str[0].toUInt(), str[1].toInt());
+	} else return PtzpDriver::set(key,value);
 
 	return 0;
 }
