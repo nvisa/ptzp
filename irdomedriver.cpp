@@ -234,6 +234,8 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "mask.cmd.display") {
 		QStringList str = value.toString().split(".");
 		headModule-> maskDisplay(str[0].toUInt(), str[1].toInt());
+	} else if (key == "ptz.cmd.ir_led"){
+		headModule->setIRLed(value.toInt());
 	} else return PtzpDriver::set(key,value);
 
 	return 0;

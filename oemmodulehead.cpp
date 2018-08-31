@@ -813,3 +813,28 @@ int OemModuleHead::maskGrid(OemModuleHead::MaskGrid onOffCenter)
 	const uchar cmd[] = {0x81, 0x01, 0x04, 0x7C, onOffCenter, 0xff };
 	return transport->send((const char *)cmd, sizeof(cmd));
 }
+
+static uint checksum(const uchar *cmd, uint lenght)
+{
+	unsigned int sum = 0;
+	for (uint i = 1; i < lenght; i++)
+		sum += cmd[i];
+	return sum & 0xff;
+}
+
+int OemModuleHead::setIRLed(int led)
+{
+	uchar cmd[] = {0xff, 0xff, 0x00, 0x9b, 0x00, 0x00, 0x00};
+	if (led == 8) {
+		cmd[4] = 0x00;
+		cmd[5] = 0x00;
+	} else if (led == 0) {
+		cmd[4] = 0x00;
+		cmd[5] = 0x01;
+	} else {
+		cmd[4] = 0x01;
+		cmd[5] = (uint)led - 1;
+	}
+	cmd[6] = checksum(cmd, 6);
+	return transport->send((const char *)cmd, sizeof(cmd));
+}

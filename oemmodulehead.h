@@ -99,7 +99,7 @@ public:
 	uint getProperty(uint r);
 	void setProperty(int r, uint x);
 
-
+	int setIRLed(int led);
 	void enableSyncing(bool en);
 	void setSyncInterval(int interval);
 	void setDeviceDefinition(QString definition);
