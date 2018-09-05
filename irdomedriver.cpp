@@ -79,84 +79,84 @@ QVariant IRDomeDriver::get(const QString &key)
 				.arg(headModule->getZoom());
 	else if (key == "ptz.get_exposure")
 		return QString("%1")
-				.arg(headModule->getProperty(3));
+				.arg(headModule->getProperty(0));
 	else if (key == "ptz.get_gain_value")
 		return QString("%1")
-				.arg(headModule->getProperty(4));
+				.arg(headModule->getProperty(1));
 	else if (key == "ptz.get_exp_compmode")
 		return QString("%1")
-				.arg(headModule->getProperty(5));
+				.arg(headModule->getProperty(3));
 	else if (key == "ptz.get_exp_compval")
 		return QString("%1")
-				.arg(headModule->getProperty(6));
+				.arg(headModule->getProperty(4));
 	else if (key == "ptz.get_gain_lim")
 		return QString("%1")
-				.arg(headModule->getProperty(7));
+				.arg(headModule->getProperty(5));
 	else if (key == "ptz.get_shutter")
 		return QString("%1")
-				.arg(headModule->getProperty(8));
+				.arg(headModule->getProperty(6));
 	else if (key == "ptz.get_noise_reduct")
 		return QString("%1")
-				.arg(headModule->getProperty(9));
+				.arg(headModule->getProperty(7));
 	else if (key == "ptz.get_wdrstat")
 		return QString("%1")
-				.arg(headModule->getProperty(10));
+				.arg(headModule->getProperty(8));
 	else if (key == "ptz.get_gamma")
 		return QString("%1")
-				.arg(headModule->getProperty(11));
+				.arg(headModule->getProperty(9));
 	else if (key == "ptz.get_awb_mode")
 		return QString("%1")
-				.arg(headModule->getProperty(12));
+				.arg(headModule->getProperty(1));
 	else if (key == "ptz.get_defog_mode")
 		return QString("%1")
-				.arg(headModule->getProperty(13));
+				.arg(headModule->getProperty(11));
 	else if (key == "ptz.get_digi_zoom_stat")
 		return QString("%1")
-				.arg(headModule->getProperty(14));
+				.arg(headModule->getProperty(12));
 	else if (key == "ptz.get_zoom_type")
 		return QString("%1")
-				.arg(headModule->getProperty(15));
+				.arg(headModule->getProperty(13));
 	else if (key == "ptz.get_focus_mode")
 		return QString("%1")
-				.arg(headModule->getProperty(16));
+				.arg(headModule->getProperty(14));
 	else if (key == "ptz.get_zoom_trigger")
 		return QString("%1")
-				.arg(headModule->getProperty(17));
+				.arg(headModule->getProperty(15));
 	else if (key == "ptz.get_blc_stattus")
 		return QString("%1")
-				.arg(headModule->getProperty(18));
+				.arg(headModule->getProperty(16));
 	else if (key == "ptz.get_ircf_status")
 		return QString("%1")
-				.arg(headModule->getProperty(19));
+				.arg(headModule->getProperty(17));
 	else if (key == "ptz.get_auto_icr")
 		return QString("%1")
-				.arg(headModule->getProperty(20));
+				.arg(headModule->getProperty(18));
 	else if (key == "ptz.get_program_ae_mode")
 		return QString("%1")
-				.arg(headModule->getProperty(21));
+				.arg(headModule->getProperty(19));
 	else if (key == "ptz.get_flip")
 		return QString("%1")
-				.arg(headModule->getProperty(22));
+				.arg(headModule->getProperty(20));
 	else if (key == "ptz.get_mirror")
 		return QString("%1")
-				.arg(headModule->getProperty(23));
+				.arg(headModule->getProperty(21));
 	else if (key == "ptz.get_display_rot")
 		return QString("%1")
-				.arg(headModule->getProperty(24));
+				.arg(headModule->getProperty(22));
 	else if (key == "ptz.get_digi_zoom_pos")
 		return QString("%1")
-				.arg(headModule->getProperty(25));
+				.arg(headModule->getProperty(23));
 	else if (key == "ptz.get_optic_zoom_pos")
 		return QString("%1")
-				.arg(headModule->getProperty(26));
+				.arg(headModule->getProperty(24));
 	else if (key == "ptz.get_device_definition"){
 //		HAzırlanacak
 	} else if (key == "ptz.get_pt_speed")
 		return QString("%1")
-				.arg(headModule->getProperty(27));
+				.arg(headModule->getProperty(25));
 	else if (key == "ptz.get_zoom_speed")
 		return QString("%1")
-				.arg(headModule->getProperty(28));
+				.arg(headModule->getProperty(26));
 	else if (key == "camera.model")
 		return QString("%1")
 				.arg(config.model);
