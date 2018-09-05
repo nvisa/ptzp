@@ -104,6 +104,7 @@ public:
 	void setSyncInterval(int interval);
 	void setDeviceDefinition(QString definition);
 	QString getDeviceDefinition();
+	int getZoomRatio();
 
 	/**
 	 * @brief maskeleme işlemleri

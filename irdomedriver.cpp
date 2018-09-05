@@ -172,6 +172,12 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "camera.ir_led_support")
 		return QString("%1")
 				.arg(config.irLedSupport);
+	else if (key == "ptz.get_device_definiton")
+		return QString("%1")
+				.arg(headModule->getDeviceDefinition());
+	else if (key == "ptz.get _zoom_ratio")
+		return QString("%1")
+				.arg(headModule->getZoomRatio());
 	else return PtzpDriver::get(key);
 
 	return "almost_there";
@@ -255,7 +261,9 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		headModule-> maskDisplay(str[0].toUInt(), str[1].toInt());
 	} else if (key == "ptz.cmd.ir_led"){
 		headModule->setIRLed(value.toInt());
-	} else return PtzpDriver::set(key,value);
+	} else if (key == "ptz.cmd.device_defintion" )
+		headModule->setDeviceDefinition(value.toString());
+	else return PtzpDriver::set(key,value);
 
 	return 0;
 }

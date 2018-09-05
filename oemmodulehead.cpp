@@ -593,10 +593,6 @@ void OemModuleHead::setProperty(int r,uint x)
 		hist->add(C_VISCA_SET_ONE_PUSH );
 		p[4 + 2] = 0x01;
 		transport->send((const char *)p + 2, p[0]);
-	} else if (r == 22){
-		setRegister(R_PT_SPEED, (int)x);
-	} else if (r == 23){
-		setRegister(R_ZOOM_SPEED, (int)x);
 	}
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0){
@@ -659,6 +655,11 @@ void OemModuleHead::setDeviceDefinition(QString definition)
 QString OemModuleHead::getDeviceDefinition()
 {
 	return deviceDefinition;
+}
+
+int OemModuleHead::getZoomRatio()
+{
+	return zoomRatio;
 }
 
 /**
