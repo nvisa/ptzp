@@ -59,8 +59,12 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent)
 {
 	timer = new QTimer(this);
+	time = new QElapsedTimer();
+	timeSettingsLoad = new QElapsedTimer();
 	connect(timer, SIGNAL(timeout()), SLOT(timeout()));
 	timer->start(10);
+	time->start();
+	timeSettingsLoad->start();
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
 	ptrn = new PatternNg(this);
@@ -260,6 +264,12 @@ void PtzpDriver::timeout()
 	ptrn->positionUpdate(defaultPTHead->getPanAngle(),
 						 defaultPTHead->getTiltAngle(),
 						 defaultModuleHead->getZoom());
+	if(time->elapsed() >= 10000) {
+		defaultModuleHead->saveRegisters();
+		time->restart();
+	}
+	if(timeSettingsLoad->elapsed() <= 50)
+		defaultModuleHead->loadRegisters();
 }
 
 QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)

@@ -13,11 +13,9 @@ public:
 	OemModuleHead();
 
 	enum Registers {
-		R_PAN_ANGLE,
-		R_TILT_ANGLE,
-		R_ZOOM_POS,
 		R_EXPOSURE_VALUE,		//14 //td:nd // exposure_value
 		R_GAIN_VALUE,			//15 //td:nd // gainvalue
+		R_ZOOM_POS,
 		R_EXP_COMPMODE,	//16 //td:nd
 		R_EXP_COMPVAL,	//17 //td:nd
 		R_GAIN_LIM,		//18 //td:nd
@@ -98,6 +96,8 @@ public:
 	int setZoom(uint pos);
 	uint getProperty(uint r);
 	void setProperty(int r, uint x);
+	int saveRegisters();
+	void loadRegisters();
 
 	int setIRLed(int led);
 	void enableSyncing(bool en);
@@ -149,6 +149,7 @@ protected:
 	uint nextSync;
 	QElapsedTimer syncTime;
 	QString deviceDefinition;
+	int zoomRatio;
 };
 
 #endif // OEMMODULEHEAD_H

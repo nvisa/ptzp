@@ -276,6 +276,16 @@ void PtzpHead::setProperty(uint r, uint x)
 	Q_UNUSED(r);
 	Q_UNUSED(x);
 }
+
+int PtzpHead::saveRegisters()
+{
+
+}
+
+void PtzpHead::loadRegisters()
+{
+
+}
 #ifdef HAVE_PTZP_GRPC_API
 QVariantMap PtzpHead::getSettings()
 {

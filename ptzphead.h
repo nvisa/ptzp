@@ -50,6 +50,8 @@ public:
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
+	virtual int saveRegisters();
+	virtual void loadRegisters();
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);

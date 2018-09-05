@@ -3,9 +3,13 @@
 #include "ptzptransport.h"
 #include "ioerrors.h"
 
+#include <QFile>
 #include <QList>
 #include <QMutex>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QMutexLocker>
+#include <QJsonDocument>
 
 #include <errno.h>
 
@@ -217,6 +221,7 @@ int OemModuleHead::getHeadStatus()
 
 int OemModuleHead::startZoomIn(int speed)
 {
+	zoomRatio = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_IN];
 	hist->add(C_VISCA_ZOOM_IN);
 	p[4 + 2] = 0x20 + speed;
@@ -225,6 +230,7 @@ int OemModuleHead::startZoomIn(int speed)
 
 int OemModuleHead::startZoomOut(int speed)
 {
+	zoomRatio = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_OUT];
 	hist->add(C_VISCA_ZOOM_OUT);
 	p[4 + 2] = 0x30 + speed;
@@ -603,6 +609,42 @@ void OemModuleHead::setProperty(int r,uint x)
 		setRegister(R_DISPLAY_ROT,3);
 		getRegister(R_DISPLAY_ROT);
 	}
+}
+int OemModuleHead::saveRegisters()
+{
+	QJsonObject json;
+	QString fileName = "oemmodule.json";
+	QFile f(fileName);
+	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
+		return -EPERM;
+	for(int i = 0; i < R_COUNT; i++)
+		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
+	json.insert(QString("deviceDefiniton"), (QString)deviceDefinition);
+	json.insert(QString("zoomRatio"),(int)zoomRatio);
+	QJsonDocument doc;
+	doc.setObject(json);
+	f.write(doc.toJson());
+	f.close();
+	return 0;
+}
+
+void OemModuleHead::loadRegisters()
+{
+	QFile f("oemmodule.json");
+	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
+		return ;
+	const QByteArray &json = f.readAll();
+	f.close();
+	const QJsonDocument &doc = QJsonDocument::fromJson(json);
+	QJsonObject root = doc.object();
+	QString key = "reg%1";
+	for(int i = 0 ; i <= 21; i++) {
+		if(i == 2)
+			setZoom((uint)root.value(key.arg(i)).toInt());
+		setProperty(i,root.value(key.arg(i)).toInt());
+	}
+	deviceDefinition = root.value("deviceDefiniton").toString();
+	zoomRatio = root.value("zoomRatio").toInt();
 }
 uint OemModuleHead::getProperty(uint r)
 {

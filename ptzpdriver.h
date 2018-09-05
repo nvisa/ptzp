@@ -12,6 +12,7 @@
 #endif
 
 class QTimer;
+class QElapsedTimer;
 class PtzpHead;
 class PatternNg;
 class PtzpTransport;
@@ -50,6 +51,8 @@ protected slots:
 
 protected:
 	QTimer *timer;
+	QElapsedTimer *time;
+	QElapsedTimer *timeSettingsLoad;
 	PtzpHead *defaultPTHead;
 	PtzpHead *defaultModuleHead;
 	PatternNg *ptrn;
