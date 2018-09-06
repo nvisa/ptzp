@@ -214,43 +214,37 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "ptz.cmd.zoom_type"){
 		headModule->setProperty(13,value.toUInt());
 	} else if (key == "ptz.cmd.focus_mode"){
-		headModule->setProperty(14,value.toUInt());
-	} else if (key == "ptz.cmd.zoom_trig"){
 		headModule->setProperty(15,value.toUInt());
-	} else if (key == "ptz.cmd.blc_stat"){
+	} else if (key == "ptz.cmd.zoom_trig"){
 		headModule->setProperty(16,value.toUInt());
-	} else if (key == "ptz.cmd.ırcf_stat"){
+	} else if (key == "ptz.cmd.blc_stat"){
 		headModule->setProperty(17,value.toUInt());
-	} else if (key == "ptz.cmd.auto_icr"){
+	} else if (key == "ptz.cmd.ırcf_stat"){
 		headModule->setProperty(18,value.toUInt());
-	} else if (key == "ptz.cmd.program_ae_mode"){
+	} else if (key == "ptz.cmd.auto_icr"){
 		headModule->setProperty(19,value.toUInt());
-	} else if (key == "ptz.cmd.flip"){
+	} else if (key == "ptz.cmd.program_ae_mode"){
 		headModule->setProperty(20,value.toUInt());
-	} else if (key == "ptz.cmd.mirror"){
+	} else if (key == "ptz.cmd.flip"){
 		headModule->setProperty(21,value.toUInt());
+	} else if (key == "ptz.cmd.mirror"){
+		headModule->setProperty(22,value.toUInt());
 	} else if (key == "ptz.cmd.one_push_af"){
-			headModule->setProperty(22,value.toUInt());
+			headModule->setProperty(23,value.toUInt());
 	} else if (key == "ptz.cmd.display_rot"){
-	if (value.toInt() == 0){
-		headModule->setProperty(20, 1);
-		headModule->setProperty(21, 0);
-	} else if (value.toInt() == 1){
-		headModule->setProperty(20, 0);
-		headModule->setProperty(21, 1);
-	} else if (value.toInt() == 2){
-		headModule->setProperty(20, 1);
-		headModule->setProperty(21, 1);
-	} else if (value.toInt() == 3){
-		headModule->setProperty(20, 0);
-		headModule->setProperty(21, 0);
-	}
-	} else if (key == "ptz.cmd.setPtSpeed"){
-		headModule->setProperty(23,value.toUInt());
-	} else if (key == "ptz.cmd.setZoomSpeed"){
-		headModule->setProperty(24,value.toUInt());
-	} else if (key == "ptz.cmd.device_definition"){
-//		Hazırlanacak
+		if (value.toInt() == 0){
+			headModule->setProperty(21, 1);
+			headModule->setProperty(22, 0);
+		} else if (value.toInt() == 1){
+			headModule->setProperty(21, 0);
+			headModule->setProperty(22, 1);
+		} else if (value.toInt() == 2){
+			headModule->setProperty(21, 1);
+			headModule->setProperty(22, 1);
+		} else if (value.toInt() == 3){
+			headModule->setProperty(21, 0);
+			headModule->setProperty(22, 0);
+		}
 	} else if (key == "ptz.cmd.zoom_point") {
 		headModule->setZoom(value.toUInt());
 	} else if (key == "mask.cmd.apply"){
@@ -263,6 +257,8 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		headModule->setIRLed(value.toInt());
 	} else if (key == "ptz.cmd.device_defintion" )
 		headModule->setDeviceDefinition(value.toString());
+	else if (key == "ptz.cmd.focus")
+		headModule->setProperty(14, value.toUInt());
 	else return PtzpDriver::set(key,value);
 
 	return 0;
