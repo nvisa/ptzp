@@ -36,6 +36,7 @@ enum Commands {
 	C_VISCA_SET_DEFOG_MODE,		//27 //td:nd
 	C_VISCA_SET_DIGI_ZOOM_STAT,	//28 //td:nd
 	C_VISCA_SET_ZOOM_TYPE,		//29 //td:nd
+	C_VISCA_SET_FOCUS,
 	C_VISCA_SET_FOCUS_MODE,		//30 //td:nd
 	C_VISCA_SET_ZOOM_TRIGGER,	//31 //td:nd
 	C_VISCA_SET_BLC_STATUS,		//32 //td:nd
@@ -97,6 +98,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x07, 0x00, 0x81, 0x01, 0x04, 0x37, 0x00, 0x00, 0xff },	//set defog mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x06, 0x00, 0xff },//digizoom
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x36, 0x00, 0xff },//zoom type
+	{0x06, 0x00, 0x81, 0x01, 0x04, 0x08, 0x00, 0xff },//set focus far-near
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x38, 0x00, 0xff },	//set focus mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x57, 0x00, 0xFF },	//set zoom trigger
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x33, 0x00, 0xff },//se BLC stat
@@ -592,6 +594,11 @@ void OemModuleHead::setProperty(int r,uint x)
 		unsigned char *p = protoBytes[C_VISCA_SET_ONE_PUSH];
 		hist->add(C_VISCA_SET_ONE_PUSH );
 		p[4 + 2] = 0x01;
+		transport->send((const char *)p + 2, p[0]);
+	} else if (r == C_VISCA_SET_FOCUS) {
+		unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
+		hist->add(C_VISCA_SET_FOCUS);
+		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 	}
 
