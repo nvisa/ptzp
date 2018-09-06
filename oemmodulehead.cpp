@@ -598,7 +598,7 @@ void OemModuleHead::setProperty(int r,uint x)
 	} else if (r == C_VISCA_SET_FOCUS) {
 		unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
 		hist->add(C_VISCA_SET_FOCUS);
-		p[4 + 2] = x ? 0x02 :0x03;
+		p[4 + 2] = x ;
 		transport->send((const char *)p + 2, p[0]);
 	}
 
