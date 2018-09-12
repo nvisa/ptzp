@@ -95,7 +95,7 @@ public:
 	int getZoom();
 	int setZoom(uint pos);
 	uint getProperty(uint r);
-	void setProperty(int r, uint x);
+	void setProperty(uint r, uint x);
 	int saveRegisters();
 	void loadRegisters();
 

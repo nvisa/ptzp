@@ -445,7 +445,7 @@ QByteArray OemModuleHead::transportReady()
 	}
 	return QByteArray();
 }
-void OemModuleHead::setProperty(int r,uint x)
+void OemModuleHead::setProperty(uint r, uint x)
 {
 	mInfo("Set Property %d , value: %d", r, x);
 	if (r == C_VISCA_SET_EXPOSURE) {

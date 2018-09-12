@@ -85,7 +85,7 @@ int MgeoGunGorHead::getCapabilities()
 	return CAP_ZOOM;
 }
 
-void MgeoGunGorHead::setProperty(int r, uint x)
+void MgeoGunGorHead::setProperty(uint r, uint x)
 {
 	if (r == C_SET_OPEN) {
 		if (x == 1)

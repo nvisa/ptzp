@@ -163,7 +163,7 @@ int MgeoThermalHead::getHeadStatus()
 	return ST_ERROR;
 }
 
-void MgeoThermalHead::setProperty(int r, uint x)
+void MgeoThermalHead::setProperty(uint r, uint x)
 {
 /*
  * p[0]		p[1]		p[2]		p[3]		p[4]		p[5]		p[6]		p[7]		p[8]		p[9]

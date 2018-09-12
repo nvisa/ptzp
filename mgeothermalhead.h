@@ -45,7 +45,7 @@ public:
 	virtual int stopZoom();
 	virtual int getZoom();
 	virtual int getHeadStatus();
-	virtual void setProperty(int r, uint x);
+	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
 
 protected:
