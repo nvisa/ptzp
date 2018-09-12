@@ -124,6 +124,7 @@ int MgeoThermalHead::startZoomIn(int speed)
 	cmd[3] = 0x01;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
+	sendCommand(C_CONT_ZOOM,cmd[3]);
 	return 0;
 }
 
@@ -134,6 +135,7 @@ int MgeoThermalHead::startZoomOut(int speed)
 	cmd[3] = 0xff;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
+	sendCommand(C_CONT_ZOOM,cmd[3]);
 	return 0;
 }
 
@@ -143,6 +145,7 @@ int MgeoThermalHead::stopZoom()
 	cmd[3] = 0x00;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
+	sendCommand(C_CONT_ZOOM,cmd[3]);
 	return 0;
 }
 

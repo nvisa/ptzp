@@ -239,6 +239,6 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	else if (key == "ptz.cmd.gungor.digi_zoom")
 		gungor->setProperty(12, value.toUInt());
 
-	return PtzpDriver::set(key, value);
+	else PtzpDriver::set(key, value);
 	return 0;
 }
