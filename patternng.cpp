@@ -90,6 +90,7 @@ void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 
 void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, int par1, int par2)
 {
+	if (isRecording()) {
 	SpaceTime st;
 	st.pan = pan;
 	st.tilt = tilt;
@@ -101,6 +102,7 @@ void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, int par1, int 
 	fDebug("command=%d time=%lld", st.cmd, st.time);
 	QMutexLocker ml(&mutex);
 	geometry << st;
+	}
 }
 
 int PatternNg::start(int pan, int tilt, int zoom)
