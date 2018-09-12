@@ -17,6 +17,7 @@ AryaDriver::AryaDriver(QObject *parent)
 	state = INIT;
 	defaultPTHead = aryapt;
 	defaultModuleHead = thermal;
+	configLoad("config.json");
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
@@ -241,4 +242,21 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 
 	else PtzpDriver::set(key, value);
 	return 0;
+}
+
+void AryaDriver::configLoad(const QString filename)
+{
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+		return ;
+	const QByteArray &json = f.readAll();
+	f.close();
+	const QJsonDocument &doc = QJsonDocument::fromJson(json);
+
+	QJsonObject root = doc.object();
+	config.model = root["model"].toString();
+	config.type = root["type"].toString();
+	config.cam_module = root["cam_module"].toString();
+	config.ptSupport = root["pan_tilt_support"].toInt();
+	config.irLedSupport = root["ir_led_support"].toInt();
 }

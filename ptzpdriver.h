@@ -17,6 +17,15 @@ class PtzpHead;
 class PatternNg;
 class PtzpTransport;
 
+struct conf
+{
+	QString model;
+	QString type;
+	QString cam_module;
+	bool ptSupport;
+	bool irLedSupport;
+};
+
 #ifdef HAVE_PTZP_GRPC_API
 class PtzpDriver : public QObject, public KeyValueInterface, public ptzp::PTZService::Service
 #else

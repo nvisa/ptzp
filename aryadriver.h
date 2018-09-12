@@ -18,6 +18,8 @@ public:
 	virtual PtzpHead * getHead(int index);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
+	void configLoad(const QString filename);
+
 protected slots:
 	void timeout();
 

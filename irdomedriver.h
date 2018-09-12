@@ -7,15 +7,6 @@ class IRDomePTHead;
 class OemModuleHead;
 class PtzpSerialTransport;
 
-struct conf
-{
-	QString model;
-	QString type;
-	QString cam_module;
-	bool ptSupport;
-	bool irLedSupport;
-};
-
 class IRDomeDriver : public PtzpDriver
 {
 	Q_OBJECT
