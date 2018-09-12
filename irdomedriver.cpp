@@ -13,6 +13,7 @@ IRDomeDriver::IRDomeDriver(QObject *parent)
 	headModule = new OemModuleHead;
 	headDome = new IRDomePTHead;
 	transport = new PtzpSerialTransport;
+	transport1 = new PtzpSerialTransport;
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
@@ -30,8 +31,11 @@ PtzpHead *IRDomeDriver::getHead(int index)
 int IRDomeDriver::setTarget(const QString &targetUri)
 {
 	headModule->setTransport(transport);
-	headDome->setTransport(transport);
+	headDome->setTransport(transport1);
 	int err = transport->connectTo(targetUri);
+	if (err)
+		return err;
+	err = transport1->connectTo("ttyTHS2;baud=9600");
 	if (err)
 		return err;
 	return 0;

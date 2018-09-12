@@ -6,6 +6,7 @@
 #include <QHash>
 #include <QMutex>
 #include <QByteArray>
+#include <QVariantMap>
 #include <QElapsedTimer>
 
 class PtzpTransport;
@@ -49,12 +50,17 @@ public:
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
-
+#ifdef HAVE_PTZP_GRPC_API
+	virtual QVariantMap getSettings();
+	virtual void setSettings(QVariantMap key);
+#endif
 	int getErrorCount(uint err);
 
 	static int dataReady(const unsigned char *bytes, int len, void *priv);
 	static QByteArray transportReady(void *priv);
-
+#ifdef HAVE_PTZP_GRPC_API
+	QHash<QString, QPair<int, int>> settings {};
+#endif
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();

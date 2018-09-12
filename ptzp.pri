@@ -12,6 +12,7 @@ HEADERS += \
     ptzp/aryadriver.h \
     ptzp/aryapthead.h \
     ptzp/gungorhead.h \
+    ptzp/grpc/commands.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
