@@ -115,6 +115,7 @@ int PatternNg::start(int pan, int tilt, int zoom)
 {
 	if (isReplaying())
 		return -EINVAL;
+	geometry.clear();
 	recording = true;
 	ptime.start();
 	positionUpdate(pan, tilt, zoom);
@@ -201,7 +202,6 @@ int PatternNg::load(const QString &filename)
 	}
 	geometry.clear();
 	in >> geometry;
-
 	return 0;
 }
 
