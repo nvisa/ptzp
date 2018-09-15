@@ -60,16 +60,6 @@ PatternNg::PatternNg(PtzControlInterface *ctrl)
 	sm = SYNC_TIME;
 	current = 0;
 	ptzctrl = ctrl;
-
-	rpars.panResolution = 100;
-	rpars.tiltResolution = 100;
-	rpars.approachSpeedHigh = 63;
-	rpars.approachSpeedMedium = 40;
-	rpars.approachSpeedLow = 20;
-	rpars.approachSpeedUltraLow = 10;
-	rpars.approachPointHigh = 10000;
-	rpars.approachPointMedium = 5000;
-	rpars.approachPointLow = 1500;
 }
 
 void PatternNg::positionUpdate(int pan, int tilt, int zoom)
@@ -147,7 +137,7 @@ int PatternNg::replay()
 	replaying = true;
 	ptime.restart();
 	current = 0;
-	rs = RS_PAN_INIT;
+	rs = RS_PTZ_INIT;
 	return 0;
 }
 
@@ -273,48 +263,12 @@ void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 {
 	const SpaceTime &st = geometry[current];
 	switch (rs) {
-	case RS_PAN_INIT: {
-		int pdiff = qAbs(st.pan - pan);
-		if (pdiff < rpars.panResolution) {
-			ptzctrl->sendCommand(ptzctrl->C_PAN_TILT_STOP, 0, 0); //todo: pan stop
-			rs = RS_TILT_INIT;
-		} else {
-			int speed = rpars.approachSpeedUltraLow;
-			if (pdiff > rpars.approachPointHigh)
-				speed = rpars.approachSpeedHigh;
-			else if (pdiff > rpars.approachPointMedium)
-				speed = rpars.approachSpeedMedium;
-			else if (pdiff > rpars.approachPointLow)
-				speed = rpars.approachSpeedLow;
-			else
-				speed = rpars.approachSpeedUltraLow;
-			ptzctrl->sendCommand(ptzctrl->C_PAN_LEFT, 0, 0); //pan_left, goto start position
-		}
-		break;
-	}
-	case RS_TILT_INIT: {
-		int tdiff = qAbs(st.tilt - tilt);
-		if (tdiff < rpars.tiltResolution) {
-			ptzctrl->sendCommand(ptzctrl->C_PAN_TILT_STOP, 0, 0); //pan stop
-			rs = RS_ZOOM_INIT;
-		} else {
-			int speed = rpars.approachSpeedUltraLow;
-			if (tdiff > rpars.approachPointHigh)
-				speed = rpars.approachSpeedHigh;
-			else if (tdiff > rpars.approachPointMedium)
-				speed = rpars.approachSpeedMedium;
-			else if (tdiff > rpars.approachPointLow)
-				speed = rpars.approachSpeedLow;
-			else
-				speed = rpars.approachSpeedUltraLow;
-			ptzctrl->sendCommand(ptzctrl->C_TILT_UP, 0, speed); //tilt_up, goto start position
-		}
-		break;
-	}
-	case RS_ZOOM_INIT:
+	case RS_PTZ_INIT: {
+		ptzctrl->goToPosition(st.pan, st.tilt, st.zoom);
 		rs = RS_RUN;
 		ptime.restart();
 		break;
+	}
 	case RS_RUN:
 		if (ptime.elapsed() > st.time) {
 			if (st.cmd != -1)
@@ -322,7 +276,7 @@ void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 			current++;
 			if (current == geometry.size()) {
 				ptime.restart();
-				rs = RS_PAN_INIT;
+				rs = RS_PTZ_INIT;
 				current = 0;
 			}
 			replayCurrent(pan, tilt, zoom);

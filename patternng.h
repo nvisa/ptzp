@@ -32,28 +32,13 @@ public:
 		bool replay;
 	};
 
-	struct ReplayParameters {
-		int panResolution;		//hundreds of 1 degree
-		int tiltResolution;		//hundreds of 1 degree
-		int approachSpeedHigh;
-		int approachSpeedMedium;
-		int approachSpeedLow;
-		int approachSpeedUltraLow;
-		int approachPointHigh;
-		int approachPointMedium;
-		int approachPointLow;
-		int approachPointUltraLow;
-	};
-
 	enum SyncMethod {
 		SYNC_POSITION,
 		SYNC_TIME,
 	};
 
 	enum ReplayState {
-		RS_PAN_INIT,
-		RS_TILT_INIT,
-		RS_ZOOM_INIT,
+		RS_PTZ_INIT,
 		RS_RUN,
 		RS_FINALIZE,
 	};
@@ -94,7 +79,6 @@ public:
 	int currentPreset;
 	QString currentPatrol;
 
-	ReplayParameters rpars;
 protected:
 	void replayCurrent(int pan, int tilt, int zoom);
 
