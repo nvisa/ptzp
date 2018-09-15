@@ -65,12 +65,12 @@ public:
 		int zoom;
 		qint64 time;
 		int cmd;
-		int par1;
-		int par2;
+		float par1;
+		float par2;
 	};
 
 	void positionUpdate(int pan, int tilt, int zoom);
-	void commandUpdate(int pan, int tilt, int zoom, int c, int par1, int par2);
+	void commandUpdate(int pan, int tilt, int zoom, int c, float par1, float par2);
 	//void viscaCommand(int c, int par1, int par2);
 	//void customCommand(int c, int par1, int par2);
 	int start(int pan, int tilt, int zoom);

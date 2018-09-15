@@ -103,7 +103,7 @@ void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 	}
 }
 
-void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, int par1, int par2)
+void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, float par1, float par2)
 {
 	if (!isRecording()) {
 		return;
