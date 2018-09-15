@@ -149,19 +149,19 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 
 	if (key == "ptz.cmd.pan_left") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_PAN_LEFT, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_PAN_LEFT, value.toFloat(),0);
 		defaultPTHead->panLeft(value.toFloat());
 	} else if (key == "ptz.cmd.pan_right") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_PAN_RIGHT, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_PAN_RIGHT, value.toFloat(),0);
 		defaultPTHead->panRight(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_down") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_TILT_DOWN, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_TILT_DOWN, value.toFloat(),0);
 		defaultPTHead->tiltDown(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_up") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_TILT_UP, value.toInt(),0);
+							defaultModuleHead->getZoom(),C_TILT_UP, value.toFloat(),0);
 		defaultPTHead->tiltUp(value.toFloat());
 	} else if (key == "ptz.cmd.pan_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
