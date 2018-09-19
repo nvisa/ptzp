@@ -11,26 +11,12 @@
 #include <ecl/debug.h>
 #include <ecl/interfaces/ptzcontrolinterface.h>
 #include <ecl/interfaces/ptzpatterninterface.h>
+#include <ecl/drivers/patrolng.h>
 
-class PatternNg : public PtzPatternInterface
+class PatternNg
 {
 public:
 	explicit PatternNg(PtzControlInterface *ctrl = 0);
-
-	struct preset {
-		float panPos;
-		float tiltPos;
-		int zoomPos;
-		bool stat;
-	};
-
-	struct patrol
-	{
-		QStringList pSetOrder;
-		QStringList timeOrder;
-		bool stat;
-		bool replay;
-	};
 
 	enum SyncMethod {
 		SYNC_POSITION,
@@ -68,22 +54,9 @@ public:
 	int save(const QString &filename);
 	int load(const QString &filename);
 
-	void addPreset(QString name, float panPos, float tiltPos, int zoomPos);
-	void goToPreset(QString name);
-	void deletePreset(QString name);
-	void addPatrol(QString name, QString pSet, QString time);
-//	void addPatrol(int i, const QList<QPair<QString, QString> > &pairList);
-	void runPatrol(QString name);
-	void deletePatrol(QString name);
-	void stopPatrol(QString name);
-	int currentPreset;
-	QString currentPatrol;
 
 protected:
 	void replayCurrent(int pan, int tilt, int zoom);
-
-	QHash<QString, preset>presetMap;
-	QHash<QString, patrol>patrolMap;
 
 	QElapsedTimer ptime;
 	QElapsedTimer rtime;
