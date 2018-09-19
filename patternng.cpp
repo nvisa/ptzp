@@ -6,6 +6,8 @@
 
 #include <errno.h>
 
+#include <ecl/drivers/presetng.h>
+
 /**
 	\class PatternNg
 
@@ -73,23 +75,11 @@ void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 		st.cmd = -1;
 		st.time = ptime.elapsed();
 		QMutexLocker ml(&mutex);
+		qDebug() <<  "getting position" << pan << tilt << zoom;
 		geometry << st;
 	} else if (isReplaying()) {
 		//pattern replay
 		replayCurrent(pan, tilt, zoom);
-	} else if (patrolMap[currentPatrol].replay == true) {
-		//patrol replay
-		const patrol p = patrolMap[currentPatrol];
-		int elapsed = rtime.elapsed();
-		int currentTime = p.timeOrder[currentPreset].toInt()*1000;
-
-		if (elapsed > currentTime) {
-			currentPreset++;
-			if (currentPreset >= p.timeOrder.length())
-				currentPreset = 0;
-			rtime.start();
-			goToPreset(p.pSetOrder[currentPreset]);
-		}
 	}
 }
 
@@ -203,60 +193,6 @@ int PatternNg::load(const QString &filename)
 	geometry.clear();
 	in >> geometry;
 	return 0;
-}
-
-void PatternNg::addPreset(QString name, float panPos, float tiltPos, int zoomPos)
-{
-	presetMap[name].panPos = panPos;
-	presetMap[name].tiltPos = tiltPos;
-	presetMap[name].zoomPos = zoomPos;
-	presetMap[name].stat = true;
-}
-
-void PatternNg::goToPreset(QString name)
-{
-	if(!presetMap[name].stat) {
-		return;
-	}
-	ptzctrl->goToPosition( presetMap[name].panPos, presetMap[name].tiltPos, presetMap[name].zoomPos);
-}
-
-void PatternNg::deletePreset(QString name)
-{
-	presetMap[name].stat = false;
-}
-
-void PatternNg::addPatrol(QString name, QString pSet, QString time)
-{
-	patrolMap[name].stat =true;
-	QStringList prst = pSet.split(",");
-	for(int j = 0; j < prst.length(); j++)
-		patrolMap[name].pSetOrder << prst[j];
-
-	QStringList tme = time.split(",");
-	for(int j = 0; j < prst.length(); j++)
-		patrolMap[name].timeOrder << tme[j];
-}
-
-void PatternNg::runPatrol(QString name)
-{
-	if(!patrolMap[name].stat) {
-		return;
-	}
-	patrolMap[name].replay = true;
-	currentPatrol = name;
-	goToPreset(patrolMap[name].pSetOrder[0]);
-	rtime.start();
-}
-
-void PatternNg::deletePatrol(QString name)
-{
-	patrolMap[name].stat = false;
-}
-
-void PatternNg::stopPatrol(QString name)
-{
-	patrolMap[name].replay = false;
 }
 
 void PatternNg::replayCurrent(int pan, int tilt, int zoom)
