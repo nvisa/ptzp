@@ -65,13 +65,6 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
 	ptrn = new PatternNg;
-
-	MAX_PRESET = 256;
-	MAX_PATROL = 10;
-#ifdef HAVE_PTZP_GRPC_API
-	presetList.fill(Preset(),MAX_PRESET);
-	patrolList.fill(Patrol(),MAX_PATROL);
-#endif
 }
 
 int PtzpDriver::getHeadCount()
@@ -440,42 +433,31 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
-	presetGo(request->preset_id());
-
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PresetDelete(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
-	presetDelete(request->preset_id());
-
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
-	Preset p(QString::fromStdString(request->preset_name()),request->pt_id(),request->z_id());
-
-	presetSave(request->preset_id(),p);
-
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PresetList *response)
 {
 
-	QJsonArray arr;
+//	QJsonArray arr;
 
-	for(int i=0;i<presetList.size();i++)
-		if (!(presetList.at(i).empty)) arr.append(presetList.at(i).toJson(i));
+//	for(int i=0;i<presetList.size();i++)
+//		if (!(presetList.at(i).empty)) arr.append(presetList.at(i).toJson(i));
 
-	auto doc = QJsonDocument(arr);
-	response->set_list(doc.toJson().constData());
+//	auto doc = QJsonDocument(arr);
+//	response->set_list(doc.toJson().constData());
 
 	return grpc::Status::OK;
 }
@@ -483,8 +465,6 @@ grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PatrolSave(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	// TODO: this is merely a placeholder and will be deleted.
-	patrolSave(request->patrol_id(),Patrol(QString::fromStdString(request->patrol_name()),commaToList(QString::fromStdString(request->preset_list())),commaToList(QString::fromStdString(request->interval_list()))));
 	return grpc::Status::OK;
 }
 
@@ -492,7 +472,6 @@ grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context, const ptzp::Pat
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
-	patrolRun(request->patrol_id());
 	return grpc::Status::OK;
 }
 
@@ -500,29 +479,22 @@ grpc::Status PtzpDriver::PatrolDelete(grpc::ServerContext *context, const ptzp::
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
-
-	patrolDelete(request->patrol_id());
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolStop(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	patrolStop();
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolGetList(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PresetList *response)
 {
-	QJsonArray arr;
-
-	for(int i=0;i<patrolList.size();i++)
-		if (!(patrolList.at(i).empty)) arr.append(patrolList.at(i).toJson(i));
-
-	auto doc = QJsonDocument(arr);
-
-	response->set_list(doc.toJson().constData());
-
+//	QJsonArray arr;
+//	for(int i=0;i<patrolList.size();i++)
+//		if (!(patrolList.at(i).empty)) arr.append(patrolList.at(i).toJson(i));
+//	auto doc = QJsonDocument(arr);
+//	response->set_list(doc.toJson().constData());
 	return grpc::Status::OK;
 }
 
@@ -619,60 +591,6 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	return grpc::Status::OK;
 }
 
-void PtzpDriver::timeout()
-{
-
-}
-#endif
-
-
-QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
-{
-	if (key == "status")
-		return head->getHeadStatus();
-	return QVariant();
-}
-
-#ifdef HAVE_PTZP_GRPC_API
-
-int PtzpDriver::presetGo(int id)
-{
-	Preset preset = presetList.at(id);
-
-	if (preset.empty)
-		return -1;
-
-	PtzpHead *ptHead = getHead(preset.pt_id), *zHead = getHead(preset.zoom_id);
-	if(ptHead != NULL) ptHead->panTiltGoPos(preset.pan,preset.tilt);
-	if(zHead != NULL) zHead->setZoom(preset.zoom);
-
-	return 0;
-}
-
-int PtzpDriver::presetDelete(int id)
-{
-	presetList[id].empty = true;
-	return 0;
-}
-
-int PtzpDriver::presetSave(int id, Preset preset)
-{
-	PtzpHead *ptHead = getHead(preset.pt_id), *zHead = getHead(preset.zoom_id);
-
-	if(ptHead != NULL)
-	{
-		preset.pan = ptHead->getPanAngle();
-		preset.tilt = ptHead->getTiltAngle();
-	}
-
-	if(zHead != NULL) preset.zoom = zHead->getZoom();
-
-	preset.empty = false;
-	presetList[id] = preset;
-
-	return 0;
-}
-
 QList<int> PtzpDriver::commaToList(const QString& comma)
 {
 	QList<int> ret;
@@ -692,54 +610,6 @@ QString PtzpDriver::listToComma(const QList<int> &list)
 	return ret;
 }
 
-int PtzpDriver::patrolSave(int id, PtzpDriver::Patrol patrol)
-{
-
-	for(int a : patrol.presetSequence){
-		if (presetList.at(a).empty)
-			return -1;
-	}
-
-	patrolList[id] = patrol;
-	return 0;
-}
-
-int PtzpDriver::patrolDelete(int id)
-{
-	patrolList[id].empty = true;
-	return 0;
-}
-
-int PtzpDriver::patrolRun(int id)
-{
-	patrolTimer = new QTimer(this);
-	connect(patrolTimer,SIGNAL(timeout()),this,SLOT(patrolTick()));
-
-	patrolStop();
-	if(id < 0 && id > patrolList.size())
-		return -1;
-
-	runningPatrol = patrolList.at(id);
-	if (runningPatrol.empty)
-		return -1;
-
-	int i = runningPatrol.intervals.size() , s = runningPatrol.presetSequence.size();
-	if (i!=s)
-		return -1;
-
-	isRunning = true;
-	patrolTimer->start(runningPatrol.intervals[runningPatrol.currentIndex]*1000);
-
-	return 0;
-}
-
-int PtzpDriver::patrolStop()
-{
-	isRunning = false;
-	if(patrolTimer->isActive()) patrolTimer->stop();
-
-	return 0;
-}
 
 QVariantMap PtzpDriver::jsonToMap(const QByteArray& arr)
 {
@@ -755,17 +625,16 @@ QByteArray PtzpDriver::mapToJson(const QVariantMap &map)
 {
 	return QJsonDocument::fromVariant(map).toJson();
 }
-
-void PtzpDriver::patrolTick()
-{
-	if(!isRunning)
-	{
-		patrolStop();
-		return;
-	}
-
-	presetGo(runningPatrol.presetSequence[runningPatrol.currentIndex]);
-	runningPatrol.inc();
-	patrolTimer->setInterval(runningPatrol.intervals[runningPatrol.currentIndex]*1000);
-}
 #endif
+
+void PtzpDriver::timeout()
+{
+
+}
+
+QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
+{
+	if (key == "status")
+		return head->getHeadStatus();
+	return QVariant();
+}

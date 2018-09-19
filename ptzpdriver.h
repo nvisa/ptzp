@@ -39,75 +39,10 @@ public:
 	virtual int set(const QString &key, const QVariant &value);
 
 #ifdef HAVE_PTZP_GRPC_API
-	struct Preset{
-		QString name;
-		float pan;
-		float tilt;
-		float zoom;
-		bool empty;
-		int pt_id;
-		int zoom_id;
-		Preset() : empty(true){}
-		Preset(QString name,int pt_id,int zoom_id) : empty(false), name(name), pt_id(pt_id), zoom_id(zoom_id) {}
-		Preset(QString name,float pan,float tilt,int pt_id=-1,float zoom=-1,int zoom_id=-1) : name(name),
-			pan(pan), tilt(tilt),zoom(zoom),pt_id(pt_id),zoom_id(zoom_id){
-			empty = false;
-		}
-
-		QJsonObject toJson(int id) const {
-			if (empty)
-				return {{"id", id},{"name", ""}};
-			return {{"id", id},{"name", name}};
-		}
-
-	};
-
-	struct Patrol{
-
-		QString name;
-		QList<int> intervals;
-		QList<int> presetSequence;
-		int currentIndex;
-		bool empty;
-
-		Patrol(): empty(true){}
-
-		Patrol(QString n,QList<int> i, QList<int> p) : name(n),intervals(i),presetSequence(p),
-			currentIndex(0),empty(false){}
-
-		void inc(){
-			if(currentIndex==intervals.size()) currentIndex=0;
-			else currentIndex++;
-		}
-
-		QJsonObject toJson(int id) const {
-			if (empty)
-				return {{"id", id},{"name", ""},{"sequence",""},{"interval",""}};
-			return {{"id", id},{"name", name}, {"sequence", listToComma(presetSequence)}, {"interval", listToComma(intervals)}};
-		}
-	};
-
-	virtual int presetGo(int id);
-	virtual int presetDelete(int id);
-	virtual int presetSave(int id, Preset preset);
-
-	virtual int patrolSave(int id,Patrol patrol);
-	virtual int patrolDelete(int id);
-	virtual int patrolRun(int id);
-	virtual int patrolStop();
-
 	static QList<int> commaToList(const QString& comma);
 	static QString listToComma(const QList<int>& list);
 	virtual QVariantMap jsonToMap(const QByteArray& arr);
 	virtual QByteArray mapToJson(const QVariantMap& map);
-private:
-	bool isRunning;
-	Patrol runningPatrol;
-	QTimer *patrolTimer;
-	QVector<Preset> presetList;
-	QVector<Patrol> patrolList;
-	int MAX_PRESET;
-	int MAX_PATROL;
 #endif
 
 private slots:
