@@ -3,6 +3,7 @@
 #include "net/remotecontrol.h"
 
 #include <drivers/patternng.h>
+#include <drivers/presetng.h>
 #include <ecl/ptzp/ptzphead.h>
 #include <ecl/ptzp/ptzptransport.h>
 
@@ -143,6 +144,8 @@ QVariant PtzpDriver::get(const QString &key)
 
 int PtzpDriver::set(const QString &key, const QVariant &value)
 {
+	PatrolNg *ptrl = PatrolNg::getInstance();
+	PresetNg *prst = PresetNg::getInstance();
 	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (defaultPTHead == NULL || defaultModuleHead == NULL)
 		return -ENODEV;
@@ -197,20 +200,32 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 	else if (key == "pattern_replay")
 		ptrn->replay();
 	else if (key == "preset_save")
-		ptrn->addPreset(value.toString(),defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
+		prst->addPreset(value.toString(),defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
 	else if (key == "preset_delete")
-		ptrn->deletePreset(value.toString());
-	else if (key == "preset_goto")
-		ptrn->goToPreset(value.toString());
-	else if (key == "patrol_save"){
-		QStringList str = value.toString().split(".");
-		ptrn->addPatrol(str[0], str[1], str[2]);
-	} else if (key == "patrol_delete")
-		ptrn->deletePatrol(value.toString());
-	else if (key == "patrol_run")
-		ptrn->runPatrol(value.toString());
-	else if (key == "patrol_stop")
-		ptrn->stopPatrol(value.toString());
+		prst->deletePreset(value.toString());
+	else if (key == "preset_goto") {
+		QStringList pos = prst->getPreset(value.toString());
+		if (!pos.isEmpty())
+			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
+		else return -EINVAL;
+	}
+	else if (key == "patrol_list") {
+		QString presets = value.toString();
+		if (presets.contains(","))
+			ptrl->addPatrol(presets.split(","));
+	} else if (key == "patrol_interval") {
+		QString intervals = value.toString();
+		if (intervals.contains(","))
+			ptrl->addInterval(intervals.split(","));
+	} else if (key == "patrol_ind") {
+		ptrl->setPatrolIndex(value.toInt());
+	} else if (key == "patrol_delete") {
+		ptrl->deletePatrol();
+	} else if (key == "patrol_state_run") {
+		ptrl->setPatrolStateRun(value.toInt());
+	} else if (key == "patrol_state_stop") {
+		ptrl->setPatrolStateStop(value.toInt());
+	}
 	else
 		return -ENOENT;
 
@@ -219,12 +234,13 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 
 void PtzpDriver::goToPosition(float p, float t, int z)
 {
-	defaultModuleHead->setZoom(z) ;
+	defaultModuleHead->setZoom(z);
 	defaultPTHead->panTiltGoPos(p, t);
 }
 
 void PtzpDriver::sendCommand(int c, float par1, int par2)
 {
+	qDebug() << "command"  << c << par1;
 	if (c == C_PAN_LEFT)
 		defaultPTHead->panLeft(par1);
 	else if (c == C_PAN_RIGHT)
@@ -264,17 +280,42 @@ void PtzpDriver::timeout()
 	ptrn->positionUpdate(defaultPTHead->getPanAngle(),
 						 defaultPTHead->getTiltAngle(),
 						 defaultModuleHead->getZoom());
-	if(time->elapsed() >= 10000) {
-		defaultModuleHead->saveRegisters();
-		time->restart();
+	PatrolNg *ptrl = PatrolNg::getInstance();
+	if (ptrl->getCurrentPatrol().state != 0) { // patrol
+		static QElapsedTimer elaps;
+		static int listPos = 0;
+		PatrolNg::PatrolInfo *patrol = &ptrl->getCurrentPatrol();
+		if (patrol->list.isEmpty()) {
+			ptrl->setPatrolStateStop(patrol->patrolId);
+			return;
+		}
+		QPair<QString, int> pp = patrol->list[listPos];
+		QString preset = pp.first;
+		int waittime = pp.second;
+		if (elaps.elapsed() >= waittime) {
+			listPos ++;
+			if (listPos == patrol->list.size())
+				listPos = 0;
+			pp = patrol->list[listPos];
+			preset = pp.first;
+			waittime = pp.second;
+			elaps.restart();
+			PresetNg *prst = PresetNg::getInstance();
+			QStringList pos = prst->getPreset(preset);
+			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
+		}
 	}
-	if(timeSettingsLoad->elapsed() <= 50)
-		defaultModuleHead->loadRegisters();
-}
+		if(time->elapsed() >= 10000) {
+			defaultModuleHead->saveRegisters();
+			time->restart();
+		}
+		if(timeSettingsLoad->elapsed() <= 50)
+			defaultModuleHead->loadRegisters();
+	}
 
-QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
-{
-	if (key == "status")
-		return head->getHeadStatus();
-	return QVariant();
-}
+	QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
+	{
+		if (key == "status")
+			return head->getHeadStatus();
+		return QVariant();
+	}
