@@ -125,6 +125,7 @@ int MgeoThermalHead::startZoomIn(int speed)
 	cmd[3] = 0x01;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
+	sendCommand(C_CONT_ZOOM,cmd[3]);
 	return 0;
 }
 
@@ -135,6 +136,7 @@ int MgeoThermalHead::startZoomOut(int speed)
 	cmd[3] = 0xff;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
+	sendCommand(C_CONT_ZOOM,cmd[3]);
 	return 0;
 }
 
@@ -144,6 +146,7 @@ int MgeoThermalHead::stopZoom()
 	cmd[3] = 0x00;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
+	sendCommand(C_CONT_ZOOM,cmd[3]);
 	return 0;
 }
 
@@ -161,7 +164,7 @@ int MgeoThermalHead::getHeadStatus()
 	return ST_ERROR;
 }
 
-void MgeoThermalHead::setProperty(int r, uint x)
+void MgeoThermalHead::setProperty(uint r, uint x)
 {
 /*
  * p[0]		p[1]		p[2]		p[3]		p[4]		p[5]		p[6]		p[7]		p[8]		p[9]

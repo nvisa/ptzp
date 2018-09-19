@@ -148,7 +148,7 @@ PtzpSerialTransport::PtzpSerialTransport()
 
 int PtzpSerialTransport::connectTo(const QString &targetUri)
 {
-	QStringList fields = targetUri.split(";");
+	QStringList fields = targetUri.split("?");
 	QString filename = fields.first();
 	QHash<QString, QString> values;
 	for (int i = 0; i < fields.size(); i++) {
@@ -164,8 +164,18 @@ int PtzpSerialTransport::connectTo(const QString &targetUri)
 	port->setParity(PAR_NONE);
 	port->setDataBits(DATA_8);
 	port->setStopBits(STOP_1);
-	if (values.contains("baud"))
-		port->setBaudRate((BaudRateType)values["baud"].toInt());
+	for (int i = 0 ; i < values.size(); i++) {
+		if (values.contains("baud"))
+			port->setBaudRate((BaudRateType)values["baud"].toInt());
+		else if (values.contains("flow"))
+			port->setFlowControl((FlowType)values["flow"].toInt());
+		else if (values.contains("parity"))
+			port->setParity((ParityType)values["parity"].toInt());
+		else if (values.contains("databits"))
+			port->setDataBits((DataBitsType)values["databits"].toInt());
+		else if (values.contains("stopbits"))
+			port->setStopBits((StopBitsType)values["stopbits"].toInt());
+	}
 	if (!port->open(QIODevice::ReadWrite)) {
 		fDebug("error opening serial port '%s': %s", qPrintable(port->portName()), strerror(errno));
 		return -EPERM;

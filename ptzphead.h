@@ -50,11 +50,15 @@ public:
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
+	virtual int saveRegisters();
+	virtual void loadRegisters();
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
 #endif
 	int getErrorCount(uint err);
+	virtual void enableSyncing(bool en);
+	virtual void setSyncInterval(int interval);
 
 	static int dataReady(const unsigned char *bytes, int len, void *priv);
 	static QByteArray transportReady(void *priv);

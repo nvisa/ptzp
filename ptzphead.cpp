@@ -192,6 +192,16 @@ int PtzpHead::getErrorCount(uint err)
 	return errorCount[err];
 }
 
+void PtzpHead::enableSyncing(bool en)
+{
+	Q_UNUSED(en);
+}
+
+void PtzpHead::setSyncInterval(int interval)
+{
+	Q_UNUSED(interval);
+}
+
 int PtzpHead::dataReady(const unsigned char *bytes, int len, void *priv)
 {
 	return ((PtzpHead *)priv)->dataReady(bytes, len);
@@ -267,6 +277,15 @@ void PtzpHead::setProperty(uint r, uint x)
 	Q_UNUSED(x);
 }
 
+int PtzpHead::saveRegisters()
+{
+
+}
+
+void PtzpHead::loadRegisters()
+{
+
+}
 #ifdef HAVE_PTZP_GRPC_API
 QVariantMap PtzpHead::getSettings()
 {
@@ -278,9 +297,7 @@ QVariantMap PtzpHead::getSettings()
 
 void PtzpHead::setSettings(QVariantMap keyMap)
 {
-	for (auto key : keyMap.keys()){
+	for (auto key : keyMap.keys())
 		setProperty(settings[key].first, keyMap[key].toUInt());
-	}
-
 }
 #endif

@@ -3,9 +3,13 @@
 #include "ptzptransport.h"
 #include "ioerrors.h"
 
+#include <QFile>
 #include <QList>
 #include <QMutex>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QMutexLocker>
+#include <QJsonDocument>
 
 #include <errno.h>
 
@@ -32,6 +36,7 @@ enum Commands {
 	C_VISCA_SET_DEFOG_MODE,		//27 //td:nd
 	C_VISCA_SET_DIGI_ZOOM_STAT,	//28 //td:nd
 	C_VISCA_SET_ZOOM_TYPE,		//29 //td:nd
+	C_VISCA_SET_FOCUS,
 	C_VISCA_SET_FOCUS_MODE,		//30 //td:nd
 	C_VISCA_SET_ZOOM_TRIGGER,	//31 //td:nd
 	C_VISCA_SET_BLC_STATUS,		//32 //td:nd
@@ -93,6 +98,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x07, 0x00, 0x81, 0x01, 0x04, 0x37, 0x00, 0x00, 0xff },	//set defog mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x06, 0x00, 0xff },//digizoom
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x36, 0x00, 0xff },//zoom type
+	{0x06, 0x00, 0x81, 0x01, 0x04, 0x08, 0x00, 0xff },//set focus far-near
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x38, 0x00, 0xff },	//set focus mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x57, 0x00, 0xFF },	//set zoom trigger
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x33, 0x00, 0xff },//se BLC stat
@@ -161,6 +167,7 @@ OemModuleHead::OemModuleHead()
 	hist = new CommandHistory;
 	nextSync = C_COUNT;
 	syncEnabled = true;
+	syncInterval = 40;
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -216,6 +223,7 @@ int OemModuleHead::getHeadStatus()
 
 int OemModuleHead::startZoomIn(int speed)
 {
+	zoomRatio = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_IN];
 	hist->add(C_VISCA_ZOOM_IN);
 	p[4 + 2] = 0x20 + speed;
@@ -224,6 +232,7 @@ int OemModuleHead::startZoomIn(int speed)
 
 int OemModuleHead::startZoomOut(int speed)
 {
+	zoomRatio = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_OUT];
 	hist->add(C_VISCA_ZOOM_OUT);
 	p[4 + 2] = 0x30 + speed;
@@ -256,6 +265,13 @@ int OemModuleHead::setZoom(uint pos)
 void OemModuleHead::enableSyncing(bool en)
 {
 	syncEnabled = en;
+	mInfo("Sync status: %d", (int)syncEnabled);
+}
+
+void OemModuleHead::setSyncInterval(int interval)
+{
+	syncInterval = interval;
+	mInfo("Sync interval: %d", syncInterval);
 }
 
 int OemModuleHead::syncNext()
@@ -267,6 +283,8 @@ int OemModuleHead::syncNext()
 
 int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 {
+	for (int i = 0 ; i < len; i++)
+		mLogv("%d", bytes[i]);
 	const unsigned char *p = bytes;
 	if (p[0] != 0x90)
 		return -1;
@@ -303,6 +321,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	/* register sync support */
 	if (nextSync != C_COUNT) {
 		/* we are in sync mode, let's sync next */
+		mInfo("Next sync property: %d",nextSync);
 		if (++nextSync == C_COUNT) {
 			fDebug("Visca register syncing completed, activating auto-sync");
 		} else
@@ -314,50 +333,70 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		if (exVal == 0)			//Açıklama için setProperty'de exposure kısmına bakın!
 			exVal = 13;
 		else exVal = 17 - exVal;
+		mInfo("Exposure value synced");
 		setRegister(R_EXPOSURE_VALUE , exVal);
 	} else if(sendcmd == C_VISCA_GET_GAIN) {
+		mInfo("Gain Value synced");
 		setRegister(R_GAIN_VALUE , (p[4] << 4 | p[5]));
 	} else if(sendcmd == C_VISCA_GET_EXP_COMPMODE){
+		mInfo("Ex Comp Mode synced");
 		setRegister(R_EXP_COMPMODE , (p[2] == 0x02));
 	} else if(sendcmd == C_VISCA_GET_EXP_COMPVAL){
+		mInfo("Ex Comp Value synced");
 		setRegister(R_EXP_COMPVAL , ((p[4] << 4) + p[5]));
 	} else if(sendcmd == C_VISCA_GET_GAIN_LIM){
+		mInfo("Gain Limit synced");
 		setRegister(R_GAIN_LIM , (p[2] - 4));
 	} else if(sendcmd == C_VISCA_GET_SHUTTER){
+		mInfo("Shutter synced");
 		setRegister(R_SHUTTER , (p[4] << 4 | p[5]));
 	} else if(sendcmd == C_VISCA_GET_NOISE_REDUCT){
+		mInfo("Noise Reduct synced");
 		setRegister(R_NOISE_REDUCT , p[2]);
 	} else if(sendcmd == C_VISCA_GET_WDRSTAT){
+		mInfo("Wdr Status synced");
 		setRegister(R_WDRSTAT , (p[2] == 0x02));
 	} else if(sendcmd == C_VISCA_GET_GAMMA){
+		mInfo("Gamma synced");
 		setRegister(R_GAMMA , p[2]);
 	} else if(sendcmd == C_VISCA_GET_AWB_MODE){
+		mInfo("Awb Mode synced");
 		char val = p[2];
 		if (val > 0x03)
 			val -= 1;
 		setRegister(R_AWB_MODE , val);
 	} else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
+		mInfo("Defog Mode synced");
 		setRegister(R_DEFOG_MODE , (p[2] == 0x02));
 	} else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
+		mInfo("Digi Zoom Status synced");
 		setRegister(R_DIGI_ZOOM_STAT,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TYPE){
+		mInfo("Zoom Type synced");
 		setRegister(R_ZOOM_TYPE,p[2]);
 	} else if(sendcmd == C_VISCA_GET_FOCUS_MODE){
+		mInfo("Focus mode synced");
 		setRegister(R_FOCUS_MODE,p[2]);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TRIGGER){
+		mInfo("Zoom Trigger synced");
 		if (p[2] == 0x01)
 			setRegister(R_ZOOM_TRIGGER,0);
 		else if (p[2] == 0x02)
 			setRegister(R_ZOOM_TRIGGER,1);
 	} else if(sendcmd == C_VISCA_GET_BLC_STATUS){
+		mInfo("BLC status synced");
 		setRegister(R_BLC_STATUS,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_IRCF_STATUS){
+		mInfo("Ircf Status synced");
 		setRegister(R_IRCF_STATUS,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_AUTO_ICR){
+		mInfo("Auto Icr synced");
 		setRegister(R_AUTO_ICR,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_PROGRAM_AE_MODE){
+		mInfo("Program AE Mode synced");
 		setRegister(R_PROGRAM_AE_MODE,p[2]);
 	} else if(sendcmd == C_VISCA_GET_ZOOM){
+		mLogv("Zoom Position synced");
 		uint value =
 				((p[2] & 0x0F) << 12) +
 				((p[3] & 0x0F) << 8) +
@@ -365,15 +404,19 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 				((p[5] & 0x0F) << 0);
 		setRegister(R_ZOOM_POS, value);
 	} else if(sendcmd == C_VISCA_GET_FLIP_MODE){
+		mInfo("Flip Status synced");
 		setRegister(R_FLIP,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_MIRROR_MODE){
+		mInfo("Mirror status synced");
 		setRegister(R_MIRROR,(p[2] == 0x02) ? true : false);
 	}
 
 	if(getRegister(R_ZOOM_POS) >= 16384){
+		mLogv("Optic and digital zoom position synced");
 		setRegister(R_DIGI_ZOOM_POS,getRegister(R_ZOOM_POS)-16384);
 		setRegister(R_OPTIC_ZOOM_POS,16384);
 	} else if (getRegister(R_ZOOM_POS) < 16384){
+		mLogv("Optic and digital zoom position synced");
 		setRegister(R_OPTIC_ZOOM_POS,getRegister(R_ZOOM_POS));
 		setRegister(R_DIGI_ZOOM_POS,0);
 	}
@@ -393,7 +436,8 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray OemModuleHead::transportReady()
 {
-	if (syncEnabled && syncTime.elapsed() > 40) {
+	if (syncEnabled && syncTime.elapsed() > syncInterval) {
+		mLogv("Syncing zoom positon");
 		syncTime.restart();
 		const unsigned char *p = protoBytes[C_VISCA_GET_ZOOM];
 		hist->add(C_VISCA_GET_ZOOM);
@@ -403,6 +447,7 @@ QByteArray OemModuleHead::transportReady()
 }
 void OemModuleHead::setProperty(uint r, uint x)
 {
+	mInfo("Set Property %d , value: %d", r, x);
 	if (r == C_VISCA_SET_EXPOSURE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE];
 		hist->add(C_VISCA_SET_EXPOSURE );
@@ -550,10 +595,11 @@ void OemModuleHead::setProperty(uint r, uint x)
 		hist->add(C_VISCA_SET_ONE_PUSH );
 		p[4 + 2] = 0x01;
 		transport->send((const char *)p + 2, p[0]);
-	} else if (r == 22){
-		setRegister(R_PT_SPEED, (int)x);
-	} else if (r == 23){
-		setRegister(R_ZOOM_SPEED, (int)x);
+	} else if (r == C_VISCA_SET_FOCUS) {
+		unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
+		hist->add(C_VISCA_SET_FOCUS);
+		p[4 + 2] = x ;
+		transport->send((const char *)p + 2, p[0]);
 	}
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0){
@@ -566,6 +612,42 @@ void OemModuleHead::setProperty(uint r, uint x)
 		setRegister(R_DISPLAY_ROT,3);
 		getRegister(R_DISPLAY_ROT);
 	}
+}
+int OemModuleHead::saveRegisters()
+{
+	QJsonObject json;
+	QString fileName = "oemmodule.json";
+	QFile f(fileName);
+	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
+		return -EPERM;
+	for(int i = 0; i < R_COUNT; i++)
+		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
+	json.insert(QString("deviceDefiniton"), (QString)deviceDefinition);
+	json.insert(QString("zoomRatio"),(int)zoomRatio);
+	QJsonDocument doc;
+	doc.setObject(json);
+	f.write(doc.toJson());
+	f.close();
+	return 0;
+}
+
+void OemModuleHead::loadRegisters()
+{
+	QFile f("oemmodule.json");
+	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
+		return ;
+	const QByteArray &json = f.readAll();
+	f.close();
+	const QJsonDocument &doc = QJsonDocument::fromJson(json);
+	QJsonObject root = doc.object();
+	QString key = "reg%1";
+	for(int i = 0 ; i <= 21; i++) {
+		if(i == 2)
+			setZoom((uint)root.value(key.arg(i)).toInt());
+		setProperty(i,root.value(key.arg(i)).toInt());
+	}
+	deviceDefinition = root.value("deviceDefiniton").toString();
+	zoomRatio = root.value("zoomRatio").toInt();
 }
 uint OemModuleHead::getProperty(uint r)
 {
@@ -580,4 +662,229 @@ void OemModuleHead::setDeviceDefinition(QString definition)
 QString OemModuleHead::getDeviceDefinition()
 {
 	return deviceDefinition;
+}
+
+int OemModuleHead::getZoomRatio()
+{
+	return zoomRatio;
+}
+
+/**
+ * @brief OemModuleHead::maskSet
+ * @param maskID : visca is have 24 mask ID, from 0 to 23
+ * @param nn : if 0 ,this mask is used one time after reset setting, if 1, setting is record
+ * @param width : width +-0x50
+ * @param height : height +-0x2d
+ * @return
+ */
+
+int OemModuleHead::maskSet(uint maskID, int width, int height, bool nn)
+{
+	if((maskID > 0x17) || (width > 0x50) || (width < -0x50) || (height > 0x2D) || (height < -0x2D))
+		return -ENODATA;
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x76, maskID & 0xFF,
+						 nn, (uchar(width) & 0xF0) >> 4, uchar(width) & 0x0F,
+						 (uchar(height) & 0xF0) >> 4, uchar(height) & 0x0F, 0xFF };
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+/**
+ * @brief OemModuleHead::maskSetNoninterlock
+ * @param  : visca is have 24 mask ID, from 0 to 23
+ * @param x : horizonal +-0x50
+ * @param y : vertical +-0x2d
+ * @param width : width +-0x50
+ * @param height : height +-0x2d
+ * @param nn : if 0 ,this mask is used one time after reset setting, if 1, setting is record
+ * @return
+ */
+
+int OemModuleHead::maskSetNoninterlock(uint maskID, int x, int y, int width, int height)
+{
+	if((maskID > 0x17) || (width > 0x50) || (width < -0x50) ||
+	   (height > 0x2D) || (height < -0x2D)||
+	   (x > 0x50) || (x < -0x50) ||
+	   (y > 0x2D) || (y < -0x2D))
+		return -ENODATA;
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x6F, maskID & 0xFF,
+						 (x & 0xF0) >> 4, x & 0x0F,
+						 (y & 0xF0) >> 4, y & 0x0F,
+						 (uchar(width) & 0xF0) >> 4, uchar(width) & 0x0F,
+						 (uchar(height) & 0xF0) >> 4, uchar(height) & 0x0F, 0xFF };
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+int OemModuleHead::maskSetPTZ(uint maskID, int pan, int tilt, uint zoom)
+{
+	if (maskRanges.pMax == maskRanges.pMin)
+		return -ENODATA;
+	if (maskRanges.tMax == maskRanges.tMin)
+		return -ENODATA;
+	if (maskRanges.xMax == maskRanges.xMin)
+		return -ENODATA;
+	if (maskRanges.yMax == maskRanges.yMin)
+		return -ENODATA;
+
+	if (hPole)
+		pan = maskRanges.pMax - pan;
+	if (vPole)
+		tilt = maskRanges.tMax - tilt;
+
+	if (tilt > 9000)
+		tilt += 18000;
+
+	tilt = tilt * yTiltRate + maskRanges.yMin;
+	pan = pan * xPanRate + maskRanges.xMin;
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x7B, maskID,
+						 uchar((0xf00 & pan) >> 8), uchar((0xf0 & pan) >> 4), uchar(0xf & pan),
+						 uchar((0xf00 & tilt) >> 8), uchar((0xf0 & tilt) >> 4), uchar(0xf & tilt),
+						 uchar((0xf000 & zoom) >> 16),uchar((0xf00 & zoom) >> 8), uchar((0xf0 & zoom) >> 4),
+						 uchar((0xf & zoom)), 0xFF};
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+int OemModuleHead::maskSetPanTiltAngle(int pan, int tilt)
+{
+	if (maskRanges.pMax == maskRanges.pMin)
+		return -ENODATA;
+	if (maskRanges.tMax == maskRanges.tMin)
+		return -ENODATA;
+
+	if (hPole)
+		pan = maskRanges.pMax - pan;
+	if (vPole)
+		tilt = maskRanges.tMax - tilt;
+
+	if (tilt > 9000)
+		tilt += 18000;
+
+	tilt = tilt * yTiltRate + maskRanges.yMin;
+	pan = pan * xPanRate + maskRanges.xMin;
+
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x79,
+						 uchar((0xf00 & pan) >> 8), uchar((0xf0 & pan) >> 4), uchar(0xf & pan),
+						 uchar((0xf00 & tilt) >> 8), uchar((0xf0 & tilt) >> 4), uchar((0xf & tilt)), 0xFF};
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+int OemModuleHead::maskSetRanges(int panMax, int panMin, int xMax, int xMin, int tiltMax, int tiltMin, int yMax, int yMin, bool hConvert, bool vConvert)
+{
+	if (panMax == panMin)
+		return -ENODATA;
+	maskRanges.pMax = panMax;
+	maskRanges.pMin = panMin;
+
+	if (tiltMax == tiltMin)
+		return -ENODATA;
+	maskRanges.tMax = tiltMax;
+	maskRanges.tMin = tiltMin;
+
+	if (xMax == xMin)
+		return -ENODATA;
+	maskRanges.xMax = xMax;
+	maskRanges.xMin = xMin;
+
+	if (yMax == yMin)
+		return -ENODATA;
+	maskRanges.yMax = yMax;
+	maskRanges.yMin = yMin;
+
+	hPole = hConvert;
+	vPole = vConvert;
+
+	xPanRate = (1.0 * maskRanges.xMax - 1.0 * maskRanges.xMin) / (1.0 * maskRanges.pMax - 1.0 * maskRanges.pMin);
+	yTiltRate = (1.0 * maskRanges.yMax - 1.0 * maskRanges.yMin) / (1.0 * maskRanges.tMax - 1.0 * maskRanges.tMin);
+	return 0;
+}
+
+int OemModuleHead::maskDisplay(uint maskID, bool onOff)
+{
+	if (maskID > 17)
+		maskID += 6;
+	else if (maskID > 11)
+		maskID += 4;
+	else if (maskID > 5)
+		maskID += 2;
+
+	if (onOff)
+		maskBits |= (1 << maskID);
+	else
+		maskBits &= ~(1 << maskID);
+	maskBits &= 0x3F3F3F3F;
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x77, (maskBits & 0xff000000) >> 24,
+						 (maskBits & 0xff0000) >> 16, (maskBits & 0xff00) >> 8,
+						 (maskBits & 0xff), 0xff };
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+void OemModuleHead::updateMaskPosition()
+{
+//	vGetZoom();
+//	if (!lastV.panTitlSupport)
+//		return;
+//	sGetPos();
+//	if (maskBits)
+//		maskSetPanTiltAngle(lastV.position.first, lastV.position.second);
+}
+
+/**
+ * @brief OemModuleHead::maskColor
+ * @param maskID
+ * @param color_0
+ * @param color_1
+ * @param colorChoose
+ * @return
+ * [china dome is not supported]
+ */
+
+int OemModuleHead::maskColor(uint maskID, OemModuleHead::MaskColor color_0, OemModuleHead::MaskColor color_1, bool colorChoose)
+{
+	uint maskBits = 0;
+	if (colorChoose == true)
+		maskBits |= (1 << maskID);
+	else
+		maskBits &= ~(1 << maskID);
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x78, (maskBits & 0xff000000) >> 24,
+						 (maskBits & 0xff0000) >> 16, (maskBits & 0xff00) >> 8,
+						 (maskBits & 0xff),(((int)color_0) & 0xff),
+						 (((int)color_1) & 0xff), 0xff };
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+/**
+ * @brief OemModuleHead::maskGrid
+ * @param onOffCenter
+ * [china dome is not supported]
+ * @return
+ */
+
+int OemModuleHead::maskGrid(OemModuleHead::MaskGrid onOffCenter)
+{
+	const uchar cmd[] = {0x81, 0x01, 0x04, 0x7C, onOffCenter, 0xff };
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+static uint checksum(const uchar *cmd, uint lenght)
+{
+	unsigned int sum = 0;
+	for (uint i = 1; i < lenght; i++)
+		sum += cmd[i];
+	return sum & 0xff;
+}
+
+int OemModuleHead::setIRLed(int led)
+{
+	uchar cmd[] = {0xff, 0xff, 0x00, 0x9b, 0x00, 0x00, 0x00};
+	if (led == 8) {
+		cmd[4] = 0x00;
+		cmd[5] = 0x00;
+	} else if (led == 0) {
+		cmd[4] = 0x00;
+		cmd[5] = 0x01;
+	} else {
+		cmd[4] = 0x01;
+		cmd[5] = (uint)led - 1;
+	}
+	cmd[6] = checksum(cmd, 6);
+	return transport->send((const char *)cmd, sizeof(cmd));
 }

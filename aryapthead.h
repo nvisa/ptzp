@@ -21,6 +21,7 @@ public:
 	virtual int panTiltStop();
 	virtual float getPanAngle();
 	virtual float getTiltAngle();
+	int panTiltGoPos(float ppos, float tpos);
 
 protected:
 	QStringList ptzCommandList;

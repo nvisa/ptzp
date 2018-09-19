@@ -17,6 +17,7 @@ AryaDriver::AryaDriver(QObject *parent)
 	state = INIT;
 	defaultPTHead = aryapt;
 	defaultModuleHead = thermal;
+	configLoad("config.json");
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
@@ -49,6 +50,7 @@ PtzpHead *AryaDriver::getHead(int index)
 
 void AryaDriver::timeout()
 {
+	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
 		state = SYNC_ALL_MODULES;
@@ -77,6 +79,7 @@ void AryaDriver::timeout()
 
 QVariant AryaDriver::get(const QString &key)
 {
+	mInfo("Get func: %s", qPrintable(key));
 	if (key == "ptz.get_cooled_down")
 		return QString("%1")
 			.arg(thermal->getProperty(0));
@@ -166,6 +169,7 @@ QVariant AryaDriver::get(const QString &key)
 
 int AryaDriver::set(const QString &key, const QVariant &value)
 {
+	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (key == "ptz.cmd.brightness") {
 		thermal->setProperty(0, value.toUInt());
 
@@ -236,6 +240,23 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	else if (key == "ptz.cmd.gungor.digi_zoom")
 		gungor->setProperty(12, value.toUInt());
 
-	return PtzpDriver::set(key, value);
+	else PtzpDriver::set(key, value);
 	return 0;
+}
+
+void AryaDriver::configLoad(const QString filename)
+{
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+		return ;
+	const QByteArray &json = f.readAll();
+	f.close();
+	const QJsonDocument &doc = QJsonDocument::fromJson(json);
+
+	QJsonObject root = doc.object();
+	config.model = root["model"].toString();
+	config.type = root["type"].toString();
+	config.cam_module = root["cam_module"].toString();
+	config.ptSupport = root["pan_tilt_support"].toInt();
+	config.irLedSupport = root["ir_led_support"].toInt();
 }
