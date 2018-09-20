@@ -55,8 +55,8 @@ public:
 	void sendCommand(int c, float par1, int par2);
 
 #ifdef HAVE_PTZP_GRPC_API
-	static QList<int> commaToList(const QString& comma);
-	static QString listToComma(const QList<int>& list);
+	static QStringList commaToList(const QString& comma);
+	static QString listToComma(const QStringList& list);
 	virtual QVariantMap jsonToMap(const QByteArray& arr);
 	virtual QByteArray mapToJson(const QVariantMap& map);
 #endif
@@ -98,6 +98,7 @@ public:
 	grpc::Status PatternStop(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response);
 	grpc::Status PatternStartRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response);
 	grpc::Status PatternStopRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response);
+	grpc::Status PatternDelete(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response);
 	grpc::Status PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response);
 	// settings
 	grpc::Status GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);

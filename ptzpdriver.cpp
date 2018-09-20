@@ -68,7 +68,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	timeSettingsLoad->start();
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
-	ptrn = new PatternNg(this);
+	ptrn = new PatternNg();
 }
 
 int PtzpDriver::getHeadCount()
@@ -152,23 +152,23 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 
 	if (key == "ptz.cmd.pan_left") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_PAN_LEFT, value.toFloat(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_LEFT, value.toFloat(),0);
 		defaultPTHead->panLeft(value.toFloat());
 	} else if (key == "ptz.cmd.pan_right") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_PAN_RIGHT, value.toFloat(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_RIGHT, value.toFloat(),0);
 		defaultPTHead->panRight(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_down") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_TILT_DOWN, value.toFloat(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_DOWN, value.toFloat(),0);
 		defaultPTHead->tiltDown(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_up") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_TILT_UP, value.toFloat(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_UP, value.toFloat(),0);
 		defaultPTHead->tiltUp(value.toFloat());
 	} else if (key == "ptz.cmd.pan_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_PAN_TILT_STOP, value.toInt(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_TILT_STOP, value.toInt(),0);
 		defaultPTHead->panTiltAbs(0, 0);
 	} else if (key == "ptz.cmd.pan_tilt_abs") {
 		const QStringList &vals = value.toString().split(";");
@@ -179,15 +179,15 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 		defaultPTHead->panTiltAbs(pan, tilt);
 	} else if (key == "ptz.cmd.zoom_in") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_ZOOM_IN, value.toInt(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_IN, value.toInt(),0);
 		defaultModuleHead->startZoomIn(value.toInt());
 	} else if (key == "ptz.cmd.zoom_out") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_ZOOM_OUT, value.toInt(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_OUT, value.toInt(),0);
 		defaultModuleHead->startZoomOut(value.toInt());
 	} else if (key == "ptz.cmd.zoom_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),C_ZOOM_STOP, value.toInt(),0);
+							defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_STOP, value.toInt(),0);
 		defaultModuleHead->stopZoom();
 	} else if (key == "pattern_start")
 		ptrn->start(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
@@ -241,21 +241,21 @@ void PtzpDriver::goToPosition(float p, float t, int z)
 void PtzpDriver::sendCommand(int c, float par1, int par2)
 {
 	qDebug() << "command"  << c << par1;
-	if (c == C_PAN_LEFT)
+	if (c == PtzControlInterface::C_PAN_LEFT)
 		defaultPTHead->panLeft(par1);
-	else if (c == C_PAN_RIGHT)
+	else if (c == PtzControlInterface::C_PAN_RIGHT)
 		defaultPTHead->panRight(par1);
-	else if (c == C_TILT_DOWN)
+	else if (c == PtzControlInterface::C_TILT_DOWN)
 		defaultPTHead->tiltDown(par1);
-	else if (c == C_TILT_UP)
+	else if (c == PtzControlInterface::C_TILT_UP)
 		defaultPTHead->tiltUp(par1);
-	else if (c == C_ZOOM_IN)
+	else if (c == PtzControlInterface::C_ZOOM_IN)
 		defaultModuleHead->startZoomIn((int)par1);
-	else if (c == C_ZOOM_OUT)
+	else if (c == PtzControlInterface::C_ZOOM_OUT)
 		defaultModuleHead->startZoomOut((int)par1);
-	else if (c == C_ZOOM_STOP)
+	else if (c == PtzControlInterface::C_ZOOM_STOP)
 		defaultModuleHead->stopZoom();
-	else if (c == C_PAN_TILT_STOP)
+	else if (c == PtzControlInterface::C_PAN_TILT_STOP)
 		defaultPTHead->panTiltStop();
 }
 
@@ -497,7 +497,6 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context, const ptzp:
 	{
 		return grpc::Status::CANCELLED;
 	}
-
 	response->set_pan_pos(head->getPanAngle());
 	response->set_tilt_pos(head->getTiltAngle());
 	response->set_zoom_pos(head->getZoom());
@@ -508,18 +507,23 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	QStringList li = PresetNg::getInstance()->getPreset(QString::fromStdString(request->preset_name()));
+	goToPosition(li[0].toFloat(),li[1].toFloat(),li[2].toInt());
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PresetDelete(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	PresetNg::getInstance()->deletePreset(QString::fromStdString(request->preset_name()));
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	PresetNg::getInstance()->addPreset(QString::fromStdString(request->preset_name()),defaultPTHead->getPanAngle(),defaultPTHead->getTiltAngle(),defaultModuleHead->getZoom());
+	request->preset_id();
 	return grpc::Status::OK;
 }
 
@@ -534,12 +538,19 @@ grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp:
 //	auto doc = QJsonDocument(arr);
 //	response->set_list(doc.toJson().constData());
 
+	response->set_list(PresetNg::getInstance()->getList());
+
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolSave(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	auto patrolNg = PatrolNg::getInstance();
+	patrolNg->setPatrolIndex(request->patrol_id());
+	patrolNg->addPatrol(commaToList(QString::fromStdString(request->preset_list())));
+	patrolNg->addInterval(commaToList(QString::fromStdString(request->interval_list())));
+
 	return grpc::Status::OK;
 }
 
@@ -547,6 +558,7 @@ grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context, const ptzp::Pat
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
+	PatrolNg::getInstance()->setPatrolStateRun(request->patrol_id());
 	return grpc::Status::OK;
 }
 
@@ -554,12 +566,15 @@ grpc::Status PtzpDriver::PatrolDelete(grpc::ServerContext *context, const ptzp::
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
+	PatrolNg::getInstance()->setPatrolIndex(request->patrol_id());
+	PatrolNg::getInstance()->deletePatrol();
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolStop(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	PatrolNg::getInstance()->setPatrolStateStop(request->patrol_id());
 	return grpc::Status::OK;
 }
 
@@ -576,24 +591,43 @@ grpc::Status PtzpDriver::PatrolGetList(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PatternRun(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	ptrn->load(QString::fromStdString(request->pattern_name()));
+	ptrn->replay();
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternStop(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	ptrn->stop(defaultPTHead->getPanAngle(),
+						 defaultPTHead->getTiltAngle(),
+						 defaultModuleHead->getZoom());
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternStartRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	ptrn->start(defaultPTHead->getPanAngle(),
+				defaultPTHead->getTiltAngle(),
+				defaultModuleHead->getZoom());
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternStopRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	ptrn->stop(defaultPTHead->getPanAngle(),
+			   defaultPTHead->getTiltAngle(),
+			   defaultModuleHead->getZoom());
+	ptrn->save(QString::fromStdString(request->pattern_name()));
+	return grpc::Status::OK;
+}
+
+grpc::Status PtzpDriver::PatternDelete(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
+{
+	Q_UNUSED(context);
+	ptrn->deletePattern(QString::fromStdString(request->pattern_name()));
 	return grpc::Status::OK;
 }
 
@@ -666,20 +700,20 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	return grpc::Status::OK;
 }
 
-QList<int> PtzpDriver::commaToList(const QString& comma)
+QStringList PtzpDriver::commaToList(const QString& comma)
 {
-	QList<int> ret;
+	QStringList ret;
 	for (QString item : comma.split(",")){
-		ret.append(item.toInt());
+		ret.append(item);
 	}
 	return ret;
 }
 
-QString PtzpDriver::listToComma(const QList<int> &list)
+QString PtzpDriver::listToComma(const QStringList &list)
 {
 	QString ret = "";
-	for(int item : list){
-		ret+=QString::number(item) + ",";
+	for(QString item : list){
+		ret+=item + ",";
 	}
 
 	return ret;
