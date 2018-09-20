@@ -7,6 +7,8 @@
 #include <QMutexLocker>
 
 #include <errno.h>
+#include <QJsonObject>
+#include <QJsonArray>
 
 PresetNg::PresetNg()
 {
@@ -45,6 +47,22 @@ int PresetNg::deletePreset(const QString &name)
 	QMutexLocker ml(&mutex);
 	presets.remove(name);
 	save();
+}
+
+QJsonObject PresetNg::getList()
+{
+	load();
+	QJsonArray last;
+	QJsonObject obj2;
+	for(int i = 0; i < presets.keys().size(); i++) {
+		QJsonObject obj;
+		QString key = presets.keys().at(i);
+		obj.insert("id", QJsonValue::fromVariant(key));
+		obj.insert("name", QJsonValue::fromVariant(presets.value(key)));
+		last.insert(i++, obj);
+	}
+	obj2.insert("", last);
+	return obj2;
 }
 
 int PresetNg::save()
@@ -95,6 +113,7 @@ int PresetNg::load()
 		fDebug("Unsupported version '0x%x'", ver);
 		return -2;
 	}
+	presets.clear();
 	in >> presets;
 	return 0;
 }

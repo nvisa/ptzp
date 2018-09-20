@@ -1,7 +1,9 @@
 #include "patternng.h"
 #include "debug.h"
 
+#include <QDir>
 #include <QTimer>
+#include <QProcess>
 #include <QDataStream>
 
 #include <errno.h>
@@ -193,6 +195,13 @@ int PatternNg::load(const QString &filename)
 	geometry.clear();
 	in >> geometry;
 	return 0;
+}
+
+int PatternNg::deletePattern(const QString &name)
+{
+	QDir a;
+	QString path = a.absolutePath();
+	return QProcess::execute(QString("rm %1/%2").arg(path).arg(name));
 }
 
 void PatternNg::replayCurrent(int pan, int tilt, int zoom)

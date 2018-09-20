@@ -5,6 +5,7 @@
 #include <QMutex>
 #include <QByteArray>
 #include <QElapsedTimer>
+#include <QJsonObject>
 class PatrolNg
 {
 public:
@@ -30,11 +31,13 @@ public:
 	int setPatrolName(const QString &name);
 	int setPatrolStateRun(int index = -1);
 	int setPatrolStateStop(int index = -1);
-	PatrolInfo getCurrentPatrol();
+	PatrolInfo* getCurrentPatrol();
+	QJsonObject getList();
 private:
 	PatrolNg();
 	QMutex mutex;
 	QHash<int, patrolType> patrols;
+	QHash<int, QString> patrolsName;
 
 	int currentPatrolIndex;
 	QString currentPatrolName;

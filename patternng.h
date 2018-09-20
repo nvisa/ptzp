@@ -47,13 +47,12 @@ public:
 	int start(int pan, int tilt, int zoom);
 	void stop(int pan, int tilt, int zoom);
 	int replay();
-	void space();
 	bool isRecording();
 	bool isReplaying();
 
 	int save(const QString &filename);
 	int load(const QString &filename);
-
+	int deletePattern(const QString &name);
 
 protected:
 	void replayCurrent(int pan, int tilt, int zoom);

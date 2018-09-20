@@ -6,6 +6,8 @@
 #include <QFileInfo>
 #include <QMutexLocker>
 
+#include <QJsonArray>
+#include <QJsonObject>
 #include <errno.h>
 
 PatrolNg::PatrolNg()
@@ -106,6 +108,7 @@ int PatrolNg::load()
 		fDebug("Unsupported version '0x%x'", ver);
 		return -2;
 	}
+	patrols.clear();
 	in >> patrols;
 	return 0;
 }
@@ -119,6 +122,7 @@ int PatrolNg::setPatrolIndex(int index)
 int PatrolNg::setPatrolName(const QString &name)
 {
 	currentPatrolName = name;
+	patrolsName.insert(currentPatrolIndex, currentPatrolName);
 	return 0;
 }
 
@@ -148,4 +152,20 @@ int PatrolNg::setPatrolStateStop(int index)
 PatrolNg::PatrolInfo PatrolNg::getCurrentPatrol()
 {
 	return currentPatrol;
+}
+
+QJsonObject PatrolNg::getList()
+{
+	load();
+	QJsonArray last;
+	QJsonObject obj2;
+	for(int i = 0; i < patrols.keys().size(); i++) {
+		QJsonObject obj;
+		int key = patrols.keys().at(i);
+		obj.insert("id", QJsonValue::fromVariant(key));
+		obj.insert("name", patrolsName.value(i));
+		last.insert(i++, obj);
+	}
+	obj2.insert("", last);
+	return obj2;
 }
