@@ -14,8 +14,9 @@ PatrolNg::PatrolNg()
 {
 	load();
 	currentPatrolIndex = 0;
-	currentPatrol.patrolId = 0;
-	currentPatrol.state = 0;
+	currentPatrol = new PatrolInfo();
+	currentPatrol->patrolId = 0;
+	currentPatrol->state = 0;
 }
 
 PatrolNg *PatrolNg::getInstance()
@@ -62,7 +63,7 @@ int PatrolNg::deletePatrol()
 
 int PatrolNg::save()
 {
-	QMutexLocker ml(&mutex);
+//	QMutexLocker ml(&mutex);
 	qDebug() << "Saving patrols" << patrols;
 	QByteArray ba;
 	QDataStream out(&ba, QIODevice::WriteOnly);
@@ -84,7 +85,7 @@ int PatrolNg::save()
 
 int PatrolNg::load()
 {
-	QMutexLocker ml(&mutex);
+//	QMutexLocker ml(&mutex);
 	if (!QFileInfo("patrols.bin").exists()) {
 		mDebug("The file doesn't existed");
 		return -1;
@@ -128,28 +129,28 @@ int PatrolNg::setPatrolName(const QString &name)
 
 int PatrolNg::setPatrolStateRun(int index)
 {
-	QMutexLocker ml(&mutex);
+//	QMutexLocker ml(&mutex);
 	qDebug() << index << "index";
 	int ind = currentPatrolIndex;
 	if (index >= 0)
 		ind = index;
-	currentPatrol.patrolId = ind;
-	currentPatrol.state = RUN;
-	currentPatrol.list = patrols.value(ind);
+	currentPatrol->patrolId = ind;
+	currentPatrol->state = RUN;
+	currentPatrol->list = patrols.value(ind);
 	return 0;
 }
 
 int PatrolNg::setPatrolStateStop(int index)
 {
-	QMutexLocker ml(&mutex);
+//	QMutexLocker ml(&mutex);
 	int ind = currentPatrolIndex;
 	if (index >= 0)
 		ind = index;
-	currentPatrol.patrolId = ind;
-	currentPatrol.state = STOP;
+	currentPatrol->patrolId = ind;
+	currentPatrol->state = STOP;
 }
 
-PatrolNg::PatrolInfo PatrolNg::getCurrentPatrol()
+PatrolNg::PatrolInfo* PatrolNg::getCurrentPatrol()
 {
 	return currentPatrol;
 }

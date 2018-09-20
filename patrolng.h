@@ -41,7 +41,7 @@ private:
 
 	int currentPatrolIndex;
 	QString currentPatrolName;
-	PatrolInfo currentPatrol;
+	PatrolInfo *currentPatrol;
 
 };
 
