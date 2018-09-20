@@ -42,8 +42,8 @@ public:
 
 	void run()
 	{
-		qDebug() << "GRPC Starting @ 50052" ;
-		string ep("0.0.0.0:50052");
+		qDebug() << "GRPC Starting @ 50058" ;
+		string ep("0.0.0.0:50058");
 		ServerBuilder builder;
 		builder.AddListeningPort(ep, grpc::InsecureServerCredentials());
 		builder.RegisterService(service);
@@ -743,10 +743,10 @@ void PtzpDriver::timeout()
 						 defaultPTHead->getTiltAngle(),
 						 defaultModuleHead->getZoom());
 	PatrolNg *ptrl = PatrolNg::getInstance();
-	if (ptrl->getCurrentPatrol().state != 0) { // patrol
+	if (ptrl->getCurrentPatrol()->state != 0) { // patrol
 		static QElapsedTimer elaps;
 		static int listPos = 0;
-		PatrolNg::PatrolInfo *patrol = &ptrl->getCurrentPatrol();
+		PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
 		if (patrol->list.isEmpty()) {
 			ptrl->setPatrolStateStop(patrol->patrolId);
 			return;

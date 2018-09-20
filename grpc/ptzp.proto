@@ -72,6 +72,8 @@ message PtzCmdPar {
 message PresetCmd{
 	int32 preset_id = 1;
 	string preset_name = 2;
+	int32 pt_id = 3;
+	int32 z_id = 4;
 }
 
 message PresetList{

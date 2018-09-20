@@ -61,8 +61,6 @@ public:
 	virtual QByteArray mapToJson(const QVariantMap& map);
 #endif
 
-private slots:
-	virtual void patrolTick();
 
 #ifdef HAVE_PTZP_GRPC_API
 public:
