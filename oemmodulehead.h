@@ -96,8 +96,6 @@ public:
 	int setZoom(uint pos);
 	uint getProperty(uint r);
 	void setProperty(uint r, uint x);
-	int saveRegisters();
-	void loadRegisters();
 
 	int setIRLed(int led);
 	void enableSyncing(bool en);
@@ -143,6 +141,8 @@ protected:
 	int syncNext();
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
+	QJsonValue marshallAllRegisters();
+	void unmarshallloadAllRegisters(const QJsonValue &node);
 
 	bool syncEnabled;
 	int syncInterval;

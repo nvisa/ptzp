@@ -789,11 +789,11 @@ void PtzpDriver::timeout()
 		}
 	}
 		if(time->elapsed() >= 10000) {
-			defaultModuleHead->saveRegisters();
+			defaultModuleHead->saveRegisters("registers.json");
 			time->restart();
 		}
 		if(timeSettingsLoad->elapsed() <= 50)
-			defaultModuleHead->loadRegisters();
+			defaultModuleHead->loadRegisters("registers.json");
 	}
 
 	QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)

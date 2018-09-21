@@ -2,6 +2,11 @@
 #include "ptzptransport.h"
 #include "debug.h"
 
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+
 #include <errno.h>
 
 static const char ioErrorStr[][256] = {
@@ -257,6 +262,16 @@ uint PtzpHead::getRegister(uint reg)
 	return registers[reg];
 }
 
+QJsonValue PtzpHead::marshallAllRegisters()
+{
+	return QJsonObject();
+}
+
+void PtzpHead::unmarshallloadAllRegisters(const QJsonValue &node)
+{
+	Q_UNUSED(node);
+}
+
 uint PtzpHead::getProperty(uint r)
 {
 	Q_UNUSED(r);
@@ -277,14 +292,40 @@ void PtzpHead::setProperty(uint r, uint x)
 	Q_UNUSED(x);
 }
 
-int PtzpHead::saveRegisters()
+int PtzpHead::saveRegisters(const QString &filename)
 {
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
+		return -EPERM;
+	QJsonValue json = marshallAllRegisters();
 
+	QJsonDocument doc;
+	QJsonObject obj;
+	obj.insert("registers", json);
+	doc.setObject(obj);
+	f.write(doc.toJson());
+	f.close();
+
+	return 0;
 }
 
-void PtzpHead::loadRegisters()
+int PtzpHead::loadRegisters(const QString &filename)
 {
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
+		return -EPERM;
 
+	const QByteArray &json = f.readAll();
+	f.close();
+
+	const QJsonDocument &doc = QJsonDocument::fromJson(json);
+	QJsonObject root = doc.object();
+	if (root.isEmpty())
+		return -EINVAL;
+
+	unmarshallloadAllRegisters(root["registers"]);
+
+	return 0;
 }
 #ifdef HAVE_PTZP_GRPC_API
 QVariantMap PtzpHead::getSettings()

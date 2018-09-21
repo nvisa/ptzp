@@ -5,6 +5,7 @@
 
 #include <QHash>
 #include <QMutex>
+#include <QJsonValue>
 #include <QByteArray>
 #include <QVariantMap>
 #include <QElapsedTimer>
@@ -50,8 +51,8 @@ public:
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
-	virtual int saveRegisters();
-	virtual void loadRegisters();
+	int saveRegisters(const QString &filename);
+	int loadRegisters(const QString &filename);
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
@@ -71,6 +72,8 @@ protected:
 	virtual void setIOError(int err);
 	int setRegister(uint reg, uint value);
 	uint getRegister(uint reg);
+	virtual QJsonValue marshallAllRegisters();
+	virtual void unmarshallloadAllRegisters(const QJsonValue &node);
 
 	PtzpTransport *transport;
 	QHash<uint, uint> registers;
