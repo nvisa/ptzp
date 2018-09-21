@@ -460,7 +460,6 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context, const ptzp::PtzC
 	return grpc::Status::OK;
 }
 
-
 grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
@@ -508,6 +507,10 @@ grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::Pres
 {
 	Q_UNUSED(context);
 	QStringList li = PresetNg::getInstance()->getPreset(QString::fromStdString(request->preset_name()));
+
+	if (li.isEmpty())
+		return grpc::Status::CANCELLED;
+
 	goToPosition(li[0].toFloat(),li[1].toFloat(),li[2].toInt());
 	return grpc::Status::OK;
 }
@@ -522,15 +525,15 @@ grpc::Status PtzpDriver::PresetDelete(grpc::ServerContext *context, const ptzp::
 grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	PresetNg::getInstance()->addPreset(QString::fromStdString(request->preset_name()),defaultPTHead->getPanAngle(),defaultPTHead->getTiltAngle(),defaultModuleHead->getZoom());
-	request->preset_id();
+	PresetNg::getInstance()->addPreset(QString::fromStdString(request->preset_name()),
+									   defaultPTHead->getPanAngle(),defaultPTHead->getTiltAngle(),defaultModuleHead->getZoom());
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PresetList *response)
 {
-	qDebug() << PresetNg::getInstance()->getList();
-//	response->set_list(PresetNg::getInstance()->getList());
+	QJsonDocument doc(PresetNg::getInstance()->getList());
+	response->set_list(doc.toJson());
 
 	return grpc::Status::OK;
 }
@@ -538,7 +541,8 @@ grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PatrolSave(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	auto patrolNg = PatrolNg::getInstance();
+
+	PatrolNg* patrolNg = PatrolNg::getInstance();
 	patrolNg->setPatrolIndex(request->patrol_id());
 	patrolNg->addPatrol(commaToList(QString::fromStdString(request->preset_list())));
 	patrolNg->addInterval(commaToList(QString::fromStdString(request->interval_list())));
@@ -550,7 +554,9 @@ grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context, const ptzp::Pat
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
+
 	PatrolNg::getInstance()->setPatrolStateRun(request->patrol_id());
+
 	return grpc::Status::OK;
 }
 
@@ -558,15 +564,19 @@ grpc::Status PtzpDriver::PatrolDelete(grpc::ServerContext *context, const ptzp::
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
+
 	PatrolNg::getInstance()->setPatrolIndex(request->patrol_id());
 	PatrolNg::getInstance()->deletePatrol();
+
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolStop(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+
 	PatrolNg::getInstance()->setPatrolStateStop(request->patrol_id());
+
 	return grpc::Status::OK;
 }
 
@@ -585,50 +595,62 @@ grpc::Status PtzpDriver::PatrolGetList(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PatternRun(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	ptrn->load(QString::fromStdString(request->pattern_name()));
-	ptrn->replay();
-	return grpc::Status::OK;
+
+	if(ptrn->load(QString::fromStdString(request->pattern_name())) == 0)
+	{
+		ptrn->replay();
+		return grpc::Status::OK;
+	}
+
+	return grpc::Status::CANCELLED;
 }
 
 grpc::Status PtzpDriver::PatternStop(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+
 	ptrn->stop(defaultPTHead->getPanAngle(),
 						 defaultPTHead->getTiltAngle(),
 						 defaultModuleHead->getZoom());
+
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternStartRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+
 	ptrn->start(defaultPTHead->getPanAngle(),
 				defaultPTHead->getTiltAngle(),
 				defaultModuleHead->getZoom());
+
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternStopRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+
 	ptrn->stop(defaultPTHead->getPanAngle(),
 			   defaultPTHead->getTiltAngle(),
 			   defaultModuleHead->getZoom());
-	ptrn->save(QString::fromStdString(request->pattern_name()));
-	return grpc::Status::OK;
+
+	if(ptrn->save(QString::fromStdString(request->pattern_name())) == 0)
+		return grpc::Status::OK;
+	return grpc::Status::CANCELLED;
 }
 
 grpc::Status PtzpDriver::PatternDelete(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	ptrn->deletePattern(QString::fromStdString(request->pattern_name()));
-	return grpc::Status::OK;
+
+	if(ptrn->deletePattern(QString::fromStdString(request->pattern_name())) == 0)
+		return grpc::Status::OK;
+	return grpc::Status::CANCELLED;
 }
 
 grpc::Status PtzpDriver::PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
-	qDebug() << PatternNg::getInstance()->getList();
-
 	return grpc::Status::OK;
 }
 
@@ -719,7 +741,6 @@ QString PtzpDriver::listToComma(const QStringList &list)
 
 	return ret;
 }
-
 
 QVariantMap PtzpDriver::jsonToMap(const QByteArray& arr)
 {

@@ -64,11 +64,9 @@ void AryaDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		//ffDebug() << "running";
 		static int once = 1;
 		if (!once) {
 			once = 1;
-			//aryapt->panTiltStop();
 			thermal->startZoomIn(1);
 		}
 		break;

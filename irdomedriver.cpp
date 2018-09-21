@@ -282,7 +282,7 @@ void IRDomeDriver::configLoad(const QString filename)
 
 void IRDomeDriver::timeout()
 {
-	mLog("Driver state: %d", state);
+//	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
 		headModule->syncRegisters();

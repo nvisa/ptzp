@@ -55,15 +55,12 @@ public:
 	void sendCommand(int c, float par1, int par2);
 
 #ifdef HAVE_PTZP_GRPC_API
+public:
 	static QStringList commaToList(const QString& comma);
 	static QString listToComma(const QStringList& list);
 	virtual QVariantMap jsonToMap(const QByteArray& arr);
 	virtual QByteArray mapToJson(const QVariantMap& map);
-#endif
-
-
-#ifdef HAVE_PTZP_GRPC_API
-public:
+	// grpc start
 	grpc::Status GetHeads(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::PtzHeadInfo *response);
 	// pan
 	grpc::Status PanLeft(grpc::ServerContext *context, const::ptzp::PtzCmdPar *request, ::ptzp::PtzCommandResult *response);
