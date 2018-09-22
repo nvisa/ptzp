@@ -152,7 +152,7 @@ int MgeoThermalHead::stopZoom()
 
 int MgeoThermalHead::getZoom()
 {
-	return 0;
+	return getRegister(R_ZOOM);
 }
 
 int MgeoThermalHead::getHeadStatus()
@@ -382,6 +382,12 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(R_IMAGE_UPDATE_SPEED, p[1]);
 	}
 	return meslen;
+}
+
+QByteArray MgeoThermalHead::transportReady()
+{
+	sendCommand(C_GET_ZOOM_FOCUS);
+	return QByteArray();
 }
 
 int MgeoThermalHead::syncNext()

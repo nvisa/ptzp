@@ -9,6 +9,10 @@ PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 	PtzpTransport(proto)
 {
 	sock = NULL;
+
+	timer = new QTimer();
+	timer->start(100);
+	connect(timer, SIGNAL(timeout()), SLOT(callback()));
 }
 
 int PtzpTcpTransport::connectTo(const QString &targetUri)
@@ -43,4 +47,16 @@ void PtzpTcpTransport::clientDisconnected()
 {
 	ffDebug() << "disconnected";
 }
-
+/**
+ * @brief PtzpTcpTransport::callback
+ * This function waiting data to send.
+ * Some `head` classes have sendcommand API, for himself.
+ * If returning data from `queueFreeCallBack` isn't empty,
+ * The data will send over standart TCP API's.
+ */
+void PtzpTcpTransport::callback()
+{
+	QByteArray m = PtzpTransport::queueFreeCallback();
+	if (!m.isEmpty())
+		send(m.data(), m.size());
+}

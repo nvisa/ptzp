@@ -191,6 +191,12 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 	return 5;
 }
 
+QByteArray MgeoGunGorHead::transportReady()
+{
+	sendCommand(C_GET_ZOOM);
+	return QByteArray();
+}
+
 int MgeoGunGorHead::syncNext()
 {
 	uint cmd = syncList[nextSync];

@@ -51,6 +51,7 @@ public:
 protected:
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);
+	QByteArray transportReady();
 	int syncNext();
 
 	QStringList ptzCommandList;

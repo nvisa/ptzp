@@ -31,6 +31,7 @@ public:
 
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
+	virtual QByteArray transportReady();
 	int syncNext();
 
 	int nextSync;

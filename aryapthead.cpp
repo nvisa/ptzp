@@ -193,3 +193,8 @@ int AryaPTHead::dataReady(const unsigned char *bytes, int len)
 	return len;
 }
 
+QByteArray AryaPTHead::transportReady()
+{
+	return ptzCommandList.at(C_GET_PAN_POS).toLatin1();
+}
+

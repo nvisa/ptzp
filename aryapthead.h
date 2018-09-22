@@ -30,6 +30,7 @@ protected:
 
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);
+	QByteArray transportReady();
 };
 
 #endif // ARYAPTHEAD_H

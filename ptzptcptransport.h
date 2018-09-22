@@ -3,6 +3,7 @@
 
 #include <ecl/ptzp/ptzptransport.h>
 
+#include <QTimer>
 #include <QObject>
 
 class QTcpSocket;
@@ -20,9 +21,11 @@ protected slots:
 	void connected();
 	void dataReady();
 	void clientDisconnected();
+	void callback();
 
 protected:
 	QTcpSocket *sock;
+	QTimer *timer;
 };
 
 #endif // PTZPTCPTRANSPORT_H

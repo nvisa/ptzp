@@ -36,6 +36,9 @@ int AryaDriver::setTarget(const QString &targetUri)
 	err = tcp3->connectTo(QString("%1:4003").arg(targetUri));
 	if (err)
 		return err;
+	tcp1->enableQueueFreeCallbacks(true);
+	tcp2->enableQueueFreeCallbacks(true);
+	tcp3->enableQueueFreeCallbacks(true);
 	return 0;
 }
 
