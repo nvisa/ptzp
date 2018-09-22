@@ -529,16 +529,8 @@ grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::Pr
 
 grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PresetList *response)
 {
-
-//	QJsonArray arr;
-
-//	for(int i=0;i<presetList.size();i++)
-//		if (!(presetList.at(i).empty)) arr.append(presetList.at(i).toJson(i));
-
-//	auto doc = QJsonDocument(arr);
-//	response->set_list(doc.toJson().constData());
-
-	response->set_list(PresetNg::getInstance()->getList());
+	qDebug() << PresetNg::getInstance()->getList();
+//	response->set_list(PresetNg::getInstance()->getList());
 
 	return grpc::Status::OK;
 }
@@ -585,6 +577,8 @@ grpc::Status PtzpDriver::PatrolGetList(grpc::ServerContext *context, const ptzp:
 //		if (!(patrolList.at(i).empty)) arr.append(patrolList.at(i).toJson(i));
 //	auto doc = QJsonDocument(arr);
 //	response->set_list(doc.toJson().constData());
+	qDebug() << PatrolNg::getInstance()->getList();
+
 	return grpc::Status::OK;
 }
 
@@ -628,6 +622,13 @@ grpc::Status PtzpDriver::PatternDelete(grpc::ServerContext *context, const ptzp:
 {
 	Q_UNUSED(context);
 	ptrn->deletePattern(QString::fromStdString(request->pattern_name()));
+	return grpc::Status::OK;
+}
+
+grpc::Status PtzpDriver::PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
+{
+	qDebug() << PatternNg::getInstance()->getList();
+
 	return grpc::Status::OK;
 }
 
