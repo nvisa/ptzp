@@ -5,6 +5,8 @@
 #include "ptzptcptransport.h"
 #include "debug.h"
 
+#include <QFile>
+
 AryaDriver::AryaDriver(QObject *parent)
 	: PtzpDriver(parent)
 {

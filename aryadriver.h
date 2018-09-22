@@ -37,6 +37,7 @@ protected:
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
+	conf config;
 };
 
 #endif // ARYADRIVER_H
