@@ -691,7 +691,10 @@ grpc::Status PtzpDriver::FocusIn(grpc::ServerContext *context, const ptzp::PtzCm
 	if (!head->settings.contains("focus_in"))
 		return grpc::Status::CANCELLED;
 
-	// focus not implemented yet so empty for now
+	QVariantMap map;
+	map["focus_in"] = 1;
+	head->setSettings(map);
+
 	return grpc::Status::OK;
 }
 
@@ -705,7 +708,10 @@ grpc::Status PtzpDriver::FocusOut(grpc::ServerContext *context, const ptzp::PtzC
 	if (!head->settings.contains("focus_out"))
 		return grpc::Status::CANCELLED;
 
-	// focus not implemented yet so empty for now
+	QVariantMap map;
+	map["focus_out"] = 1;
+	head->setSettings(map);
+
 	return grpc::Status::OK;
 }
 
@@ -719,7 +725,10 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	if (!head->settings.contains("focus_stop"))
 		return grpc::Status::CANCELLED;
 
-	// focus not implemented yet so empty for now
+	QVariantMap map;
+	map["focus_stop"] = 1;
+	head->setSettings(map);
+
 	return grpc::Status::OK;
 }
 
