@@ -161,13 +161,13 @@ float AryaPTHead::getPanAngle()
 
 float AryaPTHead::getTiltAngle()
 {
-	return tiltPos / MaxTiltPos * 90;
+	return tiltPos / MaxTiltPos * 45;
 }
 
 int AryaPTHead::panTiltGoPos(float ppos, float tpos)
 {
 	ppos = qAbs(ppos) * MaxPanPos;
-	tpos = qAbs(tpos) * MaxTiltPos;
+	tpos = tpos * MaxTiltPos;
 	return sendCommand(ptzCommandList.at(C_PAN_TILT_POS).arg((int)ppos).arg((int)tpos));
 }
 
