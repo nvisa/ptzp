@@ -145,7 +145,7 @@ QVariant AryaDriver::get(const QString &key)
 				.arg(thermal->getProperty(20));
 	else if (key == "ptz.head.2.zoom")
 		return QString("%1")
-				.arg(gungor->getProperty(0));
+				.arg(gungor->getZoom());
 	else if (key == "ptz.head.2.focus")
 		return QString("%1")
 				.arg(gungor->getProperty(1));
@@ -223,11 +223,11 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	else if (key == "ptz.cmd.gungor.cam_stat")
 		gungor->setProperty(0, value.toUInt());
 	else if (key == "ptz.cmd.gungor.zoom_in")
-		gungor->setProperty(2, value.toUInt());
+		gungor->startZoomIn(value.toUInt());
 	else if (key == "ptz.cmd.gungor.zoom_stop")
-		gungor->setProperty(3, value.toUInt());
+		gungor->stopZoom();
 	else if (key == "ptz.cmd.gungor.zoom_out")
-		gungor->setProperty(4, value.toUInt());
+		gungor->startZoomOut(value.toUInt());
 	else if (key == "ptz.cmd.gungor.zoom")
 		gungor->setProperty(5, value.toUInt());
 	else if (key == "ptz.cmd.gungor.focus_in")
