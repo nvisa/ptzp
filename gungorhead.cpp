@@ -96,12 +96,6 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 	} else if (r == C_SET_CLOSE) {
 		sendCommand(r);
 		setRegister(R_CAM_STATUS, 0);
-	} else if (r == C_SET_ZOOM_INC_START) {
-		sendCommand(r);
-	} else if (r == C_SET_ZOOM_STOP) {
-		sendCommand(r);
-	} else if (r == C_SET_ZOOM_DEC_START) {
-		sendCommand(r);
 	} else if (r == C_SET_ZOOM) {
 //		unsigned char *p = protoBytes[C_SET_ZOOM];
 
@@ -150,6 +144,28 @@ int MgeoGunGorHead::syncRegisters()
 		return -ENOENT;
 	nextSync = 0;
 	return syncNext();
+}
+
+int MgeoGunGorHead::startZoomIn(int speed)
+{
+	Q_UNUSED(speed);
+	return sendCommand(C_SET_ZOOM_INC_START);
+}
+
+int MgeoGunGorHead::startZoomOut(int speed)
+{
+	Q_UNUSED(speed);
+	return sendCommand(C_SET_ZOOM_INC_START);
+}
+
+int MgeoGunGorHead::stopZoom()
+{
+	return sendCommand(C_SET_ZOOM_STOP);
+}
+
+int MgeoGunGorHead::getZoom()
+{
+	return getRegister(R_ZOOM);
 }
 
 int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)

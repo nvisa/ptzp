@@ -25,6 +25,10 @@ public:
 	int getCapabilities();
 
 	virtual int syncRegisters();
+	virtual int startZoomIn(int speed);
+	virtual int startZoomOut(int speed);
+	virtual int stopZoom();
+	virtual int getZoom();
 	virtual int getHeadStatus();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
