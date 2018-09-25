@@ -36,6 +36,8 @@ protected:
 	PtzpTransport *transport;
 	PtzpTransport *transport1;
 	DriverState state;
+	QStringList targetCam;
+	QStringList targetDome;
 };
 
 #endif // IRDOMEDRIVER_H

@@ -41,7 +41,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		if(dstr.startsWith("cammodule")) {
 			mDebug("cam module initializing.");
 			headModule->setTransport(transport);
-			QStringList targetCam = fields[0].split("//");
+			targetCam = fields[0].split("//");
 			defaultModuleHead->enableSyncing(true);
 			mDebug("cam port target: %s",qPrintable(targetCam[1]));
 			int err = transport->connectTo(targetCam[1]);
@@ -49,13 +49,16 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 				return err;
 		} else if (dstr.startsWith("ptmodule://")) {
 			mDebug ("pt module initializing.");
-			headDome->setTransport(transport1);
-			QStringList targetDome = fields[1].split("//");
+			targetDome = fields[1].split("//");
+			if (targetCam[1].split("?").first() != targetDome[1].split("?").first()) {
+				headDome->setTransport(transport1);
+				int err = transport1->connectTo(targetDome[1]);
+				if (err)
+					return err;
+			}
+			else headDome->setTransport(transport);
 			defaultPTHead->enableSyncing(true);
 			mDebug("pt port target: %s",qPrintable(targetDome[1]));
-			int err = transport1->connectTo(targetDome[1]);
-			if (err)
-				return err;
 		}
 	}
 	return 0;
@@ -298,6 +301,7 @@ void IRDomeDriver::timeout()
 		if (headDome->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
 			transport->enableQueueFreeCallbacks(true);
+			transport1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
 		}
 		break;
