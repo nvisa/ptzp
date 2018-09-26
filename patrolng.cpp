@@ -4,6 +4,7 @@
 
 #include <QFile>
 #include <QFileInfo>
+#include <QDataStream>
 #include <QMutexLocker>
 
 #include <QJsonArray>
