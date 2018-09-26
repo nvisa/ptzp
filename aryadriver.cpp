@@ -93,6 +93,9 @@ void AryaDriver::timeout()
 
 QVariant AryaDriver::get(const QString &key)
 {
+	if (sleep)
+		return 0;
+
 	mInfo("Get func: %s", qPrintable(key));
 	if (key == "ptz.get_cooled_down")
 		return QString("%1")
@@ -183,6 +186,11 @@ QVariant AryaDriver::get(const QString &key)
 
 int AryaDriver::set(const QString &key, const QVariant &value)
 {
+	if (key == "ptz.command.control")
+		sleepMode(value.toBool());
+	if (sleep)
+		return 0;
+
 	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (key == "ptz.cmd.brightness") {
 		thermal->setProperty(0, value.toUInt());

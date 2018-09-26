@@ -53,6 +53,7 @@ public:
 	virtual int set(const QString &key, const QVariant &value);
 	void goToPosition(float p, float t, int z);
 	void sendCommand(int c, float par1, int par2);
+	virtual void sleepMode(bool stat);
 
 #ifdef HAVE_PTZP_GRPC_API
 public:
@@ -109,6 +110,7 @@ protected slots:
 	QVariant headInfo(const QString &key, PtzpHead *head);
 
 protected:
+	bool sleep;
 	QTimer *timer;
 	QElapsedTimer *time;
 	QElapsedTimer *timeSettingsLoad;

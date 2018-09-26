@@ -269,6 +269,12 @@ void PtzpDriver::sendCommand(int c, float par1, int par2)
 		defaultPTHead->panTiltStop();
 }
 
+void PtzpDriver::sleepMode(bool stat)
+{
+	sleep = stat;
+	mInfo("Sleep mode is %d", sleep);
+}
+
 #ifdef HAVE_PTZP_GRPC_API
 grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::PtzHeadInfo *response)
 {
