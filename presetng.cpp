@@ -18,7 +18,6 @@ PresetNg::PresetNg()
 
 int PresetNg::addPreset(const QString &name, float panPos, float tiltPos, int zoomPos)
 {
-//	QMutexLocker ml(&mutex);
 	presets.insert(name, QString("%1;%2;%3").arg(panPos).arg(tiltPos).arg(zoomPos));
 	return save();
 }
@@ -33,9 +32,9 @@ PresetNg *PresetNg::getInstance()
 
 QStringList PresetNg::getPreset(const QString &name)
 {
-//	QMutexLocker ml(&mutex);
+	load();
 	if (!presets.keys().contains(name))
-		load();
+		return QStringList();
 	QString pos = presets.value(name);
 	qDebug() << "go to preset" << pos;
 	if (pos.isEmpty())
@@ -45,30 +44,23 @@ QStringList PresetNg::getPreset(const QString &name)
 
 int PresetNg::deletePreset(const QString &name)
 {
-//	QMutexLocker ml(&mutex);
 	presets.remove(name);
-	save();
+	return save();
 }
 
-QJsonObject PresetNg::getList()
+QString PresetNg::getList()
 {
 	load();
-	QJsonArray last;
-	QJsonObject obj2;
-	for(int i = 0; i < presets.keys().size(); i++) {
-		QJsonObject obj;
-		QString key = presets.keys().at(i);
-		obj.insert("id", QJsonValue::fromVariant(key));
-		obj.insert("name", QJsonValue::fromVariant(presets.value(key)));
-		last.insert(i++, obj);
+	QString preset;
+	foreach (QString st, presets.keys()) {
+		QString tmp = st + ",";
+		preset = preset + tmp;
 	}
-	obj2.insert("", last);
-	return obj2;
+	return preset;
 }
 
 int PresetNg::save()
 {
-//	QMutexLocker ml(&mutex);
 	qDebug() << "saving " << presets;
 	QByteArray ba;
 	QDataStream out(&ba, QIODevice::WriteOnly);
@@ -90,7 +82,6 @@ int PresetNg::save()
 
 int PresetNg::load()
 {
-//	QMutexLocker ml(&mutex);
 	if (!QFileInfo("presets.bin").exists()) {
 		mDebug("The file doesn't existed");
 		return -1;
