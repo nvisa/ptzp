@@ -515,10 +515,8 @@ grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::Pres
 {
 	Q_UNUSED(context);
 	QStringList li = PresetNg::getInstance()->getPreset(QString::fromStdString(request->preset_name()));
-
 	if (li.isEmpty())
-		return grpc::Status::CANCELLED;
-
+		return  grpc::Status::CANCELLED;
 	goToPosition(li[0].toFloat(),li[1].toFloat(),li[2].toInt());
 	return grpc::Status::OK;
 }
@@ -540,9 +538,15 @@ grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::Pr
 
 grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PresetList *response)
 {
+<<<<<<< HEAD
 	QJsonDocument doc(PresetNg::getInstance()->getList());
 	response->set_list(doc.toJson());
 
+=======
+	Q_UNUSED(context);
+	Q_UNUSED(request);
+	response->set_list(PresetNg::getInstance()->getList().toStdString());
+>>>>>>> f6c39ba... Ecl:Ptzp:PresetNg: Fix preset get list.
 	return grpc::Status::OK;
 }
 
