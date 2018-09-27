@@ -69,6 +69,8 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
 	ptrn = new PatternNg();
+	elaps = new QElapsedTimer();
+	elaps->start();
 }
 
 int PtzpDriver::getHeadCount()
@@ -209,22 +211,28 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
 		else return -EINVAL;
 	}
-	else if (key == "patrol_list") {
+	else if (key == "patrol_list") {//kerim@p1,p2,p3
 		QString presets = value.toString();
-		if (presets.contains(","))
-			ptrl->addPatrol(presets.split(","));
+		if (presets.contains("@")) {
+			QString name = presets.split("@").first().remove(" ");
+			presets.remove(QString("%1@").arg(name));
+			if (presets.contains(","))
+				ptrl->addPatrol(name, presets.split(","));
+		}
 	} else if (key == "patrol_interval") {
 		QString intervals = value.toString();
-		if (intervals.contains(","))
-			ptrl->addInterval(intervals.split(","));
-	} else if (key == "patrol_ind") {
-		ptrl->setPatrolIndex(value.toInt());
+		if (intervals.contains("@")) {
+			QString name = intervals.split("@").first().remove(" ");
+			intervals.remove(QString("%1@").arg(name));
+			if (intervals.contains(","))
+				ptrl->addInterval(name, intervals.split(","));
+		}
 	} else if (key == "patrol_delete") {
-		ptrl->deletePatrol();
+		ptrl->deletePatrol(value.toString());
 	} else if (key == "patrol_state_run") {
-		ptrl->setPatrolStateRun(value.toInt());
+		ptrl->setPatrolStateRun(value.toString());
 	} else if (key == "patrol_state_stop") {
-		ptrl->setPatrolStateStop(value.toInt());
+		ptrl->setPatrolStateStop(value.toString());
 	}
 	else
 		return -ENOENT;
@@ -541,11 +549,9 @@ grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PatrolSave(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
-	PatrolNg* patrolNg = PatrolNg::getInstance();
-	patrolNg->setPatrolIndex(request->patrol_id());
-	patrolNg->addPatrol(commaToList(QString::fromStdString(request->preset_list())));
-	patrolNg->addInterval(commaToList(QString::fromStdString(request->interval_list())));
+	auto patrolNg = PatrolNg::getInstance();
+	patrolNg->addPatrol(QString::fromStdString(request->patrol_name()), commaToList(QString::fromStdString(request->preset_list())));
+	patrolNg->addInterval(QString::fromStdString(request->patrol_name()), commaToList(QString::fromStdString(request->interval_list())));
 
 	return grpc::Status::OK;
 }
@@ -554,9 +560,7 @@ grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context, const ptzp::Pat
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
-
-	PatrolNg::getInstance()->setPatrolStateRun(request->patrol_id());
-
+	PatrolNg::getInstance()->setPatrolStateRun(QString::fromStdString(request->patrol_name()));
 	return grpc::Status::OK;
 }
 
@@ -564,31 +568,21 @@ grpc::Status PtzpDriver::PatrolDelete(grpc::ServerContext *context, const ptzp::
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
-
-	PatrolNg::getInstance()->setPatrolIndex(request->patrol_id());
-	PatrolNg::getInstance()->deletePatrol();
-
+	PatrolNg::getInstance()->deletePatrol(QString::fromStdString(request->patrol_name()));
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolStop(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
-	PatrolNg::getInstance()->setPatrolStateStop(request->patrol_id());
-
+	PatrolNg::getInstance()->setPatrolStateStop(QString::fromStdString(request->patrol_name()));
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolGetList(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PresetList *response)
 {
-//	QJsonArray arr;
-//	for(int i=0;i<patrolList.size();i++)
-//		if (!(patrolList.at(i).empty)) arr.append(patrolList.at(i).toJson(i));
-//	auto doc = QJsonDocument(arr);
-//	response->set_list(doc.toJson().constData());
 	qDebug() << PatrolNg::getInstance()->getList();
-
+	response->set_list(PatrolNg::getInstance()->getList().toStdString());
 	return grpc::Status::OK;
 }
 
@@ -774,24 +768,23 @@ void PtzpDriver::timeout()
 						 defaultModuleHead->getZoom());
 	PatrolNg *ptrl = PatrolNg::getInstance();
 	if (ptrl->getCurrentPatrol()->state != 0) { // patrol
-		static QElapsedTimer elaps;
 		static int listPos = 0;
 		PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
 		if (patrol->list.isEmpty()) {
-			ptrl->setPatrolStateStop(patrol->patrolId);
+			ptrl->setPatrolStateStop(patrol->patrolName);
 			return;
 		}
 		QPair<QString, int> pp = patrol->list[listPos];
 		QString preset = pp.first;
 		int waittime = pp.second;
-		if (elaps.elapsed() >= waittime) {
+		if (elaps->elapsed() >= waittime) {
 			listPos ++;
 			if (listPos == patrol->list.size())
 				listPos = 0;
 			pp = patrol->list[listPos];
 			preset = pp.first;
 			waittime = pp.second;
-			elaps.restart();
+			elaps->restart();
 			PresetNg *prst = PresetNg::getInstance();
 			QStringList pos = prst->getPreset(preset);
 			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
