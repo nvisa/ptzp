@@ -68,7 +68,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	timeSettingsLoad->start();
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
-	ptrn = new PatternNg();
+	ptrn = new PatternNg(this);
 	elaps = new QElapsedTimer();
 	elaps->start();
 }
@@ -312,14 +312,15 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context, const::ptzp::PtzC
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
 	head->panLeft(speed);
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_LEFT, speed, 0);
 
 	return grpc::Status::OK;
 }
 
-grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context, const::ptzp::PtzCmdPar *request, ::ptzp::PtzCommandResult *response){
-
+grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context, const::ptzp::PtzCmdPar *request, ::ptzp::PtzCommandResult *response)
+{
 	Q_UNUSED(context);
 
 	int idx = request->head_id();
@@ -332,6 +333,8 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context, const::ptzp::Ptz
 		return grpc::Status::CANCELLED;
 	}
 	head->panRight(speed);
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_RIGHT, speed, 0);
 
 	return grpc::Status::OK;
 
@@ -349,8 +352,9 @@ grpc::Status PtzpDriver::PanStop(grpc::ServerContext *context, const::ptzp::PtzC
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
 	head->panTiltStop();
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 
 	return grpc::Status::OK;
 }
@@ -369,9 +373,9 @@ grpc::Status PtzpDriver::ZoomIn(grpc::ServerContext *context, const::ptzp::PtzCm
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
 	head->startZoomIn(speed);
-
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_IN, (int)speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -389,9 +393,9 @@ grpc::Status PtzpDriver::ZoomOut(grpc::ServerContext *context, const::ptzp::PtzC
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
 	head->startZoomOut(speed);
-
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_OUT, (int)speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -409,7 +413,8 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context, const::ptzp::Ptz
 	}
 
 	head->stopZoom();
-
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_STOP, 0 ,0);
 	return grpc::Status::OK;
 }
 
@@ -428,7 +433,8 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context, const ptzp::PtzCmd
 	}
 
 	head->tiltUp(speed);
-
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_UP, speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -447,6 +453,8 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context, const ptzp::PtzC
 	}
 
 	head->tiltDown(speed);
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_DOWN, speed, 0);
 
 	return grpc::Status::OK;
 }
@@ -464,6 +472,8 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context, const ptzp::PtzC
 	}
 
 	head->panTiltStop();
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 
 	return grpc::Status::OK;
 }
@@ -538,15 +548,9 @@ grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::Pr
 
 grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PresetList *response)
 {
-<<<<<<< HEAD
-	QJsonDocument doc(PresetNg::getInstance()->getList());
-	response->set_list(doc.toJson());
-
-=======
 	Q_UNUSED(context);
 	Q_UNUSED(request);
 	response->set_list(PresetNg::getInstance()->getList().toStdString());
->>>>>>> f6c39ba... Ecl:Ptzp:PresetNg: Fix preset get list.
 	return grpc::Status::OK;
 }
 
@@ -647,8 +651,12 @@ grpc::Status PtzpDriver::PatternDelete(grpc::ServerContext *context, const ptzp:
 	return grpc::Status::CANCELLED;
 }
 
-grpc::Status PtzpDriver::PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
+grpc::Status PtzpDriver::PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PresetList *response)
 {
+<<<<<<< HEAD
+=======
+	response->set_list(ptrn->getList().toStdString());
+>>>>>>> e47796b... Ecl:Ptzp:PatternNg: Fix pattern control.
 	return grpc::Status::OK;
 }
 
