@@ -14,9 +14,8 @@
 PatrolNg::PatrolNg()
 {
 	load();
-	currentPatrolIndex = 0;
 	currentPatrol = new PatrolInfo();
-	currentPatrol->patrolId = 0;
+	currentPatrol->patrolName = "";
 	currentPatrol->state = 0;
 }
 
@@ -28,38 +27,39 @@ PatrolNg *PatrolNg::getInstance()
 	return instance;
 }
 
-int PatrolNg::addPatrol(const QStringList presets)
+int PatrolNg::addPatrol(const QString &name, const QStringList presets)
 {
-	if (presets.isEmpty())
+	if (presets.isEmpty() | name.isEmpty())
 		return -EINVAL;
 	patrolType patrol;
 	foreach (QString preset, presets) {
 		patrol  << QPair<QString, int>(preset, 0);
 	}
-	patrols.insert(currentPatrolIndex, patrol);
+	patrols.insert(name, patrol);
 	save();
 	return 0;
 }
 
-int PatrolNg::addInterval(const QStringList intervals)
+int PatrolNg::addInterval(const QString &name, const QStringList intervals)
 {
-	if (intervals.isEmpty())
+	if (intervals.isEmpty() || name.isEmpty())
 		return -EINVAL;
-	patrolType patrol = patrols[currentPatrolIndex];
+	patrolType patrol = patrols[name];
 	for (int i = 0; i < intervals.size(); i++) {
 		if (i < patrol.size())
 			patrol[i].second = intervals[i].toInt();
 	}
-	patrols.insert(currentPatrolIndex, patrol);
+	patrols.insert(name, patrol);
 	save();
 	return 0;
 }
 
-int PatrolNg::deletePatrol()
+int PatrolNg::deletePatrol(const QString &name)
 {
-	patrols.remove(currentPatrolIndex);
-	save();
-	return 0;
+	if(name.isEmpty())
+		return -EINVAL;
+	patrols.remove(name);
+	return save();
 }
 
 int PatrolNg::save()
@@ -115,40 +115,24 @@ int PatrolNg::load()
 	return 0;
 }
 
-int PatrolNg::setPatrolIndex(int index)
+int PatrolNg::setPatrolStateRun(const QString &name)
 {
-	currentPatrolIndex = index;
-	return 0;
-}
-
-int PatrolNg::setPatrolName(const QString &name)
-{
-	currentPatrolName = name;
-	patrolsName.insert(currentPatrolIndex, currentPatrolName);
-	return 0;
-}
-
-int PatrolNg::setPatrolStateRun(int index)
-{
-//	QMutexLocker ml(&mutex);
-	qDebug() << index << "index";
-	int ind = currentPatrolIndex;
-	if (index >= 0)
-		ind = index;
-	currentPatrol->patrolId = ind;
+	qDebug() << name << "patrol name";
+	if (name.isEmpty())
+		return -EINVAL;
+	currentPatrol->patrolName = name;
 	currentPatrol->state = RUN;
-	currentPatrol->list = patrols.value(ind);
+	currentPatrol->list = patrols.value(name);
 	return 0;
 }
 
-int PatrolNg::setPatrolStateStop(int index)
+int PatrolNg::setPatrolStateStop(const QString &name)
 {
-//	QMutexLocker ml(&mutex);
-	int ind = currentPatrolIndex;
-	if (index >= 0)
-		ind = index;
-	currentPatrol->patrolId = ind;
+	if (name.isEmpty())
+		return -EINVAL;
+	currentPatrol->patrolName = name;
 	currentPatrol->state = STOP;
+	return 0;
 }
 
 PatrolNg::PatrolInfo* PatrolNg::getCurrentPatrol()
@@ -156,18 +140,13 @@ PatrolNg::PatrolInfo* PatrolNg::getCurrentPatrol()
 	return currentPatrol;
 }
 
-QJsonObject PatrolNg::getList()
+QString PatrolNg::getList()
 {
 	load();
-	QJsonArray last;
-	QJsonObject obj2;
-	for(int i = 0; i < patrols.keys().size(); i++) {
-		QJsonObject obj;
-		int key = patrols.keys().at(i);
-		obj.insert("id", QJsonValue::fromVariant(key));
-		obj.insert("name", patrolsName.value(i));
-		last.insert(i++, obj);
+	QString patrol;
+	foreach (QString st, patrols.keys()) {
+		QString tmp = st + ",";
+		patrol = patrol + tmp;
 	}
-	obj2.insert("", last);
-	return obj2;
+	return patrol;
 }

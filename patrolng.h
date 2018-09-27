@@ -17,30 +17,26 @@ public:
 
 	typedef QList<QPair<QString, int> > patrolType;
 	struct PatrolInfo {
-		int patrolId;
+		QString patrolName;
 		int state; //0: stopped, 1: running
 		patrolType list;
 	};
 
-	int addPatrol(const QStringList presets);
-	int addInterval(const QStringList intervals);
-	int deletePatrol();
+	int addPatrol(const QString &name, const QStringList presets);
+	int addInterval(const QString &name, const QStringList intervals);
+	int deletePatrol(const QString &name);
 	int save();
 	int load();
-	int setPatrolIndex(int index);
 	int setPatrolName(const QString &name);
-	int setPatrolStateRun(int index = -1);
-	int setPatrolStateStop(int index = -1);
+	int setPatrolStateRun(const QString &name);
+	int setPatrolStateStop(const QString &name);
 	PatrolInfo* getCurrentPatrol();
-	QJsonObject getList();
+	QString getList();
 private:
 	PatrolNg();
 	QMutex mutex;
-	QHash<int, patrolType> patrols;
-	QHash<int, QString> patrolsName;
+	QHash<QString, patrolType> patrols;
 
-	int currentPatrolIndex;
-	QString currentPatrolName;
 	PatrolInfo *currentPatrol;
 
 };
