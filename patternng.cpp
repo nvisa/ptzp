@@ -159,7 +159,7 @@ int PatternNg::save(const QString &filename)
 	out << (qint32)1; //version
 	out << geometry;
 
-	QFile f(filename);
+	QFile f(QString("%1.pattern").arg(filename));
 	if (!f.open(QIODevice::WriteOnly))
 		return -EPERM;
 	f.write(ba);
@@ -173,7 +173,7 @@ int PatternNg::load(const QString &filename)
 	if (isRecording())
 		return -EINVAL;
 
-	QFile f(filename);
+	QFile f(QString("%1.pattern").arg(filename));
 	if (!f.open(QIODevice::ReadOnly))
 		return -EPERM;
 	QByteArray ba = f.readAll();
@@ -202,6 +202,26 @@ int PatternNg::deletePattern(const QString &name)
 	QDir a;
 	QString path = a.absolutePath();
 	return QProcess::execute(QString("rm %1/%2").arg(path).arg(name));
+}
+
+QString PatternNg::getList()
+{
+	QProcess p;
+	p.start("ls -1");
+	p.waitForFinished(3000);
+	QString plist = QString::fromLatin1(p.readAllStandardOutput());
+	if (!plist.contains(".pattern"))
+		return QString();
+	QString pattern;
+	foreach (QString st, plist.split("\n")) {
+		if (st.isEmpty())
+			continue;
+		QString tmp;
+		if (st.contains(".pattern")) {
+			pattern = pattern + st.remove(".pattern") + ",";
+		}
+	}
+	return pattern;
 }
 
 void PatternNg::replayCurrent(int pan, int tilt, int zoom)

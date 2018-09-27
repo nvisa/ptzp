@@ -42,8 +42,6 @@ public:
 
 	void positionUpdate(int pan, int tilt, int zoom);
 	void commandUpdate(int pan, int tilt, int zoom, int c, float par1, float par2);
-	//void viscaCommand(int c, int par1, int par2);
-	//void customCommand(int c, int par1, int par2);
 	int start(int pan, int tilt, int zoom);
 	void stop(int pan, int tilt, int zoom);
 	int replay();
@@ -53,6 +51,7 @@ public:
 	int save(const QString &filename);
 	int load(const QString &filename);
 	int deletePattern(const QString &name);
+	QString getList();
 
 protected:
 	void replayCurrent(int pan, int tilt, int zoom);
