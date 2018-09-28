@@ -63,6 +63,14 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x05, 0xF1, 0x82, 0x00, 0x00, 0x8D},
 };
 
+static uchar chksum(const uchar *buf, int len)
+{
+	uint sum = 0;
+	for (int i = 0; i < len; i++)
+		sum += buf[i];
+	return (~(sum) + 0x01) & 0xFF;
+}
+
 MgeoGunGorHead::MgeoGunGorHead()
 {
 	for (int i = C_GET_ZOOM; i<=C_GET_DIGI_ZOOM; i++)
@@ -180,7 +188,7 @@ int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)
 	cmd++;
 	cmd[2] = data1;
 	cmd[3] = data2;
-//	cmd[cmdlen - 1] = chksum(cmd, cmdlen - 1);
+	cmd[cmdlen - 1] = chksum(cmd, cmdlen - 1);
 	return transport->send((const char *)cmd , cmdlen);
 }
 
