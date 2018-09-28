@@ -799,9 +799,9 @@ void PtzpDriver::timeout()
 	}
 }
 
-	QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
-	{
-		if (key == "status")
-			return head->getHeadStatus();
-		return QVariant();
-	}
+QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
+{
+	if (key == "status")
+		return head->getHeadStatus();
+	return QVariant();
+}
