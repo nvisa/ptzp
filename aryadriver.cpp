@@ -36,9 +36,6 @@ int AryaDriver::setTarget(const QString &targetUri)
 	err = tcp3->connectTo(QString("%1:4003").arg(targetUri));
 	if (err)
 		return err;
-	tcp1->enableQueueFreeCallbacks(true);
-	tcp2->enableQueueFreeCallbacks(true);
-	tcp3->enableQueueFreeCallbacks(true);
 	return 0;
 }
 
@@ -58,16 +55,23 @@ void AryaDriver::timeout()
 	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
-		state = SYNC_ALL_MODULES;
+		state = SYNC_THERMAL_MODULES;
 		thermal->syncRegisters();
-		gungor->syncRegisters();
+		thermal->loadRegisters("thermal.json");
 		break;
-	case SYNC_ALL_MODULES:
-		if (thermal->getHeadStatus() == PtzpHead::ST_NORMAL
-				|| gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
-			state = NORMAL;
-			thermal->loadRegisters("thermal.json");
+	case SYNC_THERMAL_MODULES:
+		if(thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
+			state = SYNC_GUNGOR_MODULES;
+			gungor->syncRegisters();
 			gungor->loadRegisters("gungor.json");
+		}
+		break;
+	case SYNC_GUNGOR_MODULES:
+		if(gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
+			state = NORMAL;
+			tcp1->enableQueueFreeCallbacks(true);
+			tcp2->enableQueueFreeCallbacks(true);
+			tcp3->enableQueueFreeCallbacks(true);
 		}
 		break;
 	case NORMAL:
