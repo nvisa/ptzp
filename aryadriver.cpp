@@ -66,6 +66,8 @@ void AryaDriver::timeout()
 		if (thermal->getHeadStatus() == PtzpHead::ST_NORMAL
 				|| gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
+			thermal->loadRegisters("thermal.json");
+			gungor->loadRegisters("gungor.json");
 		}
 		break;
 	case NORMAL:
@@ -73,6 +75,11 @@ void AryaDriver::timeout()
 		if (!once) {
 			once = 1;
 			thermal->startZoomIn(1);
+		}
+		if(time->elapsed() >= 10000) {
+			thermal->saveRegisters("thermal.json");
+			gungor->saveRegisters("gungor.json");
+			time->restart();
 		}
 		break;
 	}

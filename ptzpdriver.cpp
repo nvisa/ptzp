@@ -797,13 +797,7 @@ void PtzpDriver::timeout()
 			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
 		}
 	}
-		if(time->elapsed() >= 10000) {
-			defaultModuleHead->saveRegisters("registers.json");
-			time->restart();
-		}
-		if(timeSettingsLoad->elapsed() <= 50)
-			defaultModuleHead->loadRegisters("registers.json");
-	}
+}
 
 	QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
 	{

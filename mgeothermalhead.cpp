@@ -2,6 +2,11 @@
 #include "debug.h"
 #include "ptzptransport.h"
 
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+
 #include <errno.h>
 
 #define dump(p, len) \
@@ -401,6 +406,39 @@ int MgeoThermalHead::syncNext()
 		return sendCommand(C_GET_ZOOM_FOCUS);
 
 	return -ENOENT;
+}
+
+QJsonValue MgeoThermalHead::marshallAllRegisters()
+{
+	QJsonObject json;
+	json.insert(QString("reg0"), (int)getRegister(1));
+	json.insert(QString("reg1"), (int)getRegister(2));
+	json.insert(QString("reg2"), (int)getRegister(3));
+	json.insert(QString("reg6"), (int)getRegister(7));
+	json.insert(QString("reg7"), (int)getRegister(8));
+	json.insert(QString("reg8"), (int)getRegister(9));
+	json.insert(QString("reg9"), (int)getRegister(10));
+	json.insert(QString("reg10"), (int)getRegister(11));
+	json.insert(QString("reg11"), (int)getRegister(12));
+	json.insert(QString("reg14"), (int)getRegister(13));
+	json.insert(QString("reg17"), (int)getRegister(16));
+	json.insert(QString("reg18"), (int)getRegister(17));
+	json.insert(QString("reg19"), (int)getRegister(18));
+	json.insert(QString("reg21"), (int)getRegister(20));
+	return json;
+}
+
+void MgeoThermalHead::unmarshallloadAllRegisters(const QJsonValue &node)
+{
+	QJsonObject root = node.toObject();
+	QString key = "reg%1";
+	foreach (key, root.keys()) {
+		if (!key.startsWith("reg"))
+			continue;
+		int ind = key.remove("reg").toInt();
+		key = (QString)"reg" + key;
+		setProperty(ind, root[key].toInt());
+	}
 }
 
 int MgeoThermalHead::sendCommand(uint index, uchar data1, uchar data2)

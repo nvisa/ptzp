@@ -2,6 +2,11 @@
 #include "debug.h"
 #include "ptzptransport.h"
 
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+
 #include "errno.h"
 
 #define MAX_CMD_LEN 10
@@ -228,4 +233,27 @@ int MgeoGunGorHead::syncNext()
 		return sendCommand(cmd);
 	else if (cmd == C_GET_DIGI_ZOOM)
 		return sendCommand(cmd);
+}
+
+QJsonValue MgeoGunGorHead::marshallAllRegisters()
+{
+	QJsonObject json;
+	json.insert(QString("reg0"), (int)getRegister(6));
+	json.insert(QString("reg10"), (int)getRegister(7));
+	json.insert(QString("reg13"), (int)getRegister(8));
+
+	return json;
+}
+
+void MgeoGunGorHead::unmarshallloadAllRegisters(const QJsonValue &node)
+{
+	QJsonObject root = node.toObject();
+	QString key = "reg%1";
+	foreach (key, root.keys()) {
+		if (!key.startsWith("reg"))
+			continue;
+		int ind = key.remove("reg").toInt();
+		key = (QString)"reg" + key;
+		setProperty(ind, root[key].toInt());
+	}
 }

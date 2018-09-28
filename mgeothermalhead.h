@@ -53,6 +53,8 @@ protected:
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
 	int syncNext();
+	QJsonValue marshallAllRegisters();
+	void unmarshallloadAllRegisters(const QJsonValue &node);
 
 	QStringList ptzCommandList;
 	int panPos;

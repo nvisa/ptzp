@@ -37,6 +37,8 @@ protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();
 	int syncNext();
+	QJsonValue marshallAllRegisters();
+	void unmarshallloadAllRegisters(const QJsonValue &node);
 
 	int nextSync;
 	QElapsedTimer pingTimer;
