@@ -160,7 +160,7 @@ int MgeoGunGorHead::startZoomIn(int speed)
 int MgeoGunGorHead::startZoomOut(int speed)
 {
 	Q_UNUSED(speed);
-	return sendCommand(C_SET_ZOOM_INC_START);
+	return sendCommand(C_SET_ZOOM_DEC_START);
 }
 
 int MgeoGunGorHead::stopZoom()
