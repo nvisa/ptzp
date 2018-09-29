@@ -56,6 +56,7 @@ public:
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
+	QHash<QString, QPair<int, int> > settings {};
 #endif
 	int getErrorCount(uint err);
 	virtual void enableSyncing(bool en);
@@ -63,9 +64,6 @@ public:
 
 	static int dataReady(const unsigned char *bytes, int len, void *priv);
 	static QByteArray transportReady(void *priv);
-#ifdef HAVE_PTZP_GRPC_API
-	QHash<QString, QPair<int, int>> settings {};
-#endif
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();

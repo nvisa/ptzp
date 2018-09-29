@@ -2,10 +2,12 @@
 #include "debug.h"
 #include "net/remotecontrol.h"
 
-#include <drivers/patternng.h>
-#include <drivers/presetng.h>
-#include <ecl/ptzp/ptzphead.h>
-#include <ecl/ptzp/ptzptransport.h>
+#include "drivers/presetng.h"
+#include "drivers/patrolng.h"
+#include "drivers/patternng.h"
+
+#include "ptzp/ptzphead.h"
+#include "ptzp/ptzptransport.h"
 
 #include <QTimer>
 #include <QThread>
@@ -653,10 +655,7 @@ grpc::Status PtzpDriver::PatternDelete(grpc::ServerContext *context, const ptzp:
 
 grpc::Status PtzpDriver::PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PresetList *response)
 {
-<<<<<<< HEAD
-=======
 	response->set_list(ptrn->getList().toStdString());
->>>>>>> e47796b... Ecl:Ptzp:PatternNg: Fix pattern control.
 	return grpc::Status::OK;
 }
 
@@ -779,7 +778,7 @@ void PtzpDriver::timeout()
 						 defaultPTHead->getTiltAngle(),
 						 defaultModuleHead->getZoom());
 	PatrolNg *ptrl = PatrolNg::getInstance();
-	if (ptrl->getCurrentPatrol()->state != 0) { // patrol
+	if (ptrl->getCurrentPatrol()->state != PatrolNg::STOP) { // patrol
 		static int listPos = 0;
 		PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
 		if (patrol->list.isEmpty()) {
@@ -799,7 +798,8 @@ void PtzpDriver::timeout()
 			elaps->restart();
 			PresetNg *prst = PresetNg::getInstance();
 			QStringList pos = prst->getPreset(preset);
-			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
+			if(!pos.isEmpty())
+				goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
 		}
 	}
 }
