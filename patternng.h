@@ -6,14 +6,12 @@
 #include <QObject>
 #include <QDataStream>
 #include <QElapsedTimer>
-#include <QStringList>
 
 #include <ecl/debug.h>
 #include <ecl/interfaces/ptzcontrolinterface.h>
 #include <ecl/interfaces/ptzpatterninterface.h>
-#include <ecl/drivers/patrolng.h>
 
-class PatternNg
+class PatternNg: QObject
 {
 public:
 	explicit PatternNg(PtzControlInterface *ctrl = 0);

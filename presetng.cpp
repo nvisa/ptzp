@@ -8,17 +8,16 @@
 #include <QMutexLocker>
 
 #include <errno.h>
-#include <QJsonObject>
-#include <QJsonArray>
 
 PresetNg::PresetNg()
 {
-	load();
+	mDebug("Registered Presets '%s'", qPrintable(getList()));
 }
 
 int PresetNg::addPreset(const QString &name, float panPos, float tiltPos, int zoomPos)
 {
 	presets.insert(name, QString("%1;%2;%3").arg(panPos).arg(tiltPos).arg(zoomPos));
+	mDebug("Preset value '%s' inserted to list:  %f, %f, %d", qPrintable(name), panPos, tiltPos, zoomPos);
 	return save();
 }
 
@@ -36,9 +35,9 @@ QStringList PresetNg::getPreset(const QString &name)
 	if (!presets.keys().contains(name))
 		return QStringList();
 	QString pos = presets.value(name);
-	qDebug() << "go to preset" << pos;
-	if (pos.isEmpty())
+	if (!pos.contains(";"))
 		return QStringList();
+	mDebug("This preset '%s' position values '%s'", qPrintable(name), qPrintable(pos));
 	return pos.split(";");
 }
 
@@ -56,12 +55,12 @@ QString PresetNg::getList()
 		QString tmp = st + ",";
 		preset = preset + tmp;
 	}
+	mDebug("Preset list '%s'", qPrintable(preset));
 	return preset;
 }
 
 int PresetNg::save()
 {
-	qDebug() << "saving " << presets;
 	QByteArray ba;
 	QDataStream out(&ba, QIODevice::WriteOnly);
 	out.setByteOrder(QDataStream::LittleEndian);

@@ -7,16 +7,14 @@
 #include <QDataStream>
 #include <QMutexLocker>
 
-#include <QJsonArray>
-#include <QJsonObject>
 #include <errno.h>
 
 PatrolNg::PatrolNg()
 {
-	load();
 	currentPatrol = new PatrolInfo();
 	currentPatrol->patrolName = "";
-	currentPatrol->state = 0;
+	currentPatrol->state = STOP;
+	mDebug("Registered patrols '%s'", qPrintable(getList()));
 }
 
 PatrolNg *PatrolNg::getInstance()
@@ -36,8 +34,7 @@ int PatrolNg::addPatrol(const QString &name, const QStringList presets)
 		patrol  << QPair<QString, int>(preset, 0);
 	}
 	patrols.insert(name, patrol);
-	save();
-	return 0;
+	return save();
 }
 
 int PatrolNg::addInterval(const QString &name, const QStringList intervals)
@@ -50,8 +47,7 @@ int PatrolNg::addInterval(const QString &name, const QStringList intervals)
 			patrol[i].second = intervals[i].toInt();
 	}
 	patrols.insert(name, patrol);
-	save();
-	return 0;
+	return save();
 }
 
 int PatrolNg::deletePatrol(const QString &name)
@@ -59,13 +55,12 @@ int PatrolNg::deletePatrol(const QString &name)
 	if(name.isEmpty())
 		return -EINVAL;
 	patrols.remove(name);
+	mDebug("'%s' patrol deleted", qPrintable(name));
 	return save();
 }
 
 int PatrolNg::save()
 {
-//	QMutexLocker ml(&mutex);
-	qDebug() << "Saving patrols" << patrols;
 	QByteArray ba;
 	QDataStream out(&ba, QIODevice::WriteOnly);
 	out.setByteOrder(QDataStream::LittleEndian);
@@ -86,7 +81,6 @@ int PatrolNg::save()
 
 int PatrolNg::load()
 {
-//	QMutexLocker ml(&mutex);
 	if (!QFileInfo("patrols.bin").exists()) {
 		mDebug("The file doesn't existed");
 		return -1;
@@ -117,12 +111,12 @@ int PatrolNg::load()
 
 int PatrolNg::setPatrolStateRun(const QString &name)
 {
-	qDebug() << name << "patrol name";
 	if (name.isEmpty())
 		return -EINVAL;
 	currentPatrol->patrolName = name;
 	currentPatrol->state = RUN;
 	currentPatrol->list = patrols.value(name);
+	mDebug("This patrol '%s' is running", qPrintable(name));
 	return 0;
 }
 
@@ -132,6 +126,7 @@ int PatrolNg::setPatrolStateStop(const QString &name)
 		return -EINVAL;
 	currentPatrol->patrolName = name;
 	currentPatrol->state = STOP;
+	mDebug("This patrol '%s' is stopping", qPrintable(name));
 	return 0;
 }
 
@@ -148,5 +143,6 @@ QString PatrolNg::getList()
 		QString tmp = st + ",";
 		patrol = patrol + tmp;
 	}
+	mDebug("Patrol list '%s'", qPrintable(patrol));
 	return patrol;
 }

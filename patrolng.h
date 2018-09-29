@@ -3,10 +3,9 @@
 
 #include <QHash>
 #include <QMutex>
-#include <QByteArray>
-#include <QElapsedTimer>
-#include <QJsonObject>
-class PatrolNg
+#include <QObject>
+
+class PatrolNg: QObject
 {
 public:
 	static PatrolNg* getInstance();
@@ -18,7 +17,7 @@ public:
 	typedef QList<QPair<QString, int> > patrolType;
 	struct PatrolInfo {
 		QString patrolName;
-		int state; //0: stopped, 1: running
+		PatrolMode state; //0: stopped, 1: running
 		patrolType list;
 	};
 

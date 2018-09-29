@@ -8,8 +8,6 @@
 
 #include <errno.h>
 
-#include <ecl/drivers/presetng.h>
-
 /**
 	\class PatternNg
 
@@ -52,8 +50,7 @@
 	in different modes.
 
 	TODO:
-		- Implement position-based replaying
-		- Zoom commands
+		- Multi heads support.
 
 */
 
@@ -64,12 +61,12 @@ PatternNg::PatternNg(PtzControlInterface *ctrl)
 	sm = SYNC_TIME;
 	current = 0;
 	ptzctrl = ctrl;
+	mDebug("Registered patterns, '%s'", qPrintable(getList()));
 }
 
 void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 {
 	if (isRecording()) {
-		//pattern record
 		SpaceTime st;
 		st.pan = pan;
 		st.tilt = tilt;
@@ -77,10 +74,8 @@ void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 		st.cmd = -1;
 		st.time = ptime.elapsed();
 		QMutexLocker ml(&mutex);
-		qDebug() <<  "getting position" << pan << tilt << zoom;
 		geometry << st;
 	} else if (isReplaying()) {
-		//pattern replay
 		replayCurrent(pan, tilt, zoom);
 	}
 }
@@ -201,7 +196,7 @@ int PatternNg::deletePattern(const QString &name)
 {
 	QDir a;
 	QString path = a.absolutePath();
-	return QProcess::execute(QString("rm %1/%2").arg(path).arg(name));
+	return QProcess::execute(QString("rm %1/%2.pattern").arg(path).arg(name));
 }
 
 QString PatternNg::getList()
@@ -221,6 +216,7 @@ QString PatternNg::getList()
 			pattern = pattern + st.remove(".pattern") + ",";
 		}
 	}
+	mDebug("Pattern list '%s'", qPrintable(pattern));
 	return pattern;
 }
 

@@ -3,9 +3,9 @@
 
 #include <QHash>
 #include <QMutex>
-#include <QJsonObject>
+#include <QObject>
 
-class PresetNg
+class PresetNg: public QObject
 {
 public:
 	static PresetNg *getInstance();
