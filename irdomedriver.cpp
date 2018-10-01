@@ -300,13 +300,17 @@ void IRDomeDriver::timeout()
 	case SYNC_HEAD_DOME:
 		if (headDome->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
+			headModule->loadRegisters("oemmodule.json");
 			transport->enableQueueFreeCallbacks(true);
 			transport1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
 		}
 		break;
 	case NORMAL:
-
+		if(time->elapsed() >= 10000) {
+			headModule->saveRegisters("oemmodule.json");
+			time->restart();
+		}
 		break;
 	}
 

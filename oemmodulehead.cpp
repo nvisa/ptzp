@@ -168,6 +168,7 @@ OemModuleHead::OemModuleHead()
 	nextSync = C_COUNT;
 	syncEnabled = true;
 	syncInterval = 40;
+	syncTime.start();
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
