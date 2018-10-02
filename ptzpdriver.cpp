@@ -141,7 +141,12 @@ QVariant PtzpDriver::get(const QString &key)
 		if (index < 0 || index >= getHeadCount())
 			return -ENONET;
 		return headInfo(fields.join("."), getHead(index));
-	}
+	} else if (key == "preset_list")
+		return PresetNg::getInstance()->getList();
+	else if (key == "patrol_list")
+		return PatrolNg::getInstance()->getList();
+	else if (key == "pattern_list")
+		return ptrn->getList();
 	return "almost_there";
 	return QVariant();
 }
