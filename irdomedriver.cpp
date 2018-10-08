@@ -117,7 +117,7 @@ QVariant IRDomeDriver::get(const QString &key)
 				.arg(headModule->getProperty(9));
 	else if (key == "ptz.get_awb_mode")
 		return QString("%1")
-				.arg(headModule->getProperty(1));
+				.arg(headModule->getProperty(10));
 	else if (key == "ptz.get_defog_mode")
 		return QString("%1")
 				.arg(headModule->getProperty(11));
