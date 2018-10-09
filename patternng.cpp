@@ -216,6 +216,7 @@ QString PatternNg::getList()
 			pattern = pattern + st.remove(".pattern") + ",";
 		}
 	}
+	pattern = pattern.left(pattern.length() - 1);
 	mDebug("Pattern list '%s'", qPrintable(pattern));
 	return pattern;
 }

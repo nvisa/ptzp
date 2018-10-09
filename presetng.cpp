@@ -55,6 +55,7 @@ QString PresetNg::getList()
 		QString tmp = st + ",";
 		preset = preset + tmp;
 	}
+	preset = preset.left(preset.length() - 1);
 	mDebug("Preset list '%s'", qPrintable(preset));
 	return preset;
 }

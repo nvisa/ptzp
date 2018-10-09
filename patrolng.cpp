@@ -143,6 +143,7 @@ QString PatrolNg::getList()
 		QString tmp = st + ",";
 		patrol = patrol + tmp;
 	}
+	patrol = patrol.left(patrol.length() - 1);
 	mDebug("Patrol list '%s'", qPrintable(patrol));
 	return patrol;
 }
