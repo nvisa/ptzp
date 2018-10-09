@@ -106,6 +106,11 @@ uint PtzpTransport::getQeueuFreeCallbackMask()
 	return queueFreeCallbackMask;
 }
 
+void PtzpTransport::setMaxBufferLength(int length)
+{
+	maxBufferLength = length;
+}
+
 int PtzpTransport::dataReadyCallback(const unsigned char *bytes, int len, void *priv)
 {
 	return ((PtzpTransport *)priv)->dataReadyCallback(bytes, len);
@@ -150,7 +155,6 @@ QByteArray PtzpTransport::queueFreeCallback()
 	}
 	return QByteArray();
 }
-
 
 int PtzpTransport::LineProto::processNewFrame(const unsigned char *bytes, int len)
 {

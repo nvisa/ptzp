@@ -15,8 +15,6 @@ IRDomeDriver::IRDomeDriver(QObject *parent)
 {
 	headModule = new OemModuleHead;
 	headDome = new IRDomePTHead;
-	transport = new PtzpSerialTransport;
-	transport1 = new PtzpSerialTransport;
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
@@ -32,34 +30,44 @@ PtzpHead *IRDomeDriver::getHead(int index)
 	return NULL;
 }
 
+/**
+ * @brief IRDomeDriver::setTarget
+ * @param targetUri: This API using for initialize Serial Devices.
+ * First parameter must contains Camera module serial console info.
+ * Because sometimes callback flows need to close the Module serial console
+ * (first initialized console).
+ * Second and last parameter must contains PT serial console info.
+ * This API can do two different consoles initialize, But it can't do for three or more consoles.
+ * TargetUri Example-1: ttyS0?baud=9600 // Ekinoks cams
+ * TargetUri Example-2: ttyS0?baud=9600;ttyTHS2?baud=9600 // USB-Aselsan
+ * @return
+ */
 int IRDomeDriver::setTarget(const QString &targetUri)
 {
-	defaultModuleHead->enableSyncing(false);
-	defaultPTHead->enableSyncing(false);
 	QStringList fields = targetUri.split(";");
-	foreach (const QString dstr, fields) {
-		if(dstr.startsWith("cammodule")) {
-			mDebug("cam module initializing.");
-			headModule->setTransport(transport);
-			targetCam = fields[0].split("//");
-			defaultModuleHead->enableSyncing(true);
-			mDebug("cam port target: %s",qPrintable(targetCam[1]));
-			int err = transport->connectTo(targetCam[1]);
-			if (err)
-				return err;
-		} else if (dstr.startsWith("ptmodule://")) {
-			mDebug ("pt module initializing.");
-			targetDome = fields[1].split("//");
-			if (targetCam[1].split("?").first() != targetDome[1].split("?").first()) {
-				headDome->setTransport(transport1);
-				int err = transport1->connectTo(targetDome[1]);
-				if (err)
-					return err;
-			}
-			else headDome->setTransport(transport);
-			defaultPTHead->enableSyncing(true);
-			mDebug("pt port target: %s",qPrintable(targetDome[1]));
-		}
+	if (fields.size() == 1) {
+		PtzpTransport *tp = new PtzpSerialTransport();
+		headModule->setTransport(tp);
+		headModule->enableSyncing(true);
+		headDome->setTransport(tp);
+		headDome->enableSyncing(true);
+		tp->setMaxBufferLength(50);
+		tp->enableQueueFreeCallbacks(true);
+		if (tp->connectTo(fields[0]))
+			return -EPERM;
+	} else {
+		PtzpTransport *tp1 = new PtzpSerialTransport();
+		headModule->setTransport(tp1);
+		headModule->enableSyncing(true);
+		tp1->enableQueueFreeCallbacks(true);
+		if (tp1->connectTo(fields[0]))
+			return -EPERM;
+		PtzpTransport *tp2 = new PtzpSerialTransport();
+		headDome->setTransport(tp2);
+		headDome->enableSyncing(true);
+		tp2->enableQueueFreeCallbacks(true);
+		if (tp2->connectTo(fields[1]))
+			return -EPERM;
 	}
 	return 0;
 }
@@ -301,8 +309,6 @@ void IRDomeDriver::timeout()
 		if (headDome->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
 			headModule->loadRegisters("oemmodule.json");
-			transport->enableQueueFreeCallbacks(true);
-			transport1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
 		}
 		break;
