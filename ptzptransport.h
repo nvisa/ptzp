@@ -29,6 +29,7 @@ public:
 	void enableQueueFreeCallbacks(bool en, int timeout = 0);
 	void setQueueFreeCallbackMask(uint mask);
 	uint getQeueuFreeCallbackMask();
+	void setMaxBufferLength(int length);
 
 	static int dataReadyCallback(const unsigned char *bytes, int len, void *priv);
 	static QByteArray queueFreeCallback(void *priv);

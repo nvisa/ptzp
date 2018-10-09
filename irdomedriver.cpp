@@ -230,7 +230,7 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		headModule->setProperty(16,value.toUInt());
 	} else if (key == "ptz.cmd.blc_stat"){
 		headModule->setProperty(17,value.toUInt());
-	} else if (key == "ptz.cmd.ırcf_stat"){
+	} else if (key == "ptz.cmd.ircf_stat"){
 		headModule->setProperty(18,value.toUInt());
 	} else if (key == "ptz.cmd.auto_icr"){
 		headModule->setProperty(19,value.toUInt());

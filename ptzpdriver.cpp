@@ -208,6 +208,8 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 		ptrn->load(value.toString());
 	else if (key == "pattern_replay")
 		ptrn->replay();
+	else if (key == "pattern_delete")
+		ptrn->deletePattern(value.toString());
 	else if (key == "preset_save")
 		prst->addPreset(value.toString(),defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
 	else if (key == "preset_delete")
