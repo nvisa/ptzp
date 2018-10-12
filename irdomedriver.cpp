@@ -276,9 +276,33 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 }
 void IRDomeDriver::configLoad(const QString filename)
 {
+	if (!QFile::exists(filename)) {
+		// create default
+		QJsonDocument doc;
+		QJsonObject o;
+		o.insert("model","Ekinoks");
+		if (getHeadCount() > 0) {
+			o.insert("type" , "moving");
+			o.insert("pan_tilt_support", 1);
+			o.insert("ir_led_support", 1);
+		}
+		else {
+			o.insert("type" , "fixed");
+			o.insert("pan_tilt_support", 0);
+			o.insert("ir_led_support", 0);
+		}
+		o.insert("cam_module", "PV8430_F2D");
+		doc.setObject(o);
+		QFile f(filename);
+		f.open(QIODevice::WriteOnly);
+		f.write(doc.toJson());
+		f.close();
+	}
+
 	QFile f(filename);
-	if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+	if (!f.open(QIODevice::ReadOnly))
 		return ;
+
 	const QByteArray &json = f.readAll();
 	f.close();
 	const QJsonDocument &doc = QJsonDocument::fromJson(json);
