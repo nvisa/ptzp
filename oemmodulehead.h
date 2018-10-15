@@ -103,6 +103,7 @@ public:
 	void setDeviceDefinition(QString definition);
 	QString getDeviceDefinition();
 	int getZoomRatio();
+	void clockInvert(bool st);
 
 	/**
 	 * @brief maskeleme işlemleri

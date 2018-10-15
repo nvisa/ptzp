@@ -11,6 +11,8 @@
 #include <QMutexLocker>
 #include <QJsonDocument>
 
+#include <drivers/hardwareoperations.h>
+
 #include <errno.h>
 
 #define dump() \
@@ -657,6 +659,13 @@ QString OemModuleHead::getDeviceDefinition()
 int OemModuleHead::getZoomRatio()
 {
 	return zoomRatio;
+}
+
+void OemModuleHead::clockInvert(bool st)
+{
+	if (st)
+		HardwareOperations::writeRegister(0x1c40044, 0x1c);
+	else HardwareOperations::writeRegister(0x1c40044, 0x18);
 }
 
 /**

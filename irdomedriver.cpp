@@ -270,6 +270,8 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		headModule->setDeviceDefinition(value.toString());
 	else if (key == "ptz.cmd.focus")
 		headModule->setProperty(14, value.toUInt());
+	else if (key == "camera.clock_invert")
+			headModule->clockInvert(value.toBool());
 	else return PtzpDriver::set(key,value);
 
 	return 0;
