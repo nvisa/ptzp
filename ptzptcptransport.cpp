@@ -24,6 +24,10 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 	connect(sock, SIGNAL(connected()), SLOT(connected()));
 	connect(sock, SIGNAL(disconnected()), SLOT(clientDisconnected()));
 	connect(sock, SIGNAL(readyRead()), SLOT(dataReady()));
+	if (!sock->waitForConnected(3000)){
+		mDebug("Socket connection error: Error code: %d, Error string: %s", sock->error(), qPrintable(sock->errorString()));
+		return -1;
+	}
 	return 0;
 }
 
