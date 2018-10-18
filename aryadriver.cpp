@@ -268,8 +268,22 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 
 void AryaDriver::configLoad(const QString filename)
 {
+	if (!QFile::exists(filename)) {
+		// create default
+		QJsonDocument doc;
+		QJsonObject o;
+		o.insert("model","Arya");
+		o.insert("type" , "moving");
+		o.insert("pan_tilt_support", 1);
+		o.insert("cam_module", "Thermal");
+		doc.setObject(o);
+		QFile f(filename);
+		f.open(QIODevice::WriteOnly);
+		f.write(doc.toJson());
+		f.close();
+	}
 	QFile f(filename);
-	if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+	if (!f.open(QIODevice::ReadOnly))
 		return ;
 	const QByteArray &json = f.readAll();
 	f.close();
@@ -280,5 +294,4 @@ void AryaDriver::configLoad(const QString filename)
 	config.type = root["type"].toString();
 	config.cam_module = root["cam_module"].toString();
 	config.ptSupport = root["pan_tilt_support"].toInt();
-	config.irLedSupport = root["ir_led_support"].toInt();
 }
