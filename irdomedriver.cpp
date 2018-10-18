@@ -75,6 +75,8 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 QVariant IRDomeDriver::get(const QString &key)
 {
 	mInfo("Get func: %s", qPrintable(key));
+	if (sleep)
+		return 0;
 	if (key.startsWith("ptz.module.reg.")) {
 		uint reg = key.split(".").last().toUInt();
 		return QString("%1").arg(headModule->getProperty(reg));
@@ -198,6 +200,10 @@ QVariant IRDomeDriver::get(const QString &key)
 int IRDomeDriver::set(const QString &key, const QVariant &value)
 {
 	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
+	if (key == "ptz.command.control")
+		sleepMode(value.toBool());
+	if (sleep)
+		return 0;
 	if (key == "ptz.cmd.exposure_val"){
 		headModule->setProperty(0,value.toUInt());
 	} else if (key == "ptz.cmd.gain_value"){
