@@ -20,8 +20,6 @@ public:
 		R_EXP_COMPVAL,	//17 //td:nd
 		R_GAIN_LIM,		//18 //td:nd
 		R_SHUTTER,		//19 //td:nd // getshutterspeed
-	//	R_MIN_SHUTTER,	//20 //td:nd
-	//	R_MIN_SHUTTER_LIM,//21 //td:nd
 		R_NOISE_REDUCT,	//22 //td:nd
 		R_WDRSTAT,		//23 //td:nd
 	//	R_WDRPARAM,		//24 //td:nd
@@ -43,6 +41,13 @@ public:
 		R_OPTIC_ZOOM_POS,
 		R_PT_SPEED,
 		R_ZOOM_SPEED,
+		R_EXPOSURE_TARGET,
+		R_BOT_SHUTTER,
+		R_TOP_SHUTTER,
+		R_BOT_IRIS,
+		R_TOP_IRIS,
+		R_TOP_GAIN,
+		R_BOT_GAIN,
 
 		R_COUNT
 	};
@@ -118,6 +123,12 @@ public:
 	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);
 	int maskGrid(MaskGrid onOff);
 
+	int setShutterLimit(uint topLim, uint botLim);
+	QString getShutterLimit();
+	int setIrisLimit(uint topLim, uint botLim);
+	QString getIrisLimit();
+	int setGainLimit(uchar topLim, uchar botLim);
+	QString getGainLimit();
 private:
 	struct maskRange {
 		int pMin;

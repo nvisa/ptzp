@@ -104,7 +104,7 @@ QVariant IRDomeDriver::get(const QString &key)
 				.arg(headModule->getProperty(4));
 	else if (key == "ptz.get_gain_lim")
 		return QString("%1")
-				.arg(headModule->getProperty(5));
+				.arg(headModule->getGainLimit());
 	else if (key == "ptz.get_shutter")
 		return QString("%1")
 				.arg(headModule->getProperty(6));
@@ -191,6 +191,15 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "ptz.get _zoom_ratio")
 		return QString("%1")
 				.arg(headModule->getZoomRatio());
+	else if (key == "ptz.get_exposure_target")
+		return QString("%1")
+				.arg(headModule->getProperty(27));
+	else if (key == "ptz.get_shutter_lim")
+		return QString("%1")
+				.arg(headModule->getShutterLimit());
+	else if (key == "ptz.get_iris_lim")
+		return QString("%1")
+				.arg(headModule->getIrisLimit());
 	else return PtzpDriver::get(key);
 
 	return "almost_there";
@@ -206,61 +215,64 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		return 0;
 	if (key == "ptz.cmd.exposure_val"){
 		headModule->setProperty(0,value.toUInt());
-	} else if (key == "ptz.cmd.gain_value"){
+	} else if (key == "ptz.cmd.exposure_target")
 		headModule->setProperty(1,value.toUInt());
+	else if (key == "ptz.cmd.gain_value"){
+		headModule->setProperty(2,value.toUInt());
 	} else if (key == "ptz.cmd.exp_compmode") {
-		headModule->setProperty(3,value.toUInt());
-	} else if (key == "ptz.cmd.exp_compvalue") {
 		headModule->setProperty(4,value.toUInt());
-	} else if (key == "ptz.cmd.gain_lim") {
+	} else if (key == "ptz.cmd.exp_compvalue") {
 		headModule->setProperty(5,value.toUInt());
+	} else if (key == "ptz.cmd.gain_lim") {
+		QStringList str = value.toString().split(",");
+		headModule->setGainLimit(str[0].toUInt(), str[1].toInt());
 	} else if (key == "ptz.cmd.noise_reduct") {
-		headModule->setProperty(7,value.toUInt());
-	} else if (key == "ptz.cmd.shutter"){
-		headModule->setProperty(6,value.toUInt());
-	} else if (key == "ptz.cmd.wdr_stat"){
 		headModule->setProperty(8,value.toUInt());
-	} else if (key == "ptz.cmd.gamma") {
+	} else if (key == "ptz.cmd.shutter"){
+		headModule->setProperty(7,value.toUInt());
+	} else if (key == "ptz.cmd.wdr_stat"){
 		headModule->setProperty(9,value.toUInt());
-	} else if (key == "ptz.cmd.awb_mode"){
+	} else if (key == "ptz.cmd.gamma") {
 		headModule->setProperty(10,value.toUInt());
-	} else if (key == "ptz.cmd.defog_mode"){
+	} else if (key == "ptz.cmd.awb_mode"){
 		headModule->setProperty(11,value.toUInt());
-	} else if (key == "ptz.cmd.digi_zoom"){
+	} else if (key == "ptz.cmd.defog_mode"){
 		headModule->setProperty(12,value.toUInt());
-	} else if (key == "ptz.cmd.zoom_type"){
+	} else if (key == "ptz.cmd.digi_zoom"){
 		headModule->setProperty(13,value.toUInt());
+	} else if (key == "ptz.cmd.zoom_type"){
+		headModule->setProperty(14,value.toUInt());
 	} else if (key == "ptz.cmd.focus_mode"){
-		headModule->setProperty(15,value.toUInt());
-	} else if (key == "ptz.cmd.zoom_trig"){
 		headModule->setProperty(16,value.toUInt());
-	} else if (key == "ptz.cmd.blc_stat"){
+	} else if (key == "ptz.cmd.zoom_trig"){
 		headModule->setProperty(17,value.toUInt());
-	} else if (key == "ptz.cmd.ircf_stat"){
+	} else if (key == "ptz.cmd.blc_stat"){
 		headModule->setProperty(18,value.toUInt());
-	} else if (key == "ptz.cmd.auto_icr"){
+	} else if (key == "ptz.cmd.ircf_stat"){
 		headModule->setProperty(19,value.toUInt());
-	} else if (key == "ptz.cmd.program_ae_mode"){
+	} else if (key == "ptz.cmd.auto_icr"){
 		headModule->setProperty(20,value.toUInt());
-	} else if (key == "ptz.cmd.flip"){
+	} else if (key == "ptz.cmd.program_ae_mode"){
 		headModule->setProperty(21,value.toUInt());
-	} else if (key == "ptz.cmd.mirror"){
+	} else if (key == "ptz.cmd.flip"){
 		headModule->setProperty(22,value.toUInt());
+	} else if (key == "ptz.cmd.mirror"){
+		headModule->setProperty(23,value.toUInt());
 	} else if (key == "ptz.cmd.one_push_af"){
-			headModule->setProperty(23,value.toUInt());
+			headModule->setProperty(24,value.toUInt());
 	} else if (key == "ptz.cmd.display_rot"){
 		if (value.toInt() == 0){
-			headModule->setProperty(21, 1);
-			headModule->setProperty(22, 0);
+			headModule->setProperty(22, 1);
+			headModule->setProperty(23, 0);
 		} else if (value.toInt() == 1){
-			headModule->setProperty(21, 0);
-			headModule->setProperty(22, 1);
-		} else if (value.toInt() == 2){
-			headModule->setProperty(21, 1);
-			headModule->setProperty(22, 1);
-		} else if (value.toInt() == 3){
-			headModule->setProperty(21, 0);
 			headModule->setProperty(22, 0);
+			headModule->setProperty(23, 1);
+		} else if (value.toInt() == 2){
+			headModule->setProperty(22, 1);
+			headModule->setProperty(23, 1);
+		} else if (value.toInt() == 3){
+			headModule->setProperty(22, 0);
+			headModule->setProperty(23, 0);
 		}
 	} else if (key == "ptz.cmd.zoom_point") {
 		headModule->setZoom(value.toUInt());
@@ -276,6 +288,13 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		headModule->setDeviceDefinition(value.toString());
 	else if (key == "ptz.cmd.focus")
 		headModule->setProperty(14, value.toUInt());
+	else if (key == "ptz.cmd.shutter_top_bot_lim"){
+		QStringList str = value.toString().split(",");
+		headModule->setShutterLimit(str[0].toUInt(), str[1].toInt());
+	} else if (key == "ptz.cmd.iris_top_bot_lim"){
+		QStringList str = value.toString().split(",");
+		headModule->setIrisLimit(str[0].toUInt(), str[1].toInt());
+	}
 	else return PtzpDriver::set(key,value);
 
 	return 0;
