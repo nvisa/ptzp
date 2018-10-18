@@ -45,6 +45,7 @@ protected:
 
 PtzpTransport::PtzpTransport()
 {
+	periodTimer = 100;
 	maxBufferLength = INT_MAX;
 	queueFreeEnabled = false;
 	queueFreeEnabledTimeout = 0;
@@ -56,6 +57,7 @@ PtzpTransport::PtzpTransport()
 
 PtzpTransport::PtzpTransport(PtzpTransport::LineProtocol proto)
 {
+	periodTimer = 100;
 	maxBufferLength = INT_MAX;
 	queueFreeEnabled = false;
 	queueFreeEnabledTimeout = 0;
@@ -109,6 +111,11 @@ uint PtzpTransport::getQeueuFreeCallbackMask()
 void PtzpTransport::setMaxBufferLength(int length)
 {
 	maxBufferLength = length;
+}
+
+void PtzpTransport::setTimerInterval(int value)
+{
+	periodTimer = value;
 }
 
 int PtzpTransport::dataReadyCallback(const unsigned char *bytes, int len, void *priv)

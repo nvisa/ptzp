@@ -30,6 +30,7 @@ public:
 	void setQueueFreeCallbackMask(uint mask);
 	uint getQeueuFreeCallbackMask();
 	void setMaxBufferLength(int length);
+	void setTimerInterval(int value);
 
 	static int dataReadyCallback(const unsigned char *bytes, int len, void *priv);
 	static QByteArray queueFreeCallback(void *priv);
@@ -65,7 +66,7 @@ protected:
 	 * to some sane default value to enable this feature
 	 */
 	int maxBufferLength;
-
+	int periodTimer;
 };
 
 #endif // PTZPTRANSPORT_H

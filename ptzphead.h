@@ -64,6 +64,7 @@ public:
 
 	static int dataReady(const unsigned char *bytes, int len, void *priv);
 	static QByteArray transportReady(void *priv);
+	void setTransportInterval(int interval);
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();

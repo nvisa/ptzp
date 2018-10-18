@@ -44,6 +44,11 @@ int PtzpHead::setTransport(PtzpTransport *tport)
 	return 0;
 }
 
+void PtzpHead::setTransportInterval(int interval)
+{
+	transport->setTimerInterval(interval);
+}
+
 int PtzpHead::syncRegisters()
 {
 	return 0;

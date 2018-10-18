@@ -9,9 +9,8 @@ PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 	PtzpTransport(proto)
 {
 	sock = NULL;
-
 	timer = new QTimer();
-	timer->start(100);
+	timer->start(periodTimer);
 	connect(timer, SIGNAL(timeout()), SLOT(callback()));
 }
 
@@ -59,4 +58,5 @@ void PtzpTcpTransport::callback()
 	QByteArray m = PtzpTransport::queueFreeCallback();
 	if (!m.isEmpty())
 		send(m.data(), m.size());
+	timer->setInterval(periodTimer);
 }
