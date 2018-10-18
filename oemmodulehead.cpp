@@ -20,14 +20,13 @@
 enum Commands {
 	/* visca commands */
 	C_VISCA_SET_EXPOSURE,		//14 //td:nd // exposure_value
+	C_VISCA_SET_EXPOSURE_TARGET,
 	C_VISCA_SET_GAIN,			//15 //td:nd // gainvalue
 	C_VISCA_SET_ZOOM_POS,
 	C_VISCA_SET_EXP_COMPMODE,	//16 //td:nd
 	C_VISCA_SET_EXP_COMPVAL,	//17 //td:nd
 	C_VISCA_SET_GAIN_LIM,		//18 //td:nd
 	C_VISCA_SET_SHUTTER,		//19 //td:nd // getshutterspeed
-	//	C_VISCA_SET_MIN_SHUTTER,	//20 //td:nd
-	//	C_VISCA_SET_MIN_SHUTTER_LIM,//21 //td:nd
 	C_VISCA_SET_NOISE_REDUCT,	//22 //td:nd
 	C_VISCA_SET_WDRSTAT,		//23 //td:nd
 	//	C_VISCA_SET_WDRPARAM,		//24 //td:nd
@@ -56,8 +55,6 @@ enum Commands {
 	C_VISCA_GET_EXP_COMPVAL,	//17 //td:nd
 	C_VISCA_GET_GAIN_LIM,		//18 //td:nd
 	C_VISCA_GET_SHUTTER,		//19 //td:nd // getshutterspeed
-	//	C_VISCA_GET_MIN_SHUTTER,	//20 //td:nd
-	//	C_VISCA_GET_MIN_SHUTTER_LIM,//21 //td:nd
 	C_VISCA_GET_NOISE_REDUCT,	//22 //td:nd
 	C_VISCA_GET_WDRSTAT,		//23 //td:nd
 	//	C_VISCA_GET_WDRPARAM,		//24 //td:nd
@@ -75,8 +72,6 @@ enum Commands {
 	C_VISCA_GET_FLIP_MODE,		//36
 	C_VISCA_GET_MIRROR_MODE,	//37
 
-	//	C_VISCA_SET_EXPOSURE_TARGET,//19 //td:nd
-
 	C_COUNT,
 };
 
@@ -85,6 +80,7 @@ enum Commands {
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	/* visca commands */
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x4b, 0x00, 0x00, 0x00, 0x0f, 0xff},	//set_exposure_value
+	{0x08, 0x00, 0x81, 0x01, 0x04, 0x40, 0x04, 0x00, 0x00, 0xff },	//set exposure target
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x4c, 0x00, 0x00, 0xf0, 0x0f, 0xff },	//set gain value
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x47, 0x00, 0x00, 0x00, 0x00, 0xff },	//set zoom pos
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x3E,0x00, 0xff },	//set exp comp mode
@@ -625,6 +621,13 @@ void OemModuleHead::setProperty(uint r, uint x)
 		hist->add(C_VISCA_SET_FOCUS);
 		p[4 + 2] = x ;
 		transport->send((const char *)p + 2, p[0]);
+	} else if (r == C_VISCA_SET_EXPOSURE_TARGET){
+		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE_TARGET];
+		hist->add(C_VISCA_SET_EXPOSURE_TARGET);
+		p[5 + 2] = (x & 0xf0) >> 4 ;
+		p[6 + 2] = x & 0x0f ;
+		transport->send((const char *)p + 2, p[0]);
+		setRegister(R_EXPOSURE_TARGET, (int)x);
 	}
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0){
@@ -852,6 +855,58 @@ int OemModuleHead::maskGrid(OemModuleHead::MaskGrid onOffCenter)
 {
 	const uchar cmd[] = {0x81, 0x01, 0x04, 0x7C, onOffCenter, 0xff };
 	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+int OemModuleHead::setShutterLimit(uint topLim, uint botLim)
+{
+	const uchar cmd[] = { 0x81, 0x01, 0x04, 0x40, 0x06,
+						  uchar((topLim & 0xf00) >> 8), uchar((topLim & 0xf0) >> 4), uchar(topLim & 0xf),
+						  uchar((botLim & 0xf00) >> 8), uchar((botLim & 0xf0) >> 4), uchar(botLim & 0xf),
+						  0xff };
+	setRegister(R_TOP_SHUTTER, topLim);
+	setRegister(R_BOT_SHUTTER, botLim);
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+QString OemModuleHead::getShutterLimit()
+{
+	QString mes = QString("%1,%2").arg(getProperty(R_TOP_SHUTTER)).arg(getProperty(R_BOT_SHUTTER));
+	return mes;
+}
+
+int OemModuleHead::setIrisLimit(uint topLim, uint botLim)
+{
+	const uchar cmd[] = { 0x81, 0x01, 0x04, 0x40, 0x07,
+						  uchar((topLim & 0xf00) >> 8), uchar((topLim & 0xf0) >> 4), uchar(topLim & 0xf),
+						  uchar((botLim & 0xf00) >> 8), uchar((botLim & 0xf0) >> 4), uchar(botLim & 0xf),
+						  0xff };
+	setRegister(R_TOP_IRIS, topLim);
+	setRegister(R_BOT_IRIS, botLim);
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+QString OemModuleHead::getIrisLimit()
+{
+	int top = getProperty(R_TOP_IRIS);
+	int bot = getProperty(R_BOT_IRIS);
+	QString mes = QString("%1,%2").arg(top).arg(bot);
+	return mes;
+}
+
+int OemModuleHead::setGainLimit(uchar topLim, uchar botLim)
+{
+	const uchar cmd[] = { 0x81, 0x01, 0x04, 0x40, 0x05,
+						  topLim >> 4, topLim & 0xf,
+						  botLim >> 4, botLim & 0xf, 0xff };
+	setRegister(R_TOP_GAIN, topLim);
+	setRegister(R_BOT_GAIN, botLim);
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+QString OemModuleHead::getGainLimit()
+{
+	QString mes = QString("%1,%2").arg(getProperty(R_TOP_GAIN)).arg(getProperty(R_BOT_GAIN));
+	return mes;
 }
 
 static uint checksum(const uchar *cmd, uint lenght)
