@@ -295,6 +295,8 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 		QStringList str = value.toString().split(",");
 		headModule->setIrisLimit(str[0].toUInt(), str[1].toInt());
 	}
+	else if (key == "camera.clock_invert")
+			headModule->clockInvert(value.toBool());
 	else return PtzpDriver::set(key,value);
 
 	return 0;
