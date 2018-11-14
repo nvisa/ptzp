@@ -47,7 +47,7 @@ void NetworkAccessManager::setPath(const QString &path)
 
 void NetworkAccessManager::replyFinished(QNetworkReply *reply)
 {
-	if (reply->error() != QNetworkReply::NetworkError::NoError) {
+	if (reply->error() != QNetworkReply::NoError) {
 		mDebug("Network connection error, %s", qPrintable(reply->errorString()));
 		return;
 	}
