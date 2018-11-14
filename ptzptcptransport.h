@@ -4,10 +4,10 @@
 #include <ecl/ptzp/ptzptransport.h>
 
 #include <QTimer>
+#include <QMutex>
 #include <QObject>
 
 class QTcpSocket;
-
 class PtzpTcpTransport : public QObject, public PtzpTransport
 {
 	Q_OBJECT
@@ -26,6 +26,7 @@ protected slots:
 protected:
 	QTcpSocket *sock;
 	QTimer *timer;
+	QMutex lock;
 };
 
 #endif // PTZPTCPTRANSPORT_H
