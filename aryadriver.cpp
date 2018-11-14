@@ -179,6 +179,21 @@ QVariant AryaDriver::get(const QString &key)
 	else if (key == "ptz.head.2.digi_zoom_status")
 		return QString("%1")
 				.arg(gungor->getProperty(8));
+	else if (key == "camera.model")
+		return QString("%1")
+				.arg(config.model);
+	else if (key == "camera.type")
+		return QString("%1")
+				.arg(config.type);
+	else if (key == "camera.cam_module")
+		return QString("%1")
+				.arg(config.cam_module);
+	else if (key == "camera.pan_tilt_support")
+		return QString("%1")
+				.arg(config.ptSupport);
+	else if (key == "camera.ir_led_support")
+		return QString("%1")
+				.arg(config.irLedSupport);
 
 	return PtzpDriver::get(key);
 	return  QVariant();
