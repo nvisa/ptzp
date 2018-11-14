@@ -12,7 +12,7 @@
 
 class PtzpTransport;
 
-class PtzpHead
+class PtzpHead: public QObject
 {
 public:
 	PtzpHead();
