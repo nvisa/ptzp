@@ -323,7 +323,7 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context, const::ptzp::PtzC
 	float speed = request->pan_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) )
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -343,7 +343,7 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context, const::ptzp::Ptz
 	float speed = request->pan_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) )
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -363,7 +363,7 @@ grpc::Status PtzpDriver::PanStop(grpc::ServerContext *context, const::ptzp::PtzC
 	int idx = request->head_id();
 
 	PtzpHead *head = getHead(idx);
-	if (head==NULL && ((head->getCapabilities() && PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) )
+	if (head == NULL || ((head->getCapabilities() && PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -384,7 +384,7 @@ grpc::Status PtzpDriver::ZoomIn(grpc::ServerContext *context, const::ptzp::PtzCm
 
 	PtzpHead *head = getHead(idx);
 
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM) )
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -404,7 +404,7 @@ grpc::Status PtzpDriver::ZoomOut(grpc::ServerContext *context, const::ptzp::PtzC
 
 	PtzpHead *head = getHead(idx);
 
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM) )
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -422,7 +422,7 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context, const::ptzp::Ptz
 	int idx = request->head_id();
 
 	PtzpHead *head = getHead(idx);
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM) )
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -442,7 +442,7 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context, const ptzp::PtzCmd
 	float speed = request->tilt_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT) )
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -462,7 +462,7 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context, const ptzp::PtzC
 	float speed = request->tilt_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT) )
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -482,7 +482,7 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context, const ptzp::PtzC
 	int idx = request->head_id();
 
 	PtzpHead *head = getHead(idx);
-	if (head==NULL && ((head->getCapabilities() & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT) ){
+	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT) ){
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -504,7 +504,7 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context, const ptzp::Pt
 
 	PtzpHead *head = getHead(idx);
 	int cap = head->getCapabilities();
-	if (head==NULL && ( ((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)|| ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT)) )
+	if (head == NULL || ( ((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)|| ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT)) )
 	{
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
@@ -524,7 +524,7 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context, const ptzp:
 	PtzpHead *head = getHead(idx);
 	
 	int cap = head->getCapabilities();
-	if (head==NULL && ( ((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)
+	if (head == NULL || ( ((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)
 						|| ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT)
 						|| ((cap & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM)) )
 	{
@@ -677,7 +677,7 @@ grpc::Status PtzpDriver::GetSettings(grpc::ServerContext *context, const ptzp::S
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
-	if (head==NULL)
+	if (head == NULL)
 		return grpc::Status::CANCELLED;
 
 	QByteArray settings = mapToJson(head->getSettings());
@@ -692,7 +692,7 @@ grpc::Status PtzpDriver::SetSettings(grpc::ServerContext *context, const ptzp::S
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
-	if (head==NULL)
+	if (head == NULL)
 		return grpc::Status::CANCELLED;
 
 	QVariantMap map = jsonToMap(request->json().c_str());
@@ -705,7 +705,7 @@ grpc::Status PtzpDriver::FocusIn(grpc::ServerContext *context, const ptzp::PtzCm
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
-	if (head==NULL)
+	if (head == NULL)
 		return grpc::Status::CANCELLED;
 	if (!head->settings.contains("focus_in"))
 		return grpc::Status::CANCELLED;
@@ -722,7 +722,7 @@ grpc::Status PtzpDriver::FocusOut(grpc::ServerContext *context, const ptzp::PtzC
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
-	if (head==NULL)
+	if (head == NULL)
 		return grpc::Status::CANCELLED;
 	if (!head->settings.contains("focus_out"))
 		return grpc::Status::CANCELLED;
@@ -739,7 +739,7 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
-	if (head==NULL)
+	if (head == NULL)
 		return grpc::Status::CANCELLED;
 	if (!head->settings.contains("focus_stop"))
 		return grpc::Status::CANCELLED;
