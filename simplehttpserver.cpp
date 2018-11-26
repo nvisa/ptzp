@@ -44,8 +44,16 @@ const QByteArray SimpleHttpServer::getFile(const QString filename, QString &mime
 {
 	Q_UNUSED(filename);
 	Q_UNUSED(url);
-	mime = "text/plain";
-	return QByteArray();
+	QString fname = filename;
+	if (fname.isEmpty())
+		fname = "index.html";
+	mime = mimeTypesByExtension[fname.split(".").last()];
+	if (mime.isEmpty())
+		mime = "text/html";
+	QFile f("/usr/local/bin/www/" + fname);
+	if (!f.open(QIODevice::ReadOnly))
+		return QByteArray();
+	return f.readAll();
 }
 
 int SimpleHttpServer::handlePostData(const QByteArray &)
