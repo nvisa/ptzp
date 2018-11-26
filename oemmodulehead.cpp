@@ -167,6 +167,7 @@ OemModuleHead::OemModuleHead()
 	syncEnabled = true;
 	syncInterval = 40;
 	syncTime.start();
+	irLedLevel = 0;
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -940,5 +941,11 @@ int OemModuleHead::setIRLed(int led)
 		cmd[5] = (uint)led - 1;
 	}
 	cmd[6] = checksum(cmd, 6);
+	irLedLevel = led;
 	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+int OemModuleHead::getIRLed()
+{
+	return irLedLevel;
 }
