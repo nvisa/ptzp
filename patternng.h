@@ -11,23 +11,10 @@
 #include <ecl/interfaces/ptzcontrolinterface.h>
 #include <ecl/interfaces/ptzpatterninterface.h>
 
-class PatternNg : public PtzPatternInterface
+class PatternNg: QObject
 {
 public:
 	explicit PatternNg(PtzControlInterface *ctrl = 0);
-
-	struct ReplayParameters {
-		int panResolution;		//hundreds of 1 degree
-		int tiltResolution;		//hundreds of 1 degree
-		int approachSpeedHigh;
-		int approachSpeedMedium;
-		int approachSpeedLow;
-		int approachSpeedUltraLow;
-		int approachPointHigh;
-		int approachPointMedium;
-		int approachPointLow;
-		int approachPointUltraLow;
-	};
 
 	enum SyncMethod {
 		SYNC_POSITION,
@@ -35,9 +22,7 @@ public:
 	};
 
 	enum ReplayState {
-		RS_PAN_INIT,
-		RS_TILT_INIT,
-		RS_ZOOM_INIT,
+		RS_PTZ_INIT,
 		RS_RUN,
 		RS_FINALIZE,
 	};
@@ -49,29 +34,28 @@ public:
 		int zoom;
 		qint64 time;
 		int cmd;
-		int par1;
-		int par2;
+		float par1;
+		float par2;
 	};
 
 	void positionUpdate(int pan, int tilt, int zoom);
-	void commandUpdate(int pan, int tilt, int zoom, int c, int par1, int par2);
-	//void viscaCommand(int c, int par1, int par2);
-	//void customCommand(int c, int par1, int par2);
+	void commandUpdate(int pan, int tilt, int zoom, int c, float par1, float par2);
 	int start(int pan, int tilt, int zoom);
 	void stop(int pan, int tilt, int zoom);
 	int replay();
-	void space();
 	bool isRecording();
 	bool isReplaying();
 
 	int save(const QString &filename);
 	int load(const QString &filename);
+	int deletePattern(const QString &name);
+	QString getList();
 
-	ReplayParameters rpars;
 protected:
 	void replayCurrent(int pan, int tilt, int zoom);
 
 	QElapsedTimer ptime;
+	QElapsedTimer rtime;
 	QList<SpaceTime> geometry;
 	bool recording;
 	bool replaying;

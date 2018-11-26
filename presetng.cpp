@@ -1,132 +1,112 @@
 #include "presetng.h"
 
+#include "ecl/debug.h"
+
 #include <QFile>
+#include <QFileInfo>
+#include <QDataStream>
+#include <QMutexLocker>
+
 #include <errno.h>
-#include <debug.h>
 
-PresetNg::PresetNg(QObject *parent)
-	: QObject(parent)
+PresetNg::PresetNg()
 {
-	lastIndex = 0;
-	initPresets();
+	mDebug("Registered Presets '%s'", qPrintable(getList()));
 }
 
-int PresetNg::initPresets()
+int PresetNg::addPreset(const QString &name, float panPos, float tiltPos, int zoomPos)
 {
-	PTZLocation position;
-	position.pan = 0;
-	position.tilt = 0;
-	position.zoom = 0;
-	position.status = false;
-	position.tag = "";
-	for (int i = 0; i < 256; i++)
-		presets.insert(i, position);
-	load("presets.bin");
-	return 0;
+	presets.insert(name, QString("%1;%2;%3").arg(panPos).arg(tiltPos).arg(zoomPos));
+	mDebug("Preset value '%s' inserted to list:  %f, %f, %d", qPrintable(name), panPos, tiltPos, zoomPos);
+	return save();
 }
 
-int PresetNg::savePreset(int pan, int tilt, int zoom)
+PresetNg *PresetNg::getInstance()
 {
-	PTZLocation position;
-	position.pan = pan;
-	position.tilt = tilt;
-	position.zoom = zoom;
-	position.status = true;
-	position.tag = lastTag;
-
-	presets.insert(lastIndex, position);
-	int ret = save("presets.bin");
-	if (ret)
-		return ret;
-	return 0;
+	static PresetNg* instance = new PresetNg();
+	if (instance == 0)
+		instance = new PresetNg();
+	return instance;
 }
 
-int PresetNg::setIndex(int index)
+QStringList PresetNg::getPreset(const QString &name)
 {
-	lastIndex = index;
-	return 0;
+	load();
+	if (!presets.keys().contains(name))
+		return QStringList();
+	QString pos = presets.value(name);
+	if (!pos.contains(";"))
+		return QStringList();
+	mDebug("This preset '%s' position values '%s'", qPrintable(name), qPrintable(pos));
+	return pos.split(";");
 }
 
-int PresetNg::setPresetName(const QString name)
+int PresetNg::deletePreset(const QString &name)
 {
-	lastTag = name;
-	return 0;
+	presets.remove(name);
+	return save();
 }
 
-int PresetNg::getIndex()
+QString PresetNg::getList()
 {
-	return lastIndex;
-}
-
-int PresetNg::save(QString filename)
-{
-	QFile f(filename);
-	if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		mDebug("Error, This file didn't open. %s", qPrintable(f.fileName()));
-		return -EINVAL;
+	load();
+	QString preset;
+	foreach (QString st, presets.keys()) {
+		QString tmp = st + ",";
+		preset = preset + tmp;
 	}
-	QString presetValues = showPresets();
-	f.write(presetValues.toLatin1());
+	preset = preset.left(preset.length() - 1);
+	mDebug("Preset list '%s'", qPrintable(preset));
+	return preset;
+}
+
+int PresetNg::save()
+{
+	QByteArray ba;
+	QDataStream out(&ba, QIODevice::WriteOnly);
+	out.setByteOrder(QDataStream::LittleEndian);
+	out.setFloatingPointPrecision(QDataStream::SinglePrecision);
+	out << (qint32)0x77177177; //key
+	out << (qint32)1; //version
+	out << presets;
+
+	QFile f("presets.bin");
+	if (!f.open(QIODevice::WriteOnly)) {
+		fDebug("Preset save error");
+		return -EPERM;
+	}
+	f.write(ba);
 	f.close();
 	return 0;
 }
 
-int PresetNg::load(QString filename)
+int PresetNg::load()
 {
-	QFile f(filename);
-	if (!f.open(QIODevice::ReadOnly)) {
-		mDebug("Error, This file didn't open. %s", qPrintable(f.fileName()));
-		return -EINVAL;
+	if (!QFileInfo("presets.bin").exists()) {
+		mDebug("The file doesn't existed");
+		return -1;
 	}
-
-	QTextStream in(&f);
-	QString line = in.readLine();
-	PTZLocation location;
-	while (!line.isNull()) {
-		if (!line.contains("."))
-			continue;
-		int index = line.split(".").first().toInt();
-		QString positions = line.split(".").last();
-		positions.remove(" ");
-		if (!positions.contains(","))
-			continue;
-		QStringList ptz = positions.split(",");
-		if (ptz.size() < 4)
-			continue;
-		int pan = ptz.at(0).split(":").last().toInt();
-		int tilt = ptz.at(1).split(":").last().toInt();
-		int zoom = ptz.at(2).split(":").last().toInt();
-		QString tag = ptz.at(3).split(":").last();
-		location.pan = pan;
-		location.tilt = tilt;
-		location.zoom = zoom;
-		location.tag = tag;
-		presets.insert(index, location);
-		line = in.readLine();
-	}
+	QFile f("presets.bin");
+	if (!f.open(QIODevice::ReadOnly))
+		return -EPERM;
+	QByteArray ba = f.readAll();
 	f.close();
+
+	QDataStream in(ba);
+	in.setByteOrder(QDataStream::LittleEndian);
+	in.setFloatingPointPrecision(QDataStream::SinglePrecision);
+	qint32 key; in >> key;
+	if (key != 0x77177177) {
+		fDebug("Wrong key '0x%x'", key);
+		return -1;
+	}
+	qint32 ver; in >> ver;
+	if (ver != 1) {
+		fDebug("Unsupported version '0x%x'", ver);
+		return -2;
+	}
+	presets.clear();
+	in >> presets;
 	return 0;
-}
-
-QString PresetNg::getPreset(int index)
-{
-	if (presets.value(index).status == false) {
-		mDebug("This index dont set. %d", index);
-		return QString();
-	}
-	PTZLocation position = presets.value(index);
-	QString value = "%1, %2, %3";
-	return value.arg(position.pan).arg(position.tilt).arg(position.zoom);
-}
-
-QString PresetNg::showPresets()
-{
-	QString info;
-	QString ptz = "%1. p:%2, t:%3, z:%4, n:%5";
-	for (int i = 0; i < 256; i++) {
-		PTZLocation position = presets.value(i);
-		info = info + ptz.arg(i).arg(position.pan).arg(position.tilt).arg(position.zoom).arg(position.tag) + "\n";
-	}
-	return info;
 }
 

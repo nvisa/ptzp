@@ -1,7 +1,9 @@
 #include "patternng.h"
 #include "debug.h"
 
+#include <QDir>
 #include <QTimer>
+#include <QProcess>
 #include <QDataStream>
 
 #include <errno.h>
@@ -48,8 +50,7 @@
 	in different modes.
 
 	TODO:
-		- Implement position-based replaying
-		- Zoom commands
+		- Multi heads support.
 
 */
 
@@ -60,16 +61,7 @@ PatternNg::PatternNg(PtzControlInterface *ctrl)
 	sm = SYNC_TIME;
 	current = 0;
 	ptzctrl = ctrl;
-
-	rpars.panResolution = 100;
-	rpars.tiltResolution = 100;
-	rpars.approachSpeedHigh = 63;
-	rpars.approachSpeedMedium = 40;
-	rpars.approachSpeedLow = 20;
-	rpars.approachSpeedUltraLow = 10;
-	rpars.approachPointHigh = 10000;
-	rpars.approachPointMedium = 5000;
-	rpars.approachPointLow = 1500;
+	mDebug("Registered patterns, '%s'", qPrintable(getList()));
 }
 
 void PatternNg::positionUpdate(int pan, int tilt, int zoom)
@@ -88,8 +80,11 @@ void PatternNg::positionUpdate(int pan, int tilt, int zoom)
 	}
 }
 
-void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, int par1, int par2)
+void PatternNg::commandUpdate(int pan, int tilt, int zoom, int c, float par1, float par2)
 {
+	if (!isRecording()) {
+		return;
+	}
 	SpaceTime st;
 	st.pan = pan;
 	st.tilt = tilt;
@@ -107,6 +102,7 @@ int PatternNg::start(int pan, int tilt, int zoom)
 {
 	if (isReplaying())
 		return -EINVAL;
+	geometry.clear();
 	recording = true;
 	ptime.start();
 	positionUpdate(pan, tilt, zoom);
@@ -129,7 +125,7 @@ int PatternNg::replay()
 	replaying = true;
 	ptime.restart();
 	current = 0;
-	rs = RS_PAN_INIT;
+	rs = RS_PTZ_INIT;
 	return 0;
 }
 
@@ -158,7 +154,7 @@ int PatternNg::save(const QString &filename)
 	out << (qint32)1; //version
 	out << geometry;
 
-	QFile f(filename);
+	QFile f(QString("%1.pattern").arg(filename));
 	if (!f.open(QIODevice::WriteOnly))
 		return -EPERM;
 	f.write(ba);
@@ -172,7 +168,7 @@ int PatternNg::load(const QString &filename)
 	if (isRecording())
 		return -EINVAL;
 
-	QFile f(filename);
+	QFile f(QString("%1.pattern").arg(filename));
 	if (!f.open(QIODevice::ReadOnly))
 		return -EPERM;
 	QByteArray ba = f.readAll();
@@ -193,56 +189,48 @@ int PatternNg::load(const QString &filename)
 	}
 	geometry.clear();
 	in >> geometry;
-
 	return 0;
+}
+
+int PatternNg::deletePattern(const QString &name)
+{
+	QDir a;
+	QString path = a.absolutePath();
+	return QProcess::execute(QString("rm %1/%2.pattern").arg(path).arg(name));
+}
+
+QString PatternNg::getList()
+{
+	QProcess p;
+	p.start("ls -1");
+	p.waitForFinished(3000);
+	QString plist = QString::fromLatin1(p.readAllStandardOutput());
+	if (!plist.contains(".pattern"))
+		return QString();
+	QString pattern;
+	foreach (QString st, plist.split("\n")) {
+		if (st.isEmpty())
+			continue;
+		QString tmp;
+		if (st.contains(".pattern")) {
+			pattern = pattern + st.remove(".pattern") + ",";
+		}
+	}
+	pattern = pattern.left(pattern.length() - 1);
+	mDebug("Pattern list '%s'", qPrintable(pattern));
+	return pattern;
 }
 
 void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 {
 	const SpaceTime &st = geometry[current];
 	switch (rs) {
-	case RS_PAN_INIT: {
-		int pdiff = qAbs(st.pan - pan);
-		if (pdiff < rpars.panResolution) {
-			ptzctrl->sendCommand(9, 0, 0); //pan stop
-			rs = RS_TILT_INIT;
-		} else {
-			int speed = rpars.approachSpeedUltraLow;
-			if (pdiff > rpars.approachPointHigh)
-				speed = rpars.approachSpeedHigh;
-			else if (pdiff > rpars.approachPointMedium)
-				speed = rpars.approachSpeedMedium;
-			else if (pdiff > rpars.approachPointLow)
-				speed = rpars.approachSpeedLow;
-			else
-				speed = rpars.approachSpeedUltraLow;
-			ptzctrl->sendCommand(1, speed, 0); //pan_left, goto start position
-		}
-		break;
-	}
-	case RS_TILT_INIT: {
-		int tdiff = qAbs(st.tilt - tilt);
-		if (tdiff < rpars.tiltResolution) {
-			ptzctrl->sendCommand(9, 0, 0); //pan stop
-			rs = RS_ZOOM_INIT;
-		} else {
-			int speed = rpars.approachSpeedUltraLow;
-			if (tdiff > rpars.approachPointHigh)
-				speed = rpars.approachSpeedHigh;
-			else if (tdiff > rpars.approachPointMedium)
-				speed = rpars.approachSpeedMedium;
-			else if (tdiff > rpars.approachPointLow)
-				speed = rpars.approachSpeedLow;
-			else
-				speed = rpars.approachSpeedUltraLow;
-			ptzctrl->sendCommand(3, 0, speed); //tilt_up, goto start position
-		}
-		break;
-	}
-	case RS_ZOOM_INIT:
+	case RS_PTZ_INIT: {
+		ptzctrl->goToPosition(st.pan, st.tilt, st.zoom);
 		rs = RS_RUN;
 		ptime.restart();
 		break;
+	}
 	case RS_RUN:
 		if (ptime.elapsed() > st.time) {
 			if (st.cmd != -1)
@@ -250,7 +238,7 @@ void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 			current++;
 			if (current == geometry.size()) {
 				ptime.restart();
-				rs = RS_PAN_INIT;
+				rs = RS_PTZ_INIT;
 				current = 0;
 			}
 			replayCurrent(pan, tilt, zoom);

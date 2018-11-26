@@ -2,44 +2,42 @@
 #define PATROLNG_H
 
 #include <QHash>
+#include <QMutex>
 #include <QObject>
-#include <QElapsedTimer>
 
-class PresetNg;
-class PatrolNg : public QObject
+class PatrolNg: QObject
 {
-	Q_OBJECT
 public:
-	explicit PatrolNg(QObject *parent = 0);
-	int save(const QString &filename);
-	int load(const QString &filename);
-	int addPatrol(const QString &data);
-	int addInterval(const QString &data);
-	int setIndex(int index);
-	int deletePatrol(int index);
-	int setPatrolState(const QString &data);
-	int getIndex();
-	QString getPatrolList();
-	QString getPatrolInterval();
-	QString getPatrol(int index);
-signals:
-
-public slots:
-private:
-	QHash<int, QString> presets;
-	typedef QList<QPair<int, int> > patrolType;
-	QHash<int, patrolType> patrols;
-	int currentPatrolIndex;
-	struct PatrolInfo {
-		int patrolId;
-		int state; //0: stopped, 1: running
-		patrolType list;
-		int listPos;
-		QElapsedTimer t;
+	static PatrolNg* getInstance();
+	enum PatrolMode  {
+		STOP,
+		RUN
 	};
-	QString targetFileName;
-	PatrolInfo currentPatrol;
-	PresetNg *prst;
+
+	typedef QList<QPair<QString, int> > patrolType;
+	struct PatrolInfo {
+		QString patrolName;
+		PatrolMode state; //0: stopped, 1: running
+		patrolType list;
+	};
+
+	int addPatrol(const QString &name, const QStringList presets);
+	int addInterval(const QString &name, const QStringList intervals);
+	int deletePatrol(const QString &name);
+	int save();
+	int load();
+	int setPatrolName(const QString &name);
+	int setPatrolStateRun(const QString &name);
+	int setPatrolStateStop(const QString &name);
+	PatrolInfo* getCurrentPatrol();
+	QString getList();
+private:
+	PatrolNg();
+	QMutex mutex;
+	QHash<QString, patrolType> patrols;
+
+	PatrolInfo *currentPatrol;
+
 };
 
 #endif // PATROLNG_H

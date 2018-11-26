@@ -1,124 +1,65 @@
 #include "patrolng.h"
-#include "debug.h"
+
+#include "ecl/debug.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QDataStream>
+#include <QMutexLocker>
 
 #include <errno.h>
-#include <ecl/drivers/presetng.h>
 
-PatrolNg::PatrolNg(QObject *parent)
-	: QObject(parent)
+PatrolNg::PatrolNg()
 {
-	targetFileName = "patrol.bin";
-	currentPatrolIndex = 0;
-	currentPatrol.patrolId = 0;
-	currentPatrol.listPos = 0;
-	currentPatrol.state = 0;
-	load(targetFileName);
-
-	prst = new PresetNg();
+	currentPatrol = new PatrolInfo();
+	currentPatrol->patrolName = "";
+	currentPatrol->state = STOP;
+	mDebug("Registered patrols '%s'", qPrintable(getList()));
 }
 
-int PatrolNg::setPatrolState(const QString &data)
+PatrolNg *PatrolNg::getInstance()
 {
-	QString pstring = data;
-	QStringList l = pstring.remove(" ").split("_", QString::SkipEmptyParts);
-	int ind = currentPatrolIndex;
-	if (l.size() == 2)
-		ind = l[1].toInt();
-	currentPatrol.patrolId = ind;
-	currentPatrol.list = patrols[ind];
-	if (currentPatrol.list.isEmpty()) {
-		mDebug("Patrol list is empty");
-		return -EACCES;
-	}
-	QPair<int, int> pp = currentPatrol.list[currentPatrol.listPos];
-
-	if (l[0] == "run") {
-		currentPatrol.listPos = 0;
-		currentPatrol.state = 1;
-		currentPatrol.t.start();
-	} else currentPatrol.state = 0;
-	return 0;
+	static PatrolNg* instance = new PatrolNg();
+	if (instance == 0)
+		instance = new PatrolNg();
+	return instance;
 }
 
-int PatrolNg::addPatrol(const QString &data)
+int PatrolNg::addPatrol(const QString &name, const QStringList presets)
 {
-	if (!data.contains(","))
+	if (presets.isEmpty() | name.isEmpty())
 		return -EINVAL;
-	QStringList plist = data.split(",");
-	mDebug("Adding new patrol, index value is %d, preset values are %s", currentPatrolIndex, qPrintable(data));
 	patrolType patrol;
-	foreach (QString pl, plist)
-		patrol << QPair<int, int>(pl.toInt(), 0);
-	patrols.insert(currentPatrolIndex, patrol);
-	save(targetFileName);
-	return 0;
+	foreach (QString preset, presets) {
+		patrol  << QPair<QString, int>(preset, 0);
+	}
+	patrols.insert(name, patrol);
+	return save();
 }
 
-int PatrolNg::addInterval(const QString &data)
+int PatrolNg::addInterval(const QString &name, const QStringList intervals)
 {
-	if (!data.contains(","))
+	if (intervals.isEmpty() || name.isEmpty())
 		return -EINVAL;
-	QStringList plist = data.split(",");
-	mDebug("Adding patrol interval, index value is %d, interval value is %s", currentPatrolIndex, qPrintable(data));
-	patrolType patrol = patrols[currentPatrolIndex];
-	for (int i = 0; i < plist.size(); i++) {
+	patrolType patrol = patrols[name];
+	for (int i = 0; i < intervals.size(); i++) {
 		if (i < patrol.size())
-			patrol[i].second = plist[i].toInt();
+			patrol[i].second = intervals[i].toInt();
 	}
-	patrols.insert(currentPatrolIndex, patrol);
-	save(targetFileName);
-	return 0;
+	patrols.insert(name, patrol);
+	return save();
 }
 
-int PatrolNg::setIndex(int index)
+int PatrolNg::deletePatrol(const QString &name)
 {
-	currentPatrolIndex = index;
-	return 0;
+	if(name.isEmpty())
+		return -EINVAL;
+	patrols.remove(name);
+	mDebug("'%s' patrol deleted", qPrintable(name));
+	return save();
 }
 
-int PatrolNg::getIndex()
-{
-	return currentPatrolIndex;
-}
-
-QString PatrolNg::getPatrol(int index)
-{
-	qDebug() << "This is my patrol" << patrols[index] << patrols[index].size();
-}
-
-QString PatrolNg::getPatrolList()
-{
-	QStringList list;
-	qDebug() << "SIZE PATROL LIST" << patrols[currentPatrolIndex].size();
-	for	(int i = 0; i < patrols[currentPatrolIndex].size(); i++) {
-		QPair<int, int> p = patrols[currentPatrolIndex][i];
-		list << QString::number(p.first);
-	}
-	qDebug() << "GET PATROL LIST " << list;
-	return list.join(",");
-}
-
-QString PatrolNg::getPatrolInterval()
-{
-	QStringList list;
-	for	(int i = 0; i < patrols[currentPatrolIndex].size(); i++) {
-		QPair<int, int> p = patrols[currentPatrolIndex][i];
-		list << QString::number(p.second);
-	}
-	return list.join(",");
-}
-
-int PatrolNg::deletePatrol(int index)
-{
-	patrols.remove(currentPatrolIndex);
-	save(targetFileName);
-	return 0;
-}
-
-int PatrolNg::save(const QString &filename)
+int PatrolNg::save()
 {
 	QByteArray ba;
 	QDataStream out(&ba, QIODevice::WriteOnly);
@@ -126,12 +67,11 @@ int PatrolNg::save(const QString &filename)
 	out.setFloatingPointPrecision(QDataStream::SinglePrecision);
 	out << (qint32)0x77177177; //key
 	out << (qint32)1; //version
-	out << presets;
 	out << patrols;
 
-	QFile f(filename);
+	QFile f("patrols.bin");
 	if (!f.open(QIODevice::WriteOnly)) {
-		mDebug("error saving presets and patrols");
+		fDebug("Preset save error");
 		return -EPERM;
 	}
 	f.write(ba);
@@ -139,13 +79,15 @@ int PatrolNg::save(const QString &filename)
 	return 0;
 }
 
-int PatrolNg::load(const QString &filename)
+int PatrolNg::load()
 {
-	QFile f(filename);
-	if (!f.open(QIODevice::ReadOnly)) {
-		mDebug("No such file");
-		return -EPERM;
+	if (!QFileInfo("patrols.bin").exists()) {
+		mDebug("The file doesn't existed");
+		return -1;
 	}
+	QFile f("patrols.bin");
+	if (!f.open(QIODevice::ReadOnly))
+		return -EPERM;
 	QByteArray ba = f.readAll();
 	f.close();
 
@@ -162,11 +104,46 @@ int PatrolNg::load(const QString &filename)
 		fDebug("Unsupported version '0x%x'", ver);
 		return -2;
 	}
-	presets.clear();
 	patrols.clear();
-	in >> presets;
 	in >> patrols;
 	return 0;
 }
 
+int PatrolNg::setPatrolStateRun(const QString &name)
+{
+	if (name.isEmpty())
+		return -EINVAL;
+	currentPatrol->patrolName = name;
+	currentPatrol->state = RUN;
+	currentPatrol->list = patrols.value(name);
+	mDebug("This patrol '%s' is running", qPrintable(name));
+	return 0;
+}
 
+int PatrolNg::setPatrolStateStop(const QString &name)
+{
+	if (name.isEmpty())
+		return -EINVAL;
+	currentPatrol->patrolName = name;
+	currentPatrol->state = STOP;
+	mDebug("This patrol '%s' is stopping", qPrintable(name));
+	return 0;
+}
+
+PatrolNg::PatrolInfo* PatrolNg::getCurrentPatrol()
+{
+	return currentPatrol;
+}
+
+QString PatrolNg::getList()
+{
+	load();
+	QString patrol;
+	foreach (QString st, patrols.keys()) {
+		QString tmp = st + ",";
+		patrol = patrol + tmp;
+	}
+	patrol = patrol.left(patrol.length() - 1);
+	mDebug("Patrol list '%s'", qPrintable(patrol));
+	return patrol;
+}
