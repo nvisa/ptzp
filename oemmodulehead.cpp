@@ -454,6 +454,7 @@ QJsonValue OemModuleHead::marshallAllRegisters()
 
 	json.insert(QString("deviceDefiniton"), (QString)deviceDefinition);
 	json.insert(QString("zoomRatio"),(int)zoomRatio);
+	json.insert(QString("irLedLevel"), (int)irLedLevel);
 	return json;
 }
 
@@ -467,7 +468,9 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 		setProperty(i,root.value(key.arg(i)).toInt());
 	}
 	deviceDefinition = root.value("deviceDefiniton").toString();
-	zoomRatio = root.value("zoomRatio").toInt();}
+	zoomRatio = root.value("zoomRatio").toInt();
+	setIRLed(root.value("irLedLevel").toInt());
+}
 
 void OemModuleHead::setProperty(uint r, uint x)
 {
