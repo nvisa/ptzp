@@ -33,10 +33,7 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 
 int PtzpTcpTransport::send(const char *bytes, int len)
 {
-	lock.lock();
-	int size = sock->write(bytes, len);
-	lock.unlock();
-	return size;
+	return sock->write(bytes, len);
 }
 
 void PtzpTcpTransport::connected()
@@ -46,9 +43,7 @@ void PtzpTcpTransport::connected()
 
 void PtzpTcpTransport::dataReady()
 {
-	lock.lock();
 	protocol->dataReady(sock->readAll());
-	lock.unlock();
 }
 
 void PtzpTcpTransport::clientDisconnected()
