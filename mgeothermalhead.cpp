@@ -38,6 +38,10 @@ enum Commands {
 	C_HPF_SPATIAL_CHANGE,
 	C_FLIP,
 	C_IMAGE_UPDATE_SPEED,
+	C_GET_DIGI_ZOOM,
+	C_GET_POLARITY,
+	C_GET_FOV,
+	C_GET_IMAGE_FREEZE,
 
 	C_COUNT
 };
@@ -65,6 +69,10 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x35, 0x0a, 0xd9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xdb, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xde, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	{0x35, 0x0a, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	{0x35, 0x0a, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	{0x35, 0x0a, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	{0x35, 0x0a, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 };
 
 static uchar chksum(const uchar *buf, int len)
@@ -80,6 +88,10 @@ MgeoThermalHead::MgeoThermalHead()
 	syncList << C_BRIGHTNESS;
 	syncList << C_CONTRAST;
 	syncList << C_GET_ZOOM_FOCUS;
+	syncList << C_GET_DIGI_ZOOM;
+	syncList << C_GET_POLARITY;
+	syncList << C_GET_FOV;
+	syncList << C_GET_IMAGE_FREEZE;
 	nextSync = syncList.size();
 
 #ifdef HAVE_PTZP_GRPC_API
@@ -162,7 +174,7 @@ int MgeoThermalHead::getZoom()
 
 int MgeoThermalHead::getHeadStatus()
 {
-	if (nextSync != 3)
+	if (nextSync != syncList.size())
 		return ST_SYNCING;
 	if (pingTimer.elapsed() < 1500)
 		return ST_NORMAL;
@@ -385,7 +397,15 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(R_HPF_SPATIAL, p[1]);
 		else if (p[0] == 0xde)
 			setRegister(R_IMAGE_UPDATE_SPEED, p[1]);
-	}
+	} else if (p[0] == 0xa9)
+		setRegister(R_DIGITAL_ZOOM, p[0]);
+	else if (p[0] == 0xa5)
+			setRegister(R_POLARITY, p[0]);
+	else if (p[0] == 0xa1)
+			setRegister(R_FOV, p[0]);
+	else if (p[0] == 0xaa)
+			setRegister(R_IMAGE_FREEZE, p[0]);
+
 	return meslen;
 }
 
@@ -404,6 +424,14 @@ int MgeoThermalHead::syncNext()
 		return sendCommand(C_CONTRAST, 0x02);
 	if (cmd == C_GET_ZOOM_FOCUS)
 		return sendCommand(C_GET_ZOOM_FOCUS);
+	if (cmd == C_GET_DIGI_ZOOM)
+		return sendCommand(cmd);
+	if (cmd == C_GET_POLARITY)
+		return sendCommand(cmd);
+	if (cmd == C_GET_FOV)
+		return sendCommand(cmd);
+	if (cmd == C_GET_IMAGE_FREEZE)
+		return sendCommand(cmd);
 
 	return -ENOENT;
 }
