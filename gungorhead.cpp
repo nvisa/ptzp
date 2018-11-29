@@ -144,9 +144,9 @@ uint MgeoGunGorHead::getProperty(uint r)
 
 int MgeoGunGorHead::getHeadStatus()
 {
-	if (nextSync != C_COUNT)
+	if (nextSync != syncList.size())
 		return ST_SYNCING;
-	if (pingTimer.elapsed() < 1500)
+	if (pingTimer.elapsed() < 3000)
 		return ST_NORMAL;
 	return ST_ERROR;
 }
