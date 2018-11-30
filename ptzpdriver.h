@@ -118,7 +118,7 @@ protected:
 	PtzpHead *defaultModuleHead;
 	PatternNg *ptrn;
 	QElapsedTimer *elaps;
-
+	conf config;
 };
 
 #endif // PTZPDRIVER_H

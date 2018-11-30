@@ -163,18 +163,30 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 	if (key == "ptz.cmd.pan_left") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_LEFT, value.toFloat(),0);
-		defaultPTHead->panLeft(value.toFloat());
+		float speed = value.toFloat() - (defaultModuleHead->getZoom() / 12500.0 * value.toFloat());
+		if (config.model == "Arya")
+			defaultPTHead->panLeft(speed);
+		else defaultPTHead->panLeft(value.toFloat());
 	} else if (key == "ptz.cmd.pan_right") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_RIGHT, value.toFloat(),0);
+		float speed = value.toFloat() - (defaultModuleHead->getZoom() / 12500.0 * value.toFloat());
+		if (config.model == "Arya")
+			defaultPTHead->panRight(speed);
 		defaultPTHead->panRight(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_down") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 							defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_DOWN, value.toFloat(),0);
+		float speed = value.toFloat() - (defaultModuleHead->getZoom() / 12500.0 * value.toFloat());
+		if (config.model == "Arya")
+			defaultPTHead->tiltDown(speed);
 		defaultPTHead->tiltDown(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_up") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 							defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_UP, value.toFloat(),0);
+		float speed = value.toFloat() - (defaultModuleHead->getZoom() / 12500.0 * value.toFloat());
+		if (config.model == "Arya")
+			defaultPTHead->tiltUp(speed);
 		defaultPTHead->tiltUp(value.toFloat());
 	} else if (key == "ptz.cmd.pan_stop") {
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),

@@ -30,7 +30,6 @@ protected:
 		NORMAL,
 	};
 
-	conf config;
 	OemModuleHead * headModule;
 	IRDomePTHead * headDome;
 	DriverState state;
