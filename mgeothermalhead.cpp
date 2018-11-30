@@ -303,12 +303,12 @@ uint MgeoThermalHead::getProperty(uint r)
 int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 {
 	if (bytes[0] != 0xca)
-		return -1;
+		return len;
 	if (len < 2)
-		return -1;
+		return len;
 	int meslen = bytes[1];
 	if (len < meslen)
-		return -1;
+		return len;
 
 	if (meslen == 5 && bytes[2] == 0xc3) {
 		/* ping message */
@@ -405,7 +405,6 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(R_FOV, p[0]);
 	else if (p[0] == 0xaa)
 			setRegister(R_IMAGE_FREEZE, p[0]);
-
 	return meslen;
 }
 
