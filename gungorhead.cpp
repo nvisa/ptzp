@@ -76,6 +76,7 @@ MgeoGunGorHead::MgeoGunGorHead()
 	for (int i = C_GET_ZOOM; i<=C_GET_DIGI_ZOOM; i++)
 		syncList << i;
 	nextSync = syncList.size();
+	syncTimer.start();
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"focus_in", {C_SET_FOCUS_INC_START,R_FOCUS}},
@@ -146,7 +147,7 @@ int MgeoGunGorHead::getHeadStatus()
 {
 	if (nextSync != syncList.size())
 		return ST_SYNCING;
-	if (pingTimer.elapsed() < 3000)
+	if (pingTimer.elapsed() < 1500)
 		return ST_NORMAL;
 	return ST_ERROR;
 }
@@ -195,9 +196,9 @@ int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)
 int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 {
 	if (bytes[0] != 0xF1)
-		return -1;
+		return len;
 	if (len < 5)
-		return -1;
+		return len;
 
 	if (nextSync != syncList.size()) {
 		if (++nextSync == syncList.size()) {
@@ -205,7 +206,7 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 		} else
 			syncNext();
 	}
-
+	pingTimer.restart();
 	uchar opcode = bytes[1];
 	const uchar *p = bytes + 2;
 
@@ -222,7 +223,10 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray MgeoGunGorHead::transportReady()
 {
-	sendCommand(C_GET_ZOOM);
+	if (syncTimer.elapsed() > 100) {
+		syncTimer.restart();
+		sendCommand(C_GET_ZOOM);
+	}
 	return QByteArray();
 }
 
