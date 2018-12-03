@@ -200,6 +200,9 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "ptz.get_iris_lim")
 		return QString("%1")
 				.arg(headModule->getIrisLimit());
+	else if (key == "ptz.get_ir_led_level")
+		return QString("%1")
+				.arg(headModule->getIRLed());
 	else return PtzpDriver::get(key);
 
 	return "almost_there";
