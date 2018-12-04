@@ -43,6 +43,7 @@ protected:
 
 	int nextSync;
 	QElapsedTimer pingTimer;
+	QElapsedTimer syncTimer;
 	QList<uint> syncList;
 
 private:
