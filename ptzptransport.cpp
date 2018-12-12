@@ -1,6 +1,8 @@
 #include "ptzptransport.h"
 #include "debug.h"
 
+#include <errno.h>
+
 class BufferedProto : public PtzpTransport::LineProto
 {
 public:
@@ -143,10 +145,22 @@ QByteArray PtzpTransport::queueFreeCallback()
 
 int PtzpTransport::LineProto::processNewFrame(const unsigned char *bytes, int len)
 {
+	int erroredCount = 0;
 	for (int i = 0; i < transport->dataReadyCallbacks.size(); i++) {
 		int read = transport->dataReadyCallbacks[i](bytes, len, transport->dataReadyCallbackPrivs[i]);
 		if (read > 0)
 			return read;
+
+		/* error case */
+		if (read == -EAGAIN)
+			continue;
+
+		if (read == -ENOENT)
+			erroredCount++;
 	}
+
+	if (erroredCount == transport->dataReadyCallbacks.size())
+		return 1;
+
 	return -1;
 }
