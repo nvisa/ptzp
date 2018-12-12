@@ -32,7 +32,6 @@ public:
 	void setMaxBufferLength(int length);
 	void setTimerInterval(int value);
 
-	static int dataReadyCallback(const unsigned char *bytes, int len, void *priv);
 	static QByteArray queueFreeCallback(void *priv);
 
 	class LineProto
@@ -44,7 +43,6 @@ public:
 	};
 protected:
 
-	int dataReadyCallback(const unsigned char *bytes, int len);
 	QByteArray queueFreeCallback();
 
 	QElapsedTimer queueFreeEnabledTimer;

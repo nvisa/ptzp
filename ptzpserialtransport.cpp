@@ -16,11 +16,10 @@ static QMutex serlock;
 class ReadThread : public QThread
 {
 public:
-	ReadThread(QextSerialPort *p, PtzpSerialTransport::dataReady cb, void *cbp)
+	ReadThread(QextSerialPort *p, PtzpTransport::LineProto *pr)
 	{
 		port = p;
-		this->cb = cb;
-		this->cbp = cbp;
+		proto = pr;
 		debug = 0;
 	}
 
@@ -56,16 +55,15 @@ protected:
 	int process(const QByteArray &buf)
 	{
 		/* if we have no callback, assume all is read */
-		if (cb == NULL)
+		if (proto == NULL)
 			return buf.size();
-		const uchar *p = (const uchar *)buf.constData();
-		return cb(p, buf.size(), cbp);
+		proto->dataReady(buf);
+		return buf.size();
 	}
 
 	QextSerialPort *port;
 	int debug;
-	PtzpTransport::dataReady cb;
-	void *cbp;
+	PtzpTransport::LineProto *proto;
 };
 
 class WriteThread : public QThread
@@ -182,7 +180,7 @@ int PtzpSerialTransport::connectTo(const QString &targetUri)
 	}
 	port->readAll();
 
-	readThread = new ReadThread(port, PtzpTransport::dataReadyCallback, this);
+	readThread = new ReadThread(port, this->protocol);
 	readThread->start();
 	writeThread = new WriteThread(port, PtzpTransport::queueFreeCallback, this);
 	writeThread->start();

@@ -118,31 +118,9 @@ void PtzpTransport::setTimerInterval(int value)
 	periodTimer = value;
 }
 
-int PtzpTransport::dataReadyCallback(const unsigned char *bytes, int len, void *priv)
-{
-	return ((PtzpTransport *)priv)->dataReadyCallback(bytes, len);
-}
-
 QByteArray PtzpTransport::queueFreeCallback(void *priv)
 {
 	return ((PtzpTransport *)priv)->queueFreeCallback();
-}
-
-int PtzpTransport::dataReadyCallback(const unsigned char *bytes, int len)
-{
-	for (int i = 0; i < dataReadyCallbacks.size(); i++) {
-		int read = dataReadyCallbacks[i](bytes, len, dataReadyCallbackPrivs[i]);
-		if (read > 0)
-			return read;
-	}
-	if (len > maxBufferLength) {
-		int plen = qMin(32, len);
-		for (int j = 0; j < plen; j++)
-			fDebug("accumulation!: %d %d", j, bytes[j]);
-		/* clean-up inbut buffer */
-		return len;
-	}
-	return -1;
 }
 
 QByteArray PtzpTransport::queueFreeCallback()
