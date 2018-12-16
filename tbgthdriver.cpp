@@ -113,6 +113,8 @@ int TbgthDriver::set(const QString &key, const QVariant &value)
 		headLens->setProperty(16, value.toUInt());
 	else if (key == "ptz.cmd.auto_iris")
 		headLens->setProperty(17, value.toUInt());
+	else if(key == "ptz.cmd.zoom_set")
+		headLens->setZoom(value.toUInt());
 	else return PtzpDriver::set(key,value);
 }
 
