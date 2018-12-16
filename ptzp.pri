@@ -13,7 +13,8 @@ HEADERS += \
     ptzp/aryapthead.h \
     ptzp/gungorhead.h \
     ptzp/yamanolenshead.h \
-    ptzp/tbgthdriver.h
+    ptzp/tbgthdriver.h \
+    ptzp/evpupthead.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -29,7 +30,8 @@ SOURCES += \
     ptzp/aryapthead.cpp \
     ptzp/gungorhead.cpp \
     ptzp/yamanolenshead.cpp \
-    ptzp/tbgthdriver.cpp
+    ptzp/tbgthdriver.cpp \
+    ptzp/evpupthead.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API

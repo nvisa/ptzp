@@ -1,6 +1,8 @@
 #include "tbgthdriver.h"
 #include "yamanolenshead.h"
+#include "evpupthead.h"
 #include "ptzpserialtransport.h"
+#include "ptzptcptransport.h"
 #include "debug.h"
 
 #include <QFile>
@@ -11,7 +13,9 @@ TbgthDriver::TbgthDriver(QObject *parent)
 	: PtzpDriver(parent)
 {
 	headLens = new YamanoLensHead;
+	headEvpuPt = new EvpuPTHead;
 	state = INIT;
+	defaultPTHead = headEvpuPt;
 	defaultModuleHead = headLens;
 }
 
@@ -19,19 +23,25 @@ PtzpHead *TbgthDriver::getHead(int index)
 {
 	if (index == 0)
 		return headLens;
+	else if (index == 1)
+		return headEvpuPt;
 	return NULL;
 }
 
 int TbgthDriver::setTarget(const QString &targetUri)
 {
 	QStringList fields = targetUri.split(";");
-	if (fields.size() == 1) {
-		tp = new PtzpSerialTransport();
-		headLens->setTransport(tp);
-		headLens->enableSyncing(true);
-		if (tp->connectTo(fields[0]))
-			return -EPERM;
-	}
+	tp = new PtzpSerialTransport();
+	headLens->setTransport(tp);
+	headLens->enableSyncing(true);
+	if (tp->connectTo(fields[0]))
+		return -EPERM;
+	tp1 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
+	headEvpuPt->setTransport(tp1);
+	int err = tp1->connectTo(QString("%1").arg(fields[1]));
+	if (err)
+		return err;
+	return 0;
 }
 
 QVariant TbgthDriver::get(const QString &key)
@@ -105,6 +115,7 @@ void TbgthDriver::timeout()
 		if (headLens->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
 			tp->enableQueueFreeCallbacks(true);
+			tp1->enableQueueFreeCallbacks(true);
 		}
 		break;
 	case NORMAL:

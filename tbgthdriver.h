@@ -4,7 +4,9 @@
 #include <ecl/ptzp/ptzpdriver.h>
 
 class YamanoLensHead;
+class EvpuPTHead;
 class PtzpSerialTransport;
+class PtzpTcpTransport;
 
 class TbgthDriver : public PtzpDriver
 {
@@ -28,7 +30,9 @@ protected:
 	};
 
 	YamanoLensHead *headLens;
+	EvpuPTHead *headEvpuPt;
 	PtzpTransport *tp;
+	PtzpTransport *tp1;
 	DriverState state;
 };
 
