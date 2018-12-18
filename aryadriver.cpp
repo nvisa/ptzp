@@ -313,10 +313,10 @@ void AryaDriver::configLoad(const QString filename)
 		// create default
 		QJsonDocument doc;
 		QJsonObject o;
-		o.insert("model","Arya");
-		o.insert("type" , "moving");
+		o.insert("model", QJsonValue::fromVariant("Arya"));
+		o.insert("type" , QJsonValue::fromVariant("moving"));
 		o.insert("pan_tilt_support", 1);
-		o.insert("cam_module", "Thermal");
+		o.insert("cam_module", QJsonValue::fromVariant("Thermal"));
 		doc.setObject(o);
 		QFile f(filename);
 		f.open(QIODevice::WriteOnly);
