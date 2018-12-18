@@ -24,6 +24,7 @@ static const char ioErrorStr[][256] = {
 
 PtzpHead::PtzpHead()
 {
+	systemChecker = -1;
 	transport = NULL;
 	pingTimer.start();
 }
@@ -296,6 +297,19 @@ void PtzpHead::setProperty(uint r, uint x)
 	Q_UNUSED(r);
 	Q_UNUSED(x);
 }
+
+int PtzpHead::headSystemChecker()
+{
+	return 0;
+}
+
+int PtzpHead::getSystemStatus()
+{
+	// this function using just check system healt state
+	// if returning value equal to `2`, system healty. But other values you must check Camera parts.
+	return systemChecker;
+}
+
 
 int PtzpHead::saveRegisters(const QString &filename)
 {

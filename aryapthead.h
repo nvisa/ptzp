@@ -22,12 +22,12 @@ public:
 	virtual float getPanAngle();
 	virtual float getTiltAngle();
 	int panTiltGoPos(float ppos, float tpos);
+	int headSystemChecker();
 
 protected:
 	QStringList ptzCommandList;
 	int panPos;
 	int tiltPos;
-
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();

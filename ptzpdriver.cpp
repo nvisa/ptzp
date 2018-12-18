@@ -62,6 +62,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent)
 {
 	sleep = false;
+	usability = false;
 	timer = new QTimer(this);
 	time = new QElapsedTimer();
 	timeSettingsLoad = new QElapsedTimer();

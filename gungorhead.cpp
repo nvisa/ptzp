@@ -137,6 +137,21 @@ uint MgeoGunGorHead::getProperty(uint r)
 	return getRegister(r);
 }
 
+int MgeoGunGorHead::headSystemChecker()
+{
+	if (systemChecker == -1) {
+		int ret = sendCommand(C_GET_ZOOM);
+		mDebug("Gungor HEAD system checker started. %d", ret);
+		systemChecker = 0;
+	} else if (systemChecker == 0) {
+		mDebug("Waiting Response from GunGor CAM");
+	} else if (systemChecker == 1) {
+		mDebug("Completed System Check. Zoom: %f", getRegister(R_ZOOM));
+		systemChecker = 2;
+	}
+	return systemChecker;
+}
+
 int MgeoGunGorHead::getHeadStatus()
 {
 	if (nextSync != syncList.size())
@@ -209,8 +224,11 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 	uchar opcode = bytes[1];
 	const uchar *p = bytes + 2;
 
-	if (opcode == 0x0a)
+	if (opcode == 0x0a) {
+		if (systemChecker == 0)
+			systemChecker = 1;
 		setRegister(R_ZOOM, (p[1] << 8 | p[0]));
+	}
 	else if (opcode == 0x0b)
 		setRegister(R_FOCUS, (p[1] << 8 | p[0]));
 	else if (opcode == 0xa4)

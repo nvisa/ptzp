@@ -16,10 +16,12 @@ AryaDriver::AryaDriver(QObject *parent)
 	tcp1 = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	tcp3 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
-	state = INIT;
+	state = SYSTEM_CHECK;
 	defaultPTHead = aryapt;
 	defaultModuleHead = thermal;
 	configLoad("config.json");
+	checker = new QElapsedTimer();
+	checker->start();
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
@@ -54,10 +56,40 @@ void AryaDriver::timeout()
 {
 	mLog("Driver state: %d", state);
 	switch (state) {
+	case SYSTEM_CHECK:
+		if (checker->elapsed() > 5000) {
+			if (aryapt->getSystemStatus() == 2)
+				tcp1->enableQueueFreeCallbacks(true);
+			if (gungor->getSystemStatus() == 2)
+				tcp3->enableQueueFreeCallbacks(true);
+			if (thermal->getSystemStatus() == 2) {
+				qDebug() << "thermal check 2";
+				tcp2->enableQueueFreeCallbacks(true);
+			}
+			state = INIT;
+		}
+
+		if (aryapt->getSystemStatus() != 2) {
+			aryapt->headSystemChecker();
+		}
+		if (gungor->getSystemStatus() != 2) {
+			gungor->headSystemChecker();
+		}
+		if (thermal->getSystemStatus() != 2) {
+			thermal->headSystemChecker();
+		}
+		break;
 	case INIT:
-		state = SYNC_THERMAL_MODULES;
-		thermal->syncRegisters();
-		thermal->loadRegisters("thermal.json");
+		if (thermal->getSystemStatus() == 2) {
+			qDebug() << "thermal check 1";
+			thermal->syncRegisters();
+			thermal->loadRegisters("thermal.json");
+			state = SYNC_THERMAL_MODULES;
+		} else if (gungor->getSystemStatus() == 2) {
+			gungor->syncRegisters();
+			gungor->loadRegisters("gungor.json");
+			state = SYNC_GUNGOR_MODULES;
+		}
 		break;
 	case SYNC_THERMAL_MODULES:
 		if(thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
@@ -69,25 +101,19 @@ void AryaDriver::timeout()
 	case SYNC_GUNGOR_MODULES:
 		if(gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
-			tcp1->enableQueueFreeCallbacks(true);
-			tcp2->enableQueueFreeCallbacks(true);
-			tcp3->enableQueueFreeCallbacks(true);
 		}
 		break;
 	case NORMAL:
-		static int once = 1;
-		if (!once) {
-			once = 1;
-			thermal->startZoomIn(1);
-		}
+		usability = true;
 		if(time->elapsed() >= 10000) {
-			thermal->saveRegisters("thermal.json");
-			gungor->saveRegisters("gungor.json");
+			if (thermal->getSystemStatus() == 2)
+				thermal->saveRegisters("thermal.json");
+			if (gungor->getSystemStatus() == 2)
+				gungor->saveRegisters("gungor.json");
 			time->restart();
 		}
 		break;
 	}
-
 	PtzpDriver::timeout();
 }
 

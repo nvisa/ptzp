@@ -33,6 +33,7 @@ public:
 	virtual int getHeadStatus();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
+	int headSystemChecker();
 
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);

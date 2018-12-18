@@ -54,6 +54,7 @@ public:
 	void goToPosition(float p, float t, int z);
 	void sendCommand(int c, float par1, int par2);
 	virtual void sleepMode(bool stat);
+	bool getDriverUsability() { return usability;}
 
 #ifdef HAVE_PTZP_GRPC_API
 public:
@@ -111,6 +112,7 @@ protected slots:
 
 protected:
 	bool sleep;
+	bool usability;
 	QTimer *timer;
 	QElapsedTimer *time;
 	QElapsedTimer *timeSettingsLoad;

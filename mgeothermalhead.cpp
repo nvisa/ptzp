@@ -300,6 +300,21 @@ uint MgeoThermalHead::getProperty(uint r)
 	return getRegister(r);
 }
 
+int MgeoThermalHead::headSystemChecker()
+{
+	if (systemChecker == -1) {
+		int ret = sendCommand(C_GET_ZOOM_FOCUS);
+		mDebug("ThermalHead system checker started. %d", ret);
+		systemChecker = 0;
+	} else if (systemChecker == 0) {
+		mDebug("Waiting Response from thermal CAM");
+	} else if (systemChecker == 1) {
+		mDebug("Completed System Check. Zoom: %f Focus: %f Angle: %f", getRegister(R_ZOOM), getRegister(R_FOCUS), getRegister(R_ANGLE));
+		systemChecker = 2;
+	}
+	return systemChecker;
+}
+
 int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 {
 	if (bytes[0] != 0xca)
@@ -345,6 +360,8 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_ZOOM, (p[1] << 8 | p[0]));
 		setRegister(R_FOCUS, (p[3] << 8 | p[2]));
 		setRegister(R_ANGLE, (p[5] << 8 | p[4]));
+		if (systemChecker == 0)
+			systemChecker = 1;
 	} else if (opcode == 0xa4) {
 		//nuc table selection
 		setRegister(R_NUC_TABLE, p[0]);

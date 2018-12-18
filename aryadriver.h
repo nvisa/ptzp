@@ -29,6 +29,7 @@ protected:
 		NORMAL,
 		SYNC_THERMAL_MODULES,
 		SYNC_GUNGOR_MODULES,
+		SYSTEM_CHECK
 	};
 
 	DriverState state;
@@ -38,6 +39,7 @@ protected:
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
+	QElapsedTimer *checker;
 };
 
 #endif // ARYADRIVER_H
