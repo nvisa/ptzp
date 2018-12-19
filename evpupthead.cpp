@@ -63,12 +63,12 @@ int EvpuPTHead::panTiltStop()
 
 float EvpuPTHead::getPanAngle()
 {
-	return panPos / MaxPanPos * 360.0;
+	return (float)panPos / MaxPanPos * 360.0;
 }
 
 float EvpuPTHead::getTiltAngle()
 {
-	return tiltPos / MaxTiltPos * 90.0;
+	return (float)tiltPos / MaxTiltPos * 90.0;
 }
 
 int EvpuPTHead::panTiltGoPos(float ppos, float tpos)
