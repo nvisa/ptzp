@@ -296,6 +296,11 @@ void PtzpDriver::sleepMode(bool stat)
 	mInfo("Sleep mode is %d", sleep);
 }
 
+int PtzpDriver::setZoomOverlay()
+{
+	return 0;
+}
+
 #ifdef HAVE_PTZP_GRPC_API
 grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::PtzHeadInfo *response)
 {

@@ -2,6 +2,7 @@
 #define ARYADRIVER_H
 
 #include <ecl/ptzp/ptzpdriver.h>
+#include <ecl/net/networkaccessmanager.h>
 
 class AryaPTHead;
 class MgeoThermalHead;
@@ -12,6 +13,22 @@ class AryaDriver : public PtzpDriver
 {
 	Q_OBJECT
 public:
+	enum OverlayPos {
+		LEFT_UP,
+		RIGHT_UP,
+		LEFT_DOWN,
+		RIGHT_DOWN,
+		CUSTOM
+	};
+
+	struct Overlay {
+		OverlayPos pos;
+		int posx;
+		int posy;
+		int textSize;
+		bool disabled;
+	};
+
 	explicit AryaDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri);
@@ -19,9 +36,11 @@ public:
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
 	void configLoad(const QString filename);
+	int setZoomOverlay();
 
 protected slots:
 	void timeout();
+	void overlayFinished();
 
 protected:
 	enum DriverState {
@@ -39,6 +58,8 @@ protected:
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
+	NetworkAccessManager *netman;
+	Overlay olay;
 	QElapsedTimer *checker;
 };
 
