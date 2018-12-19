@@ -399,3 +399,19 @@ int AryaDriver::setZoomOverlay()
 	netman->post("50.23.169.211", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayData);
 	return 0;
 }
+
+int AryaDriver::setOverlay(const QString data)
+{
+	if (vdParams.ip.isEmpty()) {
+		mDebug("Video Device parameter missing.");
+		return -1;
+	}
+	netman->post(vdParams.ip, vdParams.uname, vdParams.pass, "/moxa-cgi/imageoverlay.cgi", data);
+}
+
+void AryaDriver::setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass)
+{
+	vdParams.ip = ip;
+	vdParams.pass = pass;
+	vdParams.uname = uname;
+}

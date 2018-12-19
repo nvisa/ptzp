@@ -29,6 +29,12 @@ public:
 		bool disabled;
 	};
 
+	struct VideoDeviceParams {
+		QString ip;
+		QString pass;
+		QString uname;
+	};
+
 	explicit AryaDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri);
@@ -38,6 +44,8 @@ public:
 	void configLoad(const QString filename);
 	int setZoomOverlay();
 
+	int setOverlay(const QString data);
+	void setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass);
 protected slots:
 	void timeout();
 	void overlayFinished();
@@ -61,6 +69,8 @@ protected:
 	NetworkAccessManager *netman;
 	Overlay olay;
 	QElapsedTimer *checker;
+	VideoDeviceParams vdParams;
+
 };
 
 #endif // ARYADRIVER_H

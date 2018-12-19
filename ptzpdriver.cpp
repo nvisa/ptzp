@@ -301,6 +301,12 @@ int PtzpDriver::setZoomOverlay()
 	return 0;
 }
 
+int PtzpDriver::setOverlay(QString data)
+{
+	Q_UNUSED(data);
+	return 0;
+}
+
 #ifdef HAVE_PTZP_GRPC_API
 grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::PtzHeadInfo *response)
 {

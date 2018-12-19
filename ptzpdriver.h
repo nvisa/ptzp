@@ -55,6 +55,7 @@ public:
 	void sendCommand(int c, float par1, int par2);
 	virtual void sleepMode(bool stat);
 	virtual int setZoomOverlay();
+	virtual int setOverlay(QString data);
 	bool getDriverUsability() { return usability;}
 
 #ifdef HAVE_PTZP_GRPC_API
