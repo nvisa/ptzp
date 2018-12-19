@@ -74,6 +74,25 @@ YamanoLensHead::YamanoLensHead()
 	syncEnabled = true;
 	syncInterval = 40;
 	syncTime.start();
+#ifdef HAVE_PTZP_GRPC_API
+	settings = {
+		{"focus_in", {C_FOCUS_IN, R_FOCUS_POS}},
+		{"focus_out", {C_FOCUS_OUT, R_FOCUS_POS}},
+		{"focus_stop", {C_FOCUS_STOP, R_FOCUS_POS}},
+		{"focus_set", {C_FOCUS_SET, R_FOCUS_POS}},
+		{"iris_open", {C_IRIS_OPEN, R_IRIS_POS}},
+		{"iris_close", {C_IRIS_CLOSE, R_IRIS_POS}},
+		{"iris_stop", {C_IRIS_STOP, R_IRIS_POS}},
+		{"iris_set", {C_IRIS_SET, R_IRIS_POS}},
+		{"ir_filter_in", {C_IR_FILTER_IN, NULL}},
+		{"ir_filter_out", {C_IR_FILTER_OUT, NULL}},
+		{"ir_filter_stop", {C_IR_FILTER_STOP, NULL}},
+		{"filter_pos", {C_FILTER_POS, R_FILTER_POS}},
+		{"auto_focus", {C_AUTO_FOCUS, R_FOCUS_MODE}},
+		{"auto_iris", {C_AUTO_IRIS, R_IRIS_MODE}},
+		{"version", {NULL, R_VERSION}},
+	};
+#endif
 }
 
 int YamanoLensHead::getCapabilities()
@@ -132,7 +151,7 @@ int YamanoLensHead::getZoom()
 
 int YamanoLensHead::setZoom(uint pos)
 {
-	unsigned char *p = protoBytes[C_ZOOM_OUT];
+	unsigned char *p = protoBytes[C_ZOOM_SET];
 	int len = p[0];
 	p++;
 	p[4] = (pos & 0xFF00) >> 8;
