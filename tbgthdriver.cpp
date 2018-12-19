@@ -17,6 +17,7 @@ TbgthDriver::TbgthDriver(QObject *parent)
 	state = INIT;
 	defaultPTHead = headEvpuPt;
 	defaultModuleHead = headLens;
+	configLoad("config.json");
 }
 
 PtzpHead *TbgthDriver::getHead(int index)
