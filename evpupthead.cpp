@@ -106,6 +106,10 @@ int EvpuPTHead::panTiltAbs(float pan, float tilt)
 {
 	pan = pan * MaxSpeedA;
 	tilt = tilt * MaxSpeedE;
+	if (pan == 0 && tilt == 0) {
+		sendCommand(ptzCommandList[C_STOP_ALL]);
+		return 0;
+	}
 	if (pan < 0) {
 		// left
 		sendCommand(ptzCommandList.at(C_PAN_LEFT_RATE).arg((int)pan));
