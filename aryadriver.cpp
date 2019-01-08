@@ -262,15 +262,15 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 		gungor->stopZoom();
 	else if (key == "ptz.cmd.gungor.zoom_out")
 		gungor->startZoomOut(value.toUInt());
-	else if (key == "ptz.cmd.gungor.zoom")
-		gungor->setProperty(5, value.toUInt());
+	else if (key == "ptz.cmd.gungor.zoom_position")
+		gungor->setZoom(value.toUInt());
 	else if (key == "ptz.cmd.gungor.focus_in")
 		gungor->setProperty(6, value.toUInt());
 	else if (key == "ptz.cmd.gungor.focus_stop")
 		gungor->setProperty(7, value.toUInt());
 	else if (key == "ptz.cmd.gungor.focus_out")
 		gungor->setProperty(8, value.toUInt());
-	else if (key == "ptz.cmd.gungor.focus")
+	else if (key == "ptz.cmd.gungor.focus_position")
 		gungor->setProperty(9, value.toUInt());
 	else if (key == "ptz.cmd.gungor.auto_focus")
 		gungor->setProperty(10, value.toUInt());

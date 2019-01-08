@@ -109,11 +109,6 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 	} else if (r == C_SET_CLOSE) {
 		sendCommand(r);
 		setRegister(R_CAM_STATUS, 0);
-	} else if (r == C_SET_ZOOM) {
-//		unsigned char *p = protoBytes[C_SET_ZOOM];
-
-//		sendCommand(C_SET_ZOOM);
-//		setRegister(R_);
 	} else if (r == C_SET_FOCUS_INC_START) {
 		sendCommand(r);
 	} else if (r == C_SET_FOCUS_STOP) {
@@ -121,8 +116,7 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 	} else if (r == C_SET_FOCUS_DEC_START) {
 		sendCommand(r);
 	} else if (r == C_SET_FOCUS) {
-//		sendCommand(r);
-//		yapılacak
+		sendCommand(r, (x & 0xff00) >> 8, (x & 0x00ff));
 	} else if (r == C_SET_AUTO_FOCUS_ON) {
 		if (x == 1)
 			sendCommand(C_SET_AUTO_FOCUS_ON);
@@ -179,6 +173,11 @@ int MgeoGunGorHead::stopZoom()
 int MgeoGunGorHead::getZoom()
 {
 	return getRegister(R_ZOOM);
+}
+
+int MgeoGunGorHead::setZoom(uint pos)
+{
+	return sendCommand(C_SET_ZOOM,(pos & 0xff00) >>8, (pos & 0x00ff));
 }
 
 int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)
