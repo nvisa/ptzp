@@ -26,6 +26,7 @@ public:
 protected:
 	int panPos;
 	int tiltPos;
+	int syncFlag;
 
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);

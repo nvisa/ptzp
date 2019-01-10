@@ -143,15 +143,26 @@ int EvpuPTHead::sendCommand(const QString &key)
 int EvpuPTHead::dataReady(const unsigned char *bytes, int len)
 {
 	const QString data = QString::fromUtf8((const char *)bytes, len);
-	if (data.contains("a get")) {
+	if (data.startsWith("a syn ok") || data.startsWith("e syn ok"))
+		return 8;
+	/*
+	 * When we first connect to EVPU, 1 byte of data may be eaten causing
+	 * us to receive 1-less character for the syn messages
+	 */
+	if (data.startsWith(" syn ok"))
+		return 7;
+	if (data.startsWith("a get")) {
 		QString value = data.split(" ").last();
 		panPos = value.toInt();
 		tiltPos = value.split(",").last().toInt();
 		pingTimer.restart();
-	} else if (data.contains("e get")) {
+	} else if (data.startsWith("e get")) {
 		QString value = data.split(" ").last();
 		tiltPos = value.toInt();
 		pingTimer.restart();
+	} else /* this is not for us */ {
+		mLog("Incoming message from EVPU: %s", bytes);
+		return 0;
 	}
 
 	return len;
@@ -159,7 +170,8 @@ int EvpuPTHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray EvpuPTHead::transportReady()
 {
-	sendCommand(ptzCommandList.at(C_GET_PAN_POS));
-	sendCommand(ptzCommandList.at(C_GET_TILT_POS));
-	return 0;
+	syncFlag = (syncFlag + 1) & 0x01;
+	if (syncFlag)
+		return ptzCommandList.at(C_GET_PAN_POS).toUtf8();
+	return ptzCommandList.at(C_GET_TILT_POS).toUtf8();
 }
