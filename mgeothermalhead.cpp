@@ -81,6 +81,7 @@ MgeoThermalHead::MgeoThermalHead()
 	syncList << C_CONTRAST;
 	syncList << C_GET_ZOOM_FOCUS;
 	nextSync = syncList.size();
+	alive = false;
 
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
@@ -113,6 +114,11 @@ MgeoThermalHead::MgeoThermalHead()
 int MgeoThermalHead::getCapabilities()
 {
 	return CAP_ZOOM;
+}
+
+bool MgeoThermalHead::isAlive()
+{
+	return alive;
 }
 
 int MgeoThermalHead::syncRegisters()
@@ -299,6 +305,7 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		return -1;
 
 	if (meslen == 5 && bytes[2] == 0xc3) {
+		alive = true;
 		/* ping message */
 		pingTimer.restart();
 		return meslen;

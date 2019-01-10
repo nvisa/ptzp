@@ -39,6 +39,8 @@ public:
 
 	int getCapabilities();
 
+	bool isAlive();
+
 	virtual int syncRegisters();
 	virtual int startZoomIn(int speed);
 	virtual int startZoomOut(int speed);
@@ -62,6 +64,7 @@ protected:
 	QElapsedTimer pingTimer;
 	int nextSync;
 	QList<uint> syncList;
+	bool alive;
 
 private:
 	/* mgeo/thermal API */
