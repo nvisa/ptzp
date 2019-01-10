@@ -13,6 +13,7 @@ PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 	filterInterface = NULL;
 	timer->start(periodTimer);
 	connect(timer, SIGNAL(timeout()), SLOT(callback()));
+	connect(this, SIGNAL(sendSocketMessage2Main(QByteArray)), SLOT(sendSocketMessage(QByteArray)));
 }
 
 int PtzpTcpTransport::connectTo(const QString &targetUri)
@@ -34,16 +35,15 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 
 int PtzpTcpTransport::send(const char *bytes, int len)
 {
-	int size = 0;
 	if (filterInterface) {
 		const QByteArray ba = filterInterface->sendFilter(bytes, len);
 		if (ba.size())
-			size = sock->write(ba);
+			emit sendSocketMessage2Main(ba);
 		else
-			size = sock->write(bytes, len);
+			emit sendSocketMessage2Main(QByteArray(bytes, len));
 	} else
-		size = sock->write(bytes, len);
-	return size;
+		emit sendSocketMessage2Main(QByteArray(bytes, len));
+	return len;
 }
 
 void PtzpTcpTransport::setFilter(PtzpTcpTransport::TransportFilterInteface *iface)
@@ -91,4 +91,9 @@ void PtzpTcpTransport::callback()
 	if (!m.isEmpty())
 		send(m.data(), m.size());
 	timer->setInterval(periodTimer);
+}
+
+void PtzpTcpTransport::sendSocketMessage(const QByteArray &ba)
+{
+	sock->write(ba);
 }

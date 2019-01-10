@@ -26,11 +26,15 @@ public:
 
 	void setFilter(TransportFilterInteface *iface);
 
+signals:
+	void sendSocketMessage2Main(const QByteArray &ba);
+
 protected slots:
 	void connected();
 	void dataReady();
 	void clientDisconnected();
 	void callback();
+	void sendSocketMessage(const QByteArray &ba);
 
 protected:
 	QTcpSocket *sock;
