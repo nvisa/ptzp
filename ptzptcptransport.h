@@ -14,8 +14,17 @@ class PtzpTcpTransport : public QObject, public PtzpTransport
 public:
 	explicit PtzpTcpTransport(LineProtocol proto, QObject *parent = 0);
 
+	class TransportFilterInteface
+	{
+	public:
+		virtual QByteArray sendFilter(const char *bytes, int len) = 0;
+		virtual int readFilter(QTcpSocket *sock, QByteArray &ba) = 0;
+	};
+
 	int connectTo(const QString &targetUri);
 	int send(const char *bytes, int len);
+
+	void setFilter(TransportFilterInteface *iface);
 
 protected slots:
 	void connected();
@@ -26,7 +35,7 @@ protected slots:
 protected:
 	QTcpSocket *sock;
 	QTimer *timer;
-	QMutex lock;
+	TransportFilterInteface *filterInterface;
 };
 
 #endif // PTZPTCPTRANSPORT_H

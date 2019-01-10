@@ -10,6 +10,7 @@ PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 {
 	sock = NULL;
 	timer = new QTimer();
+	filterInterface = NULL;
 	timer->start(periodTimer);
 	connect(timer, SIGNAL(timeout()), SLOT(callback()));
 }
@@ -33,10 +34,21 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 
 int PtzpTcpTransport::send(const char *bytes, int len)
 {
-	lock.lock();
-	int size = sock->write(bytes, len);
-	lock.unlock();
+	int size = 0;
+	if (filterInterface) {
+		const QByteArray ba = filterInterface->sendFilter(bytes, len);
+		if (ba.size())
+			size = sock->write(ba);
+		else
+			size = sock->write(bytes, len);
+	} else
+		size = sock->write(bytes, len);
 	return size;
+}
+
+void PtzpTcpTransport::setFilter(PtzpTcpTransport::TransportFilterInteface *iface)
+{
+	filterInterface = iface;
 }
 
 void PtzpTcpTransport::connected()
@@ -46,9 +58,20 @@ void PtzpTcpTransport::connected()
 
 void PtzpTcpTransport::dataReady()
 {
-	lock.lock();
-	protocol->dataReady(sock->readAll());
-	lock.unlock();
+	if (filterInterface) {
+		while (sock->bytesAvailable()) {
+			QByteArray ba;
+			int err = filterInterface->readFilter(sock, ba);
+			if (err == -EAGAIN)
+				continue;
+			if (err == -ENODATA)
+				break;
+			if (err == -EIO)
+				continue;
+			protocol->dataReady(ba);
+		}
+	} else
+		protocol->dataReady(sock->readAll());
 }
 
 void PtzpTcpTransport::clientDisconnected()
