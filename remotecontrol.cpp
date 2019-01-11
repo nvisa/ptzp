@@ -153,7 +153,7 @@ void RemoteControl::dataReady()
 			sock->write(QString("error:no enough arguments\n").toUtf8());
 			continue;
 		}
-		if (flds[0] == "gets" || flds[1] != "sets") {
+		if (flds[0] == "gets" || flds[0] != "sets") {
 			if (!checkAuth(sock, flds)) {
 				/* wrong or none auth field notify */
 				if (!auths.contains(sock)) {
