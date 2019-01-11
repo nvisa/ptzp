@@ -312,16 +312,16 @@ void IRDomeDriver::configLoad(const QString filename)
 		QJsonObject o;
 		o.insert("model","Ekinoks");
 		if (getHeadCount() > 0) {
-			o.insert("type" , "moving");
+			o.insert("type" , QString("moving"));
 			o.insert("pan_tilt_support", 1);
 			o.insert("ir_led_support", 1);
 		}
 		else {
-			o.insert("type" , "fixed");
+			o.insert("type" , QString("fixed"));
 			o.insert("pan_tilt_support", 0);
 			o.insert("ir_led_support", 0);
 		}
-		o.insert("cam_module", "PV8430_F2D");
+		o.insert("cam_module", QString("PV8430_F2D"));
 		doc.setObject(o);
 		QFile f(filename);
 		f.open(QIODevice::WriteOnly);
