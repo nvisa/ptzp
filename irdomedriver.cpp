@@ -310,7 +310,7 @@ void IRDomeDriver::configLoad(const QString filename)
 		// create default
 		QJsonDocument doc;
 		QJsonObject o;
-		o.insert("model","Ekinoks");
+		o.insert("model",QString("Ekinoks"));
 		if (getHeadCount() > 0) {
 			o.insert("type" , QString("moving"));
 			o.insert("pan_tilt_support", 1);
