@@ -283,6 +283,13 @@ void PtzpDriver::sleepMode(bool stat)
 	mInfo("Sleep mode is %d", sleep);
 }
 
+void PtzpDriver::setPatternHandler(PatternNg *p)
+{
+	if (ptrn)
+		delete ptrn;
+	ptrn = p;
+}
+
 #ifdef HAVE_PTZP_GRPC_API
 grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::PtzHeadInfo *response)
 {

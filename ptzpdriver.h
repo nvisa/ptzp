@@ -55,6 +55,8 @@ public:
 	void sendCommand(int c, float par1, int par2);
 	virtual void sleepMode(bool stat);
 
+	void setPatternHandler(PatternNg *p);
+
 #ifdef HAVE_PTZP_GRPC_API
 public:
 	static QStringList commaToList(const QString& comma);
