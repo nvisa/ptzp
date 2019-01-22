@@ -10,6 +10,7 @@ service PTZService {
 	rpc PanRight(PtzCmdPar) returns (PtzCommandResult) {}
 	rpc PanStop(PtzCmdPar) returns (PtzCommandResult) {}
 	rpc PanTiltAbs(PtzCmdPar) returns (PtzCommandResult) {}
+	rpc PanTilt2Pos(PtzCmdPar) returns (PtzCommandResult) {}
 	rpc TiltUp(PtzCmdPar) returns (PtzCommandResult) {}
 	rpc TiltDown(PtzCmdPar) returns (PtzCommandResult) {}
 	rpc TiltStop(PtzCmdPar) returns (PtzCommandResult) {}

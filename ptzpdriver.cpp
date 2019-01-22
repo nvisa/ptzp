@@ -501,6 +501,27 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context, const ptzp::PtzC
 	return grpc::Status::OK;
 }
 
+grpc::Status PtzpDriver::PanTilt2Pos(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response)
+{
+	Q_UNUSED(context);
+
+	int idx = request->head_id();
+	float tilt = request->tilt_abs();
+	float pan = request->pan_abs();
+
+	PtzpHead *head = getHead(idx);
+	int cap = head->getCapabilities();
+	if (head == NULL || ( ((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)|| ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT)) )
+	{
+		response->set_err(-1);
+		return grpc::Status::CANCELLED;
+	}
+
+	head->panTiltGoPos(pan, tilt);
+
+	return grpc::Status::OK;
+}
+
 grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
