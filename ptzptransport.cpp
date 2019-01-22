@@ -53,7 +53,7 @@ PtzpTransport::PtzpTransport()
 	queueFreeEnabledTimeout = 0;
 	queueFreeCallbackMask = 0xffffffff;
 	lineProto = PROTO_BUFFERED;
-	protocol = new StringProto;
+	protocol = new BufferedProto;
 	protocol->transport = this;
 }
 

@@ -55,6 +55,8 @@ public:
 	void sendCommand(int c, float par1, int par2);
 	virtual void sleepMode(bool stat);
 
+	void setPatternHandler(PatternNg *p);
+
 #ifdef HAVE_PTZP_GRPC_API
 public:
 	static QStringList commaToList(const QString& comma);
@@ -76,6 +78,7 @@ public:
 	grpc::Status TiltDown(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response);
 	grpc::Status TiltStop(grpc::ServerContext *context, const::ptzp::PtzCmdPar *request, ::ptzp::PtzCommandResult *response);
 	// pt
+	grpc::Status PanTilt2Pos(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response);
 	grpc::Status PanTiltAbs(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response);
 	grpc::Status GetPTZPosInfo(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PTZPosInfo *response);
 	// preset

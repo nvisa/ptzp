@@ -5,7 +5,9 @@
 #define MaxSpeedA	25736
 #define MaxSpeedE	21446
 #define MaxPanPos	62831
-#define MaxTiltPos	31416
+#define AvgTiltPos	31416
+#define MinTiltPos	23562
+#define MaxTiltPos	39270
 
 enum CommandList {
 	C_STOP_ALL,
@@ -68,13 +70,13 @@ float EvpuPTHead::getPanAngle()
 
 float EvpuPTHead::getTiltAngle()
 {
-	return (float)tiltPos / MaxTiltPos * 90.0;
+	return (float)(90.0 * (tiltPos - AvgTiltPos) / (float)(MaxTiltPos - MinTiltPos));
 }
 
 int EvpuPTHead::panTiltGoPos(float ppos, float tpos)
 {
-	ppos = ppos / 360.0 *MaxPanPos;
-	tpos = tpos / 90.0 *MaxTiltPos;
+	ppos = ppos / 360.0 * MaxPanPos;
+	tpos = (tpos / 90.0) * (float)(MaxTiltPos - MinTiltPos) + AvgTiltPos;
 	return sendCommand(ptzCommandList.at(C_PAN_TILT_GO_POS).arg((int)ppos).arg((int)tpos));
 }
 
