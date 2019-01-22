@@ -78,6 +78,11 @@ int EvpuPTHead::panTiltGoPos(float ppos, float tpos)
 	return sendCommand(ptzCommandList.at(C_PAN_TILT_GO_POS).arg((int)ppos).arg((int)tpos));
 }
 
+int EvpuPTHead::setOutput(int no, bool on)
+{
+	return sendCommand(QString("o %1 %2").arg(no).arg(on ? "1" : "0"));
+}
+
 int EvpuPTHead::panLeft(float speed)
 {
 	speed = speed * -MaxSpeedA;

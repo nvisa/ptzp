@@ -23,6 +23,8 @@ public:
 	virtual float getTiltAngle();
 	int panTiltGoPos(float ppos, float tpos);
 
+	int setOutput(int no, bool on);
+
 protected:
 	int panPos;
 	int tiltPos;

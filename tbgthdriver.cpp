@@ -63,6 +63,9 @@ int TbgthDriver::setTarget(const QString &targetUri)
 				return err;
 			evpuActive = true;
 			tp1->send(QString("s4 mode 57600 8 1 n\r\n").toUtf8());
+			/* initialize outputs */
+			for (int i = 0; i < 16; i++)
+				headEvpuPt->setOutput(i, 1);
 		}
 	}
 
