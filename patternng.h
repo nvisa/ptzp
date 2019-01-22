@@ -39,7 +39,7 @@ public:
 	};
 
 	void positionUpdate(int pan, int tilt, int zoom);
-	void commandUpdate(int pan, int tilt, int zoom, int c, float par1, float par2);
+	virtual void commandUpdate(int pan, int tilt, int zoom, int c, float par1, float par2);
 	int start(int pan, int tilt, int zoom);
 	void stop(int pan, int tilt, int zoom);
 	int replay();
