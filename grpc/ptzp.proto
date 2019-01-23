@@ -26,6 +26,7 @@ service PTZService {
 	rpc PatrolRun(PatrolCmd) returns (PtzCommandResult) {}
 	rpc PatrolStop(PatrolCmd) returns (PtzCommandResult) {}
 	rpc PatrolGetList(PatrolCmd) returns (PresetList) {}
+	rpc PatrolGetDetails(PatrolCmd) returns (PatrolDefinition) {}
 	rpc PatternRun(PatternCmd) returns (PtzCommandResult) {}
 	rpc PatternStop(PatternCmd) returns (PtzCommandResult) {}
 	rpc PatternStartRecording(PatternCmd) returns (PtzCommandResult) {}
@@ -38,6 +39,27 @@ service PTZService {
 	rpc GetSettings(Settings) returns (Settings) {}
 	rpc SetSettings(Settings) returns (Settings) {}
 	rpc GetHeads(google.protobuf.Empty) returns (PtzHeadInfo) {}
+
+	rpc GetIO(IOCmdPar) returns (IOCmdPar) {}
+	rpc SetIO(IOCmdPar) returns (IOCmdPar) {}
+}
+
+message IOState {
+	enum OutputValue {
+		LOW = 0;
+		HIGH = 1;
+	}
+	enum Direction {
+		INPUT = 0;
+		OUTPUT = 1;
+	}
+	OutputValue value = 1;
+	Direction direction = 2;
+}
+
+message IOCmdPar {
+	repeated string name = 1;
+	repeated IOState state = 2;
 }
 
 message PtzHeadInfo {
@@ -110,4 +132,9 @@ message PTZPosInfo {
 	int32 pan_pos = 1;
 	int32 tilt_pos = 2;
 	int32 zoom_pos = 3;
+}
+
+message PatrolDefinition {
+	repeated string presets = 1;
+	repeated int32 intervals = 2;
 }
