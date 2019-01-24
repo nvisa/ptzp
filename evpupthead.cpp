@@ -146,22 +146,29 @@ int EvpuPTHead::dataReady(const unsigned char *bytes, int len)
 {
 	const QString data = QString::fromUtf8((const char *)bytes, len);
 	if (data.startsWith("a syn ok") || data.startsWith("e syn ok"))
-		return 8;
+		return 10;
 	/*
 	 * When we first connect to EVPU, 1 byte of data may be eaten causing
 	 * us to receive 1-less character for the syn messages
 	 */
 	if (data.startsWith(" syn ok"))
+		return 9;
+	if (data.startsWith("e end") || data.startsWith("a end"))
 		return 7;
 	if (data.startsWith("a get")) {
-		QString value = data.split(" ").last();
-		panPos = value.toInt();
-		tiltPos = value.split(",").last().toInt();
+		QStringList flds = data.split(" ");
+		if (flds.size() < 3) //we have some bug
+			return len;
+		panPos = flds[2].toInt();
 		pingTimer.restart();
+		return flds[0].size() + flds[1].size() + flds[2].size() + 4;
 	} else if (data.startsWith("e get")) {
-		QString value = data.split(" ").last();
-		tiltPos = value.toInt();
+		QStringList flds = data.split(" ");
+		if (flds.size() < 3) //we have some bug
+			return len;
+		tiltPos = flds[2].toInt();
 		pingTimer.restart();
+		return flds[0].size() + flds[1].size() + flds[2].size() + 4;
 	} else /* this is not for us */ {
 		mLog("Incoming message from EVPU: %s", bytes);
 		return 0;
