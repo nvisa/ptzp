@@ -82,7 +82,7 @@ int EvpuPTHead::panTiltGoPos(float ppos, float tpos)
 
 int EvpuPTHead::setOutput(int no, bool on)
 {
-	return sendCommand(QString("o %1 %2").arg(no).arg(on ? "1" : "0"));
+	return sendCommand(QString("o %1 %2\r\n").arg(no).arg(on ? "1" : "0"));
 }
 
 int EvpuPTHead::panLeft(float speed)
