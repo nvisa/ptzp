@@ -12,7 +12,9 @@ public:
 		C_ZOOM_IN,			//4
 		C_ZOOM_OUT,			//5
 		C_ZOOM_STOP,		//6
-		C_PAN_TILT_STOP		//7
+		C_PAN_TILT_STOP,	//7
+		C_PAN_TILT_GOTO_POS,//8
+		C_PAN_TILT_ABS_MOVE //9
 	};
 	virtual void sendCommand(int c, float par1, int par2) = 0;
 	virtual void goToPosition(float p, float t, int z) = 0;
