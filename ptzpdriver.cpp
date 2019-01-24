@@ -775,8 +775,8 @@ grpc::Status PtzpDriver::GetSettings(grpc::ServerContext *context, const ptzp::S
 	return grpc::Status::OK;
 }
 
-grpc::Status PtzpDriver::SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response){
-
+grpc::Status PtzpDriver::SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
+{
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
