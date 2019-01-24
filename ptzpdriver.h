@@ -92,6 +92,7 @@ public:
 	grpc::Status PatrolDelete(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response);
 	grpc::Status PatrolStop(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response);
 	grpc::Status PatrolGetList(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PresetList *response);
+	grpc::Status PatrolGetDetails(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PatrolDefinition *response);
 	// pattern
 	grpc::Status PatternRun(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response);
 	grpc::Status PatternStop(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response);

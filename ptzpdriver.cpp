@@ -518,6 +518,8 @@ grpc::Status PtzpDriver::PanTilt2Pos(grpc::ServerContext *context, const ptzp::P
 	}
 
 	head->panTiltGoPos(pan, tilt);
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(), PtzControlInterface::C_PAN_TILT_GOTO_POS, 0, 0);
 
 	return grpc::Status::OK;
 }
@@ -539,6 +541,8 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context, const ptzp::Pt
 	}
 
 	head->panTiltAbs(pan,tilt);
+	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(), PtzControlInterface::C_PAN_TILT_ABS_MOVE, 0, 0);
 
 	return grpc::Status::OK;
 }
@@ -551,16 +555,20 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context, const ptzp:
 
 	PtzpHead *head = getHead(idx);
 	
-	int cap = head->getCapabilities();
-	if (head == NULL || ( ((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)
-						|| ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT)
-						|| ((cap & PtzpHead::CAP_ZOOM) != PtzpHead::CAP_ZOOM)) )
-	{
+	if (head == NULL)
 		return grpc::Status::CANCELLED;
-	}
-	response->set_pan_pos(head->getPanAngle());
-	response->set_tilt_pos(head->getTiltAngle());
-	response->set_zoom_pos(head->getZoom());
+
+	int cap = head->getCapabilities();
+
+	response->set_pan_pos(0);
+	response->set_tilt_pos(0);
+	response->set_zoom_pos(0);
+	if ((cap & PtzpHead::CAP_PAN) == PtzpHead::CAP_PAN)
+		response->set_pan_pos(head->getPanAngle());
+	if ((cap & PtzpHead::CAP_TILT) == PtzpHead::CAP_TILT)
+		response->set_tilt_pos(head->getTiltAngle());
+	if ((cap & PtzpHead::CAP_ZOOM) == PtzpHead::CAP_ZOOM)
+		response->set_zoom_pos(head->getZoom());
 
 	return grpc::Status::OK;
 }
@@ -635,6 +643,19 @@ grpc::Status PtzpDriver::PatrolGetList(grpc::ServerContext *context, const ptzp:
 {
 	qDebug() << PatrolNg::getInstance()->getList();
 	response->set_list(PatrolNg::getInstance()->getList().toStdString());
+	return grpc::Status::OK;
+}
+
+grpc::Status PtzpDriver::PatrolGetDetails(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PatrolDefinition *response)
+{
+	QString name = QString::fromStdString(request->patrol_name());
+	PatrolNg::patrolType patrol = PatrolNg::getInstance()->getPatrolDef(name);
+	for (int i = 0; i < patrol.size(); i++) {
+		const QPair<QString, int> preset = patrol[i];
+		std::string *pname = response->add_presets();
+		pname->append(preset.first.toStdString());
+		response->add_intervals(preset.second);
+	}
 	return grpc::Status::OK;
 }
 
