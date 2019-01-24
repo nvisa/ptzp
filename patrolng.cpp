@@ -147,3 +147,10 @@ QString PatrolNg::getList()
 	mDebug("Patrol list '%s'", qPrintable(patrol));
 	return patrol;
 }
+
+PatrolNg::patrolType PatrolNg::getPatrolDef(const QString &name)
+{
+	if (patrols.contains(name))
+		return patrols[name];
+	return patrolType();
+}

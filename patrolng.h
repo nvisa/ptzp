@@ -31,6 +31,7 @@ public:
 	int setPatrolStateStop(const QString &name);
 	PatrolInfo* getCurrentPatrol();
 	QString getList();
+	patrolType getPatrolDef(const QString &name);
 private:
 	PatrolNg();
 	QMutex mutex;
