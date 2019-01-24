@@ -75,4 +75,8 @@ ptzp-grpc {
     grpc_impl.commands = $$escape_expand(\n)
     grpc_impl.variable_out = SOURCES
     QMAKE_EXTRA_COMPILERS += grpc_impl
+
+    grpc_files.files += ptzp/grpc/ptzp.grpc.pb.h ptzp/grpc/ptzp.pb.h
+    grpc_files.path = $$INSTALL_PREFIX/usr/local/include/ecl/ptzp/grpc/
+    INSTALLS += grpc_files
 }

@@ -63,6 +63,9 @@ int TbgthDriver::setTarget(const QString &targetUri)
 				return err;
 			evpuActive = true;
 			tp1->send(QString("s4 mode 57600 8 1 n\r\n").toUtf8());
+			/* initialize outputs */
+			for (int i = 0; i < 16; i++)
+				headEvpuPt->setOutput(i, 1);
 		}
 	}
 
@@ -151,10 +154,10 @@ void TbgthDriver::configLoad(const QString filename)
 		// create default
 		QJsonDocument doc;
 		QJsonObject o;
-		o.insert("model","Tbgth");
-		o.insert("type" , "moving");
+		o.insert("model",QString("Tbgth"));
+		o.insert("type" , QString("moving"));
 		o.insert("pan_tilt_support", 1);
-		o.insert("cam_module", "Yamano");
+		o.insert("cam_module", QString("Yamano"));
 		doc.setObject(o);
 		QFile f(filename);
 		f.open(QIODevice::WriteOnly);
