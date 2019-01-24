@@ -197,6 +197,9 @@ OemModuleHead::OemModuleHead()
 		{"display_rotation", {NULL, R_DISPLAY_ROT}},
 		{"digi_zoom_pos", {NULL, R_DIGI_ZOOM_POS}},
 		{"optic_zoom_pos", {NULL, R_OPTIC_ZOOM_POS}},
+		{"focus_in", {C_VISCA_SET_FOCUS, NULL}},
+		{"focus_out", {C_VISCA_SET_FOCUS, NULL}},
+		{"focus_stop", {C_VISCA_SET_FOCUS, NULL}}
 	};
 #endif
 }
