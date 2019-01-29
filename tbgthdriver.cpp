@@ -63,7 +63,8 @@ int TbgthDriver::setTarget(const QString &targetUri)
 				return err;
 			evpuActive = true;
 			tp1->send(QString("s4 mode 57600 8 1 n\r\n").toUtf8());
-			/* initialize outputs */
+			/* initialize device and outputs */
+			headEvpuPt->syncDevice();
 			for (int i = 0; i < 16; i++)
 				headEvpuPt->setOutput(i, 1);
 		}
@@ -261,10 +262,10 @@ void TbgthDriver::timeout()
 				state = SYNC_HEAD_THERMAL;
 			} else {
 				state = NORMAL;
-				tp->enableQueueFreeCallbacks(true);
 				if (evpuActive)
 					tp1->enableQueueFreeCallbacks(true);
 			}
+			tp->enableQueueFreeCallbacks(true);
 		}
 		break;
 	case SYNC_HEAD_THERMAL:
