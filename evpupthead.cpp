@@ -85,6 +85,12 @@ int EvpuPTHead::setOutput(int no, bool on)
 	return sendCommand(QString("o %1 %2\r\n").arg(no).arg(on ? "1" : "0"));
 }
 
+void EvpuPTHead::syncDevice()
+{
+	sendCommand("a syn\r\n");
+	sendCommand("e syn\r\n");
+}
+
 int EvpuPTHead::panLeft(float speed)
 {
 	speed = speed * -MaxSpeedA;

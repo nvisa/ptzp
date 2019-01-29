@@ -24,6 +24,7 @@ public:
 	int panTiltGoPos(float ppos, float tpos);
 
 	int setOutput(int no, bool on);
+	void syncDevice();
 
 protected:
 	int panPos;
