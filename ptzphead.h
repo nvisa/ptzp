@@ -53,6 +53,7 @@ public:
 	virtual void setProperty(uint r, uint x);
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
+	int communicationElapsed();
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);

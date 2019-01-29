@@ -297,10 +297,9 @@ int YamanoLensHead::dataReady(const unsigned char *bytes, int len)
 	if (bytes[1] != 0x01)
 		return len;
 
-	if (len < 5){
-		pingTimer.restart();
+	if (len < 5)
 		return len;
-	}
+	pingTimer.restart();
 
 	if (nextSync != C_COUNT) {
 		/* we are in sync mode, let's sync next */

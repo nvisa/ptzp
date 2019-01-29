@@ -42,7 +42,6 @@ protected:
 	void unmarshallloadAllRegisters(const QJsonValue &node);
 
 	int nextSync;
-	QElapsedTimer pingTimer;
 	QList<uint> syncList;
 
 private:

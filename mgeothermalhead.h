@@ -61,7 +61,6 @@ protected:
 	QStringList ptzCommandList;
 	int panPos;
 	int tiltPos;
-	QElapsedTimer pingTimer;
 	int nextSync;
 	QList<uint> syncList;
 	bool alive;

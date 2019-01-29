@@ -332,6 +332,11 @@ int PtzpHead::loadRegisters(const QString &filename)
 
 	return 0;
 }
+
+int PtzpHead::communicationElapsed()
+{
+	return pingTimer.elapsed();
+}
 #ifdef HAVE_PTZP_GRPC_API
 QVariantMap PtzpHead::getSettings()
 {
