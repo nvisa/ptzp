@@ -61,6 +61,8 @@ public:
 PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent)
 {
+	sreg.enable = false;
+	sreg.zoomHead = NULL;
 	sleep = false;
 	timer = new QTimer(this);
 	time = new QElapsedTimer();
@@ -283,6 +285,16 @@ void PtzpDriver::sleepMode(bool stat)
 	mInfo("Sleep mode is %d", sleep);
 }
 
+void PtzpDriver::setSpeedRegulation(PtzpDriver::SpeedRegulation r)
+{
+	sreg = r;
+}
+
+PtzpDriver::SpeedRegulation PtzpDriver::getSpeedRegulation()
+{
+	return sreg;
+}
+
 void PtzpDriver::setPatternHandler(PatternNg *p)
 {
 	if (ptrn)
@@ -335,6 +347,8 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context, const::ptzp::PtzC
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	if (sreg.enable && sreg.zoomHead)
+		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->panLeft(speed);
 	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_LEFT, speed, 0);
@@ -355,6 +369,8 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context, const::ptzp::Ptz
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	if (sreg.enable && sreg.zoomHead)
+		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->panRight(speed);
 	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_RIGHT, speed, 0);
@@ -455,6 +471,8 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context, const ptzp::PtzCmd
 		return grpc::Status::CANCELLED;
 	}
 
+	if (sreg.enable && sreg.zoomHead)
+		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->tiltUp(speed);
 	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 						defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_UP, speed, 0);
@@ -475,6 +493,8 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context, const ptzp::PtzC
 		return grpc::Status::CANCELLED;
 	}
 
+	if (sreg.enable && sreg.zoomHead)
+		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->tiltDown(speed);
 	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 						defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_DOWN, speed, 0);
@@ -798,6 +818,40 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	head->setSettings(map);
 
 	return grpc::Status::OK;
+}
+
+float PtzpDriver::regulateSpeed(float raw, int zoom)
+{
+	if (!sreg.enable)
+		return raw;
+	if (sreg.ipol == SpeedRegulation::CUSTOM)
+		return sreg.interFunc(raw, zoom);
+	if (sreg.minZoom < sreg.maxZoom) {
+		if (zoom < sreg.minZoom)
+			return raw;
+		if (zoom > sreg.maxZoom)
+			return sreg.minSpeed;
+		if (sreg.ipol == SpeedRegulation::LINEAR) {
+			//when zoom == minZoom => zoomr = 1, when zoom == maxZoom => zoomr = 0
+			float zoomr = 1.0 - (zoom - sreg.minZoom) / (float)(sreg.maxZoom - sreg.minZoom);
+			raw *= zoomr;
+		}
+		if (raw < sreg.minSpeed)
+			return sreg.minSpeed;
+	} else {
+		if (zoom < sreg.maxZoom)
+			return raw;
+		if (zoom > sreg.minZoom)
+			return sreg.minSpeed;
+		if (sreg.ipol == SpeedRegulation::LINEAR) {
+			//when zoom == minZoom => zoomr = 1, when zoom == maxZoom => zoomr = 0
+			float zoomr = (zoom - sreg.maxZoom) / (float)(sreg.minZoom - sreg.maxZoom);
+			raw *= zoomr;
+		}
+		if (raw < sreg.minSpeed)
+			return sreg.minSpeed;
+	}
+	return raw;
 }
 
 QStringList PtzpDriver::commaToList(const QString& comma)

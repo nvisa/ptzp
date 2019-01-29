@@ -40,6 +40,24 @@ class PtzpDriver : public QObject,
 {
 	Q_OBJECT
 public:
+
+	struct SpeedRegulation
+	{
+		enum Interpolation {
+			LINEAR,
+			CUSTOM
+		};
+
+		bool enable;
+		int minZoom;
+		int maxZoom;
+		float minSpeed;
+		Interpolation ipol;
+		PtzpHead *zoomHead;
+		typedef float (*interOp)(float, int);
+		interOp interFunc;
+	};
+
 	explicit PtzpDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri) = 0;
@@ -54,6 +72,8 @@ public:
 	void goToPosition(float p, float t, int z);
 	void sendCommand(int c, float par1, int par2);
 	virtual void sleepMode(bool stat);
+	void setSpeedRegulation(SpeedRegulation r);
+	SpeedRegulation getSpeedRegulation();
 
 	void setPatternHandler(PatternNg *p);
 
@@ -109,6 +129,9 @@ public:
 	grpc::Status FocusStop(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response);
 #endif
 
+protected:
+	float regulateSpeed(float raw, int zoom);
+
 protected slots:
 	virtual void timeout();
 	QVariant headInfo(const QString &key, PtzpHead *head);
@@ -122,6 +145,8 @@ protected:
 	PtzpHead *defaultModuleHead;
 	PatternNg *ptrn;
 	QElapsedTimer *elaps;
+	SpeedRegulation sreg;
+	int patrolListPos;
 
 };
 
