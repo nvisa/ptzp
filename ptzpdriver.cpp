@@ -641,6 +641,19 @@ grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context, const ptzp::Pat
 	Q_UNUSED(context);
 	Q_UNUSED(response);
 	PatrolNg::getInstance()->setPatrolStateRun(QString::fromStdString(request->patrol_name()));
+
+	patrolListPos = 0;
+	PatrolNg::PatrolInfo *patrol = PatrolNg::getInstance()->getCurrentPatrol();
+	if (!patrol->list.isEmpty()) {
+		QPair<QString, int> pp = patrol->list[patrolListPos];
+		QString preset = pp.first;
+		elaps->restart();
+		PresetNg *prst = PresetNg::getInstance();
+		QStringList pos = prst->getPreset(preset);
+		if(!pos.isEmpty())
+			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
+	}
+
 	return grpc::Status::OK;
 }
 
@@ -896,22 +909,20 @@ void PtzpDriver::timeout()
 						 defaultModuleHead->getZoom());
 	PatrolNg *ptrl = PatrolNg::getInstance();
 	if (ptrl->getCurrentPatrol()->state != PatrolNg::STOP) { // patrol
-		static int listPos = 0;
 		PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
 		if (patrol->list.isEmpty()) {
 			ptrl->setPatrolStateStop(patrol->patrolName);
 			return;
 		}
-		QPair<QString, int> pp = patrol->list[listPos];
+		QPair<QString, int> pp = patrol->list[patrolListPos];
 		QString preset = pp.first;
 		int waittime = pp.second;
 		if (elaps->elapsed() >= waittime) {
-			listPos ++;
-			if (listPos == patrol->list.size())
-				listPos = 0;
-			pp = patrol->list[listPos];
+			patrolListPos++;
+			if (patrolListPos == patrol->list.size())
+				patrolListPos = 0;
+			pp = patrol->list[patrolListPos];
 			preset = pp.first;
-			waittime = pp.second;
 			elaps->restart();
 			PresetNg *prst = PresetNg::getInstance();
 			QStringList pos = prst->getPreset(preset);
