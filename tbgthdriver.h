@@ -24,6 +24,8 @@ public:
 	QByteArray sendFilter(const char *bytes, int len);
 	int readFilter(QTcpSocket *sock, QByteArray &ba);
 
+	void enableDriver(bool value) override;
+
 protected slots:
 	void timeout();
 
@@ -59,6 +61,7 @@ protected:
 	bool yamanoActive;
 	bool evpuActive;
 	bool controlThermal;
+	QString tp1ConnectionString;
 };
 
 #endif // TBGTHDRIVER_H

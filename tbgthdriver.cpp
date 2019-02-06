@@ -58,7 +58,8 @@ int TbgthDriver::setTarget(const QString &targetUri)
 			//hack us in for EVPU offloading
 			((PtzpTcpTransport *)tp1)->setFilter(this);
 
-			int err = tp1->connectTo(QString("%1").arg(field));
+			tp1ConnectionString = QString("%1").arg(field);
+			int err = tp1->connectTo(tp1ConnectionString);
 			if (err)
 				return err;
 			evpuActive = true;
@@ -237,6 +238,16 @@ int TbgthDriver::readFilter(QTcpSocket *sock, QByteArray &ba)
 
 	mDebug("Unexpected filter state - %d %d", fstate.payload.size(), fstate.payloadLen);
 	return -EIO;
+}
+
+void TbgthDriver::enableDriver(bool value)
+{
+	PtzpDriver::enableDriver(value);
+	if (!driverEnabled) {
+		((PtzpTcpTransport *)tp1)->disconnectFrom();
+	} else {
+		tp1->connectTo(tp1ConnectionString);
+	}
 }
 
 void TbgthDriver::timeout()
