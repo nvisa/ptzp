@@ -22,6 +22,7 @@ public:
 	};
 
 	int connectTo(const QString &targetUri);
+	int disconnectFrom();
 	int send(const char *bytes, int len);
 
 	void setFilter(TransportFilterInteface *iface);

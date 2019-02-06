@@ -33,6 +33,16 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 	return 0;
 }
 
+int PtzpTcpTransport::disconnectFrom()
+{
+	if (!sock)
+		return -ENOENT;
+	sock->disconnectFromHost();
+	sock->deleteLater();
+	sock = NULL;
+	return 0;
+}
+
 int PtzpTcpTransport::send(const char *bytes, int len)
 {
 	if (filterInterface) {
@@ -95,5 +105,6 @@ void PtzpTcpTransport::callback()
 
 void PtzpTcpTransport::sendSocketMessage(const QByteArray &ba)
 {
-	sock->write(ba);
+	if (sock)
+		sock->write(ba);
 }
