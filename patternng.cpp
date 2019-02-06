@@ -61,6 +61,7 @@ PatternNg::PatternNg(PtzControlInterface *ctrl)
 	sm = SYNC_TIME;
 	current = 0;
 	ptzctrl = ctrl;
+	rs = RS_FINALIZE;
 	mDebug("Registered patterns, '%s'", qPrintable(getList()));
 }
 
