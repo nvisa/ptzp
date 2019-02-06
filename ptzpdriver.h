@@ -74,6 +74,7 @@ public:
 	virtual void sleepMode(bool stat);
 	void setSpeedRegulation(SpeedRegulation r);
 	SpeedRegulation getSpeedRegulation();
+	virtual void enableDriver(bool value);
 
 	void setPatternHandler(PatternNg *p);
 
@@ -147,6 +148,7 @@ protected:
 	QElapsedTimer *elaps;
 	SpeedRegulation sreg;
 	int patrolListPos;
+	bool driverEnabled;
 
 };
 

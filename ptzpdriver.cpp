@@ -61,6 +61,7 @@ public:
 PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent)
 {
+	driverEnabled = true;
 	sreg.enable = false;
 	sreg.zoomHead = NULL;
 	sleep = false;
@@ -293,6 +294,11 @@ void PtzpDriver::setSpeedRegulation(PtzpDriver::SpeedRegulation r)
 PtzpDriver::SpeedRegulation PtzpDriver::getSpeedRegulation()
 {
 	return sreg;
+}
+
+void PtzpDriver::enableDriver(bool value)
+{
+	driverEnabled = value;
 }
 
 void PtzpDriver::setPatternHandler(PatternNg *p)
