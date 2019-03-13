@@ -155,6 +155,14 @@ public:
 		return C_COUNT;
 	}
 
+	Commands peek()
+	{
+		QMutexLocker l(&m);
+		if (commands.size())
+			return commands.first();
+		return C_COUNT;
+	}
+
 protected:
 	QMutex m;
 	QList<Commands> commands;
@@ -293,7 +301,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	if (p[0] != 0x90)
 		return -1;
 	/* sendcmd can be C_COUNT, beware! */
-	Commands sendcmd = hist->takeFirst();
+	Commands sendcmd = hist->peek();
 	if (sendcmd == C_COUNT) {
 		setIOError(IOE_NO_LAST_WRITTEN);
 		return -1;
@@ -326,6 +334,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	if (nextSync != C_COUNT) {
 		/* we are in sync mode, let's sync next */
 		mInfo("Next sync property: %d",nextSync);
+		hist->takeFirst();
 		if (++nextSync == C_COUNT) {
 			fDebug("Visca register syncing completed, activating auto-sync");
 		} else
