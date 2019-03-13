@@ -299,12 +299,12 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		mLogv("%d", bytes[i]);
 	const unsigned char *p = bytes;
 	if (p[0] != 0x90)
-		return -1;
+		return -ENOENT;
 	/* sendcmd can be C_COUNT, beware! */
 	Commands sendcmd = hist->peek();
 	if (sendcmd == C_COUNT) {
 		setIOError(IOE_NO_LAST_WRITTEN);
-		return -1;
+		return -ENOENT;
 	}
 	const unsigned char *sptr = protoBytes[sendcmd];
 	int expected = sptr[1];
@@ -320,7 +320,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		return 3;
 	}
 	if (len < expected)
-		return -1;
+		return -EAGAIN;
 	if (sptr[2] != 0x81) {
 		setIOError(IOE_VISCA_INVALID_ADDR);
 		return expected;
