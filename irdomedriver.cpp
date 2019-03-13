@@ -290,7 +290,7 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "ptz.cmd.device_defintion" )
 		headModule->setDeviceDefinition(value.toString());
 	else if (key == "ptz.cmd.focus")
-		headModule->setProperty(14, value.toUInt());
+		headModule->setProperty(15, value.toUInt());
 	else if (key == "ptz.cmd.shutter_top_bot_lim"){
 		QStringList str = value.toString().split(",");
 		headModule->setShutterLimit(str[0].toUInt(), str[1].toInt());
