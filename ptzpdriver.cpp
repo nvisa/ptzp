@@ -799,7 +799,7 @@ grpc::Status PtzpDriver::FocusIn(grpc::ServerContext *context, const ptzp::PtzCm
 		return grpc::Status::CANCELLED;
 
 	QVariantMap map;
-	map["focus_in"] = 1;
+	map["focus_in"] = 2;
 	head->setSettings(map);
 
 	return grpc::Status::OK;
@@ -816,7 +816,7 @@ grpc::Status PtzpDriver::FocusOut(grpc::ServerContext *context, const ptzp::PtzC
 		return grpc::Status::CANCELLED;
 
 	QVariantMap map;
-	map["focus_out"] = 1;
+	map["focus_out"] = 3;
 	head->setSettings(map);
 
 	return grpc::Status::OK;
@@ -833,7 +833,7 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 		return grpc::Status::CANCELLED;
 
 	QVariantMap map;
-	map["focus_stop"] = 1;
+	map["focus_stop"] = 0;
 	head->setSettings(map);
 
 	return grpc::Status::OK;
