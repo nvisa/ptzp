@@ -910,30 +910,32 @@ QByteArray PtzpDriver::mapToJson(const QVariantMap &map)
 
 void PtzpDriver::timeout()
 {
-	ptrn->positionUpdate(defaultPTHead->getPanAngle(),
-						 defaultPTHead->getTiltAngle(),
-						 defaultModuleHead->getZoom());
-	PatrolNg *ptrl = PatrolNg::getInstance();
-	if (ptrl->getCurrentPatrol()->state != PatrolNg::STOP) { // patrol
-		PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
-		if (patrol->list.isEmpty()) {
-			ptrl->setPatrolStateStop(patrol->patrolName);
-			return;
-		}
-		QPair<QString, int> pp = patrol->list[patrolListPos];
-		QString preset = pp.first;
-		int waittime = pp.second;
-		if (elaps->elapsed() >= waittime) {
-			patrolListPos++;
-			if (patrolListPos == patrol->list.size())
-				patrolListPos = 0;
-			pp = patrol->list[patrolListPos];
-			preset = pp.first;
-			elaps->restart();
-			PresetNg *prst = PresetNg::getInstance();
-			QStringList pos = prst->getPreset(preset);
-			if(!pos.isEmpty())
-				goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
+	if(config.ptSupport == 1){
+		ptrn->positionUpdate(defaultPTHead->getPanAngle(),
+							 defaultPTHead->getTiltAngle(),
+							 defaultModuleHead->getZoom());
+		PatrolNg *ptrl = PatrolNg::getInstance();
+		if (ptrl->getCurrentPatrol()->state != PatrolNg::STOP) { // patrol
+			PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
+			if (patrol->list.isEmpty()) {
+				ptrl->setPatrolStateStop(patrol->patrolName);
+				return;
+			}
+			QPair<QString, int> pp = patrol->list[patrolListPos];
+			QString preset = pp.first;
+			int waittime = pp.second;
+			if (elaps->elapsed() >= waittime) {
+				patrolListPos++;
+				if (patrolListPos == patrol->list.size())
+					patrolListPos = 0;
+				pp = patrol->list[patrolListPos];
+				preset = pp.first;
+				elaps->restart();
+				PresetNg *prst = PresetNg::getInstance();
+				QStringList pos = prst->getPreset(preset);
+				if(!pos.isEmpty())
+					goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
+			}
 		}
 	}
 }

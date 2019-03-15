@@ -46,27 +46,25 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 {
 	QStringList fields = targetUri.split(";");
 	if (fields.size() == 1) {
-		PtzpTransport *tp = new PtzpSerialTransport();
+		tp = new PtzpSerialTransport();
 		headModule->setTransport(tp);
 		headModule->enableSyncing(true);
 		headDome->setTransport(tp);
 		headDome->enableSyncing(true);
 		tp->setMaxBufferLength(50);
-		tp->enableQueueFreeCallbacks(true);
 		if (tp->connectTo(fields[0]))
 			return -EPERM;
 	} else {
-		PtzpTransport *tp1 = new PtzpSerialTransport();
-		headModule->setTransport(tp1);
+		tp = new PtzpSerialTransport();
+		headModule->setTransport(tp);
 		headModule->enableSyncing(true);
-		tp1->enableQueueFreeCallbacks(true);
-		if (tp1->connectTo(fields[0]))
+		if (tp->connectTo(fields[0]))
 			return -EPERM;
-		PtzpTransport *tp2 = new PtzpSerialTransport();
-		headDome->setTransport(tp2);
+
+		tp1 = new PtzpSerialTransport();
+		headDome->setTransport(tp1);
 		headDome->enableSyncing(true);
-		tp2->enableQueueFreeCallbacks(true);
-		if (tp2->connectTo(fields[1]))
+		if (tp1->connectTo(fields[1]))
 			return -EPERM;
 	}
 	return 0;
@@ -356,7 +354,11 @@ void IRDomeDriver::timeout()
 	case SYNC_HEAD_MODULE:
 		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = SYNC_HEAD_DOME;
-			headDome->syncRegisters();
+			if(config.ptSupport == 0)
+				state = NORMAL;
+			else headDome->syncRegisters();
+			tp->enableQueueFreeCallbacks(true);
+
 		}
 		break;
 	case SYNC_HEAD_DOME:
@@ -364,6 +366,8 @@ void IRDomeDriver::timeout()
 			state = NORMAL;
 			headModule->loadRegisters("oemmodule.json");
 			timer->setInterval(1000);
+			tp1->enableQueueFreeCallbacks(true);
+
 		}
 		break;
 	case NORMAL:

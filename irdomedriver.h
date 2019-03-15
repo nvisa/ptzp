@@ -30,10 +30,11 @@ protected:
 		NORMAL,
 	};
 
-	conf config;
 	OemModuleHead * headModule;
 	IRDomePTHead * headDome;
 	DriverState state;
+	PtzpTransport *tp;
+	PtzpTransport *tp1;
 };
 
 #endif // IRDOMEDRIVER_H

@@ -149,6 +149,7 @@ protected:
 	SpeedRegulation sreg;
 	int patrolListPos;
 	bool driverEnabled;
+	conf config;
 
 };
 
