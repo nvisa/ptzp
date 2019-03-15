@@ -13,20 +13,18 @@
 IRDomeDriver::IRDomeDriver(QObject *parent)
 	: PtzpDriver(parent)
 {
-	headModule = new OemModuleHead;
-	headDome = new IRDomePTHead;
+	defaultPTHead = NULL;
+	defaultModuleHead = NULL;
 	state = INIT;
-	defaultPTHead = headDome;
-	defaultModuleHead = headModule;
 	configLoad("config.json");
 }
 
 PtzpHead *IRDomeDriver::getHead(int index)
 {
 	if (index == 0)
-		return headModule;
+		return defaultModuleHead;
 	else if (index == 1)
-		return headDome;
+		return defaultPTHead;
 	return NULL;
 }
 
@@ -44,6 +42,8 @@ PtzpHead *IRDomeDriver::getHead(int index)
  */
 int IRDomeDriver::setTarget(const QString &targetUri)
 {
+	headModule = new OemModuleHead;
+	headDome = new IRDomePTHead;
 	QStringList fields = targetUri.split(";");
 	if (fields.size() == 1) {
 		tp = new PtzpSerialTransport();
@@ -51,6 +51,10 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		headModule->enableSyncing(true);
 		headDome->setTransport(tp);
 		headDome->enableSyncing(true);
+
+		defaultPTHead = headDome;
+		defaultModuleHead = headModule;
+
 		tp->setMaxBufferLength(50);
 		if (tp->connectTo(fields[0]))
 			return -EPERM;
@@ -58,14 +62,20 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		tp = new PtzpSerialTransport();
 		headModule->setTransport(tp);
 		headModule->enableSyncing(true);
+
+		defaultModuleHead = headModule;
 		if (tp->connectTo(fields[0]))
 			return -EPERM;
 
-		tp1 = new PtzpSerialTransport();
-		headDome->setTransport(tp1);
-		headDome->enableSyncing(true);
-		if (tp1->connectTo(fields[1]))
-			return -EPERM;
+		if (fields[1] != "null") {
+			tp1 = new PtzpSerialTransport();
+			headDome->setTransport(tp1);
+			headDome->enableSyncing(true);
+
+			defaultPTHead = headDome;
+			if (tp1->connectTo(fields[1]))
+				return -EPERM;
+		}
 	}
 	return 0;
 }

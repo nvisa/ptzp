@@ -315,7 +315,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		}
 		return len;
 	} else if (p[1] == 0x41) {
-		ffDebug() << "acknowledge";
+		mLogv("acknowledge");
 		return 3;
 	}
 	if (len < expected)

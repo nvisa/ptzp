@@ -164,24 +164,19 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 		return -ENODEV;
 
 	if (key == "ptz.cmd.pan_left") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_LEFT, value.toFloat(),0);
+		commandUpdate(PtzControlInterface::C_PAN_LEFT, value.toFloat(), 0);
 		defaultPTHead->panLeft(value.toFloat());
 	} else if (key == "ptz.cmd.pan_right") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_RIGHT, value.toFloat(),0);
+		commandUpdate(PtzControlInterface::C_PAN_RIGHT, value.toFloat(), 0);
 		defaultPTHead->panRight(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_down") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_DOWN, value.toFloat(),0);
+		commandUpdate(PtzControlInterface::C_TILT_DOWN, value.toFloat(), 0);
 		defaultPTHead->tiltDown(value.toFloat());
 	} else if (key == "ptz.cmd.tilt_up") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_UP, value.toFloat(),0);
+		commandUpdate(PtzControlInterface::C_TILT_UP, value.toFloat(), 0);
 		defaultPTHead->tiltUp(value.toFloat());
 	} else if (key == "ptz.cmd.pan_stop") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_TILT_STOP, value.toInt(),0);
+		commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, value.toInt(), 0);
 		defaultPTHead->panTiltAbs(0, 0);
 	} else if (key == "ptz.cmd.pan_tilt_abs") {
 		const QStringList &vals = value.toString().split(";");
@@ -191,16 +186,13 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 		float tilt = vals[1].toFloat();
 		defaultPTHead->panTiltAbs(pan, tilt);
 	} else if (key == "ptz.cmd.zoom_in") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_IN, value.toInt(),0);
+		commandUpdate(PtzControlInterface::C_ZOOM_IN, value.toFloat(), 0);
 		defaultModuleHead->startZoomIn(value.toInt());
 	} else if (key == "ptz.cmd.zoom_out") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_OUT, value.toInt(),0);
+		commandUpdate(PtzControlInterface::C_ZOOM_OUT, value.toFloat(), 0);
 		defaultModuleHead->startZoomOut(value.toInt());
 	} else if (key == "ptz.cmd.zoom_stop") {
-		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-							defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_STOP, value.toInt(),0);
+		commandUpdate(PtzControlInterface::C_ZOOM_STOP, value.toFloat(), 0);
 		defaultModuleHead->stopZoom();
 	} else if (key == "pattern_start")
 		ptrn->start(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(), defaultModuleHead->getZoom());
@@ -255,29 +247,34 @@ int PtzpDriver::set(const QString &key, const QVariant &value)
 
 void PtzpDriver::goToPosition(float p, float t, int z)
 {
-	defaultModuleHead->setZoom(z);
-	defaultPTHead->panTiltGoPos(p, t);
+	if (defaultModuleHead && defaultPTHead) {
+		defaultModuleHead->setZoom(z);
+		defaultPTHead->panTiltGoPos(p, t);
+	}
 }
 
 void PtzpDriver::sendCommand(int c, float par1, int par2)
 {
-	qDebug() << "command"  << c << par1;
-	if (c == PtzControlInterface::C_PAN_LEFT)
-		defaultPTHead->panLeft(par1);
-	else if (c == PtzControlInterface::C_PAN_RIGHT)
-		defaultPTHead->panRight(par1);
-	else if (c == PtzControlInterface::C_TILT_DOWN)
-		defaultPTHead->tiltDown(par1);
-	else if (c == PtzControlInterface::C_TILT_UP)
-		defaultPTHead->tiltUp(par1);
-	else if (c == PtzControlInterface::C_ZOOM_IN)
-		defaultModuleHead->startZoomIn((int)par1);
-	else if (c == PtzControlInterface::C_ZOOM_OUT)
-		defaultModuleHead->startZoomOut((int)par1);
-	else if (c == PtzControlInterface::C_ZOOM_STOP)
-		defaultModuleHead->stopZoom();
-	else if (c == PtzControlInterface::C_PAN_TILT_STOP)
-		defaultPTHead->panTiltStop();
+	Q_UNUSED(par2);
+	if (defaultPTHead) {
+		if (c == PtzControlInterface::C_PAN_LEFT)
+			defaultPTHead->panLeft(par1);
+		else if (c == PtzControlInterface::C_PAN_RIGHT)
+			defaultPTHead->panRight(par1);
+		else if (c == PtzControlInterface::C_TILT_DOWN)
+			defaultPTHead->tiltDown(par1);
+		else if (c == PtzControlInterface::C_TILT_UP)
+			defaultPTHead->tiltUp(par1);
+		else if (c == PtzControlInterface::C_PAN_TILT_STOP)
+			defaultPTHead->panTiltStop();
+	} else if (defaultModuleHead) {
+		if (c == PtzControlInterface::C_ZOOM_IN)
+			defaultModuleHead->startZoomIn((int)par1);
+		else if (c == PtzControlInterface::C_ZOOM_OUT)
+			defaultModuleHead->startZoomOut((int)par1);
+		else if (c == PtzControlInterface::C_ZOOM_STOP)
+			defaultModuleHead->stopZoom();
+	}
 }
 
 void PtzpDriver::sleepMode(bool stat)
@@ -356,9 +353,7 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context, const::ptzp::PtzC
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->panLeft(speed);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_LEFT, speed, 0);
-
+	commandUpdate(PtzControlInterface::C_PAN_LEFT, speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -378,9 +373,7 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context, const::ptzp::Ptz
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->panRight(speed);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_RIGHT, speed, 0);
-
+	commandUpdate(PtzControlInterface::C_PAN_RIGHT, speed, 0);
 	return grpc::Status::OK;
 
 }
@@ -398,8 +391,7 @@ grpc::Status PtzpDriver::PanStop(grpc::ServerContext *context, const::ptzp::PtzC
 		return grpc::Status::CANCELLED;
 	}
 	head->panTiltStop();
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
+	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 
 	return grpc::Status::OK;
 }
@@ -419,8 +411,7 @@ grpc::Status PtzpDriver::ZoomIn(grpc::ServerContext *context, const::ptzp::PtzCm
 		return grpc::Status::CANCELLED;
 	}
 	head->startZoomIn(speed);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_IN, (int)speed, 0);
+	commandUpdate(PtzControlInterface::C_ZOOM_IN, speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -439,8 +430,7 @@ grpc::Status PtzpDriver::ZoomOut(grpc::ServerContext *context, const::ptzp::PtzC
 		return grpc::Status::CANCELLED;
 	}
 	head->startZoomOut(speed);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_OUT, (int)speed, 0);
+	commandUpdate(PtzControlInterface::C_ZOOM_OUT, speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -458,8 +448,7 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context, const::ptzp::Ptz
 	}
 
 	head->stopZoom();
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_ZOOM_STOP, 0 ,0);
+	commandUpdate(PtzControlInterface::C_ZOOM_STOP, 0, 0);
 	return grpc::Status::OK;
 }
 
@@ -480,8 +469,7 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context, const ptzp::PtzCmd
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->tiltUp(speed);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_UP, speed, 0);
+	commandUpdate(PtzControlInterface::C_TILT_UP, speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -502,9 +490,7 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context, const ptzp::PtzC
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 	head->tiltDown(speed);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_TILT_DOWN, speed, 0);
-
+	commandUpdate(PtzControlInterface::C_TILT_DOWN, speed, 0);
 	return grpc::Status::OK;
 }
 
@@ -521,9 +507,7 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context, const ptzp::PtzC
 	}
 
 	head->panTiltStop();
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(),PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
-
+	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 	return grpc::Status::OK;
 }
 
@@ -536,6 +520,8 @@ grpc::Status PtzpDriver::PanTilt2Pos(grpc::ServerContext *context, const ptzp::P
 	float pan = request->pan_abs();
 
 	PtzpHead *head = getHead(idx);
+	if (!head)
+		return grpc::Status::CANCELLED;
 	int cap = head->getCapabilities();
 	if (head == NULL || ( ((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)|| ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT)) )
 	{
@@ -544,9 +530,7 @@ grpc::Status PtzpDriver::PanTilt2Pos(grpc::ServerContext *context, const ptzp::P
 	}
 
 	head->panTiltGoPos(pan, tilt);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(), PtzControlInterface::C_PAN_TILT_GOTO_POS, 0, 0);
-
+	commandUpdate(PtzControlInterface::C_PAN_TILT_GOTO_POS, 0, 0);
 	return grpc::Status::OK;
 }
 
@@ -567,9 +551,7 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context, const ptzp::Pt
 	}
 
 	head->panTiltAbs(pan,tilt);
-	ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom(), PtzControlInterface::C_PAN_TILT_ABS_MOVE, 0, 0);
-
+	commandUpdate(PtzControlInterface::C_PAN_TILT_ABS_MOVE, 0, 0);
 	return grpc::Status::OK;
 }
 
@@ -619,8 +601,10 @@ grpc::Status PtzpDriver::PresetDelete(grpc::ServerContext *context, const ptzp::
 grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	PresetNg::getInstance()->addPreset(QString::fromStdString(request->preset_name()),
-									   defaultPTHead->getPanAngle(),defaultPTHead->getTiltAngle(),defaultModuleHead->getZoom());
+	if (defaultPTHead && defaultModuleHead)
+		PresetNg::getInstance()->addPreset(QString::fromStdString(request->preset_name()),
+									defaultPTHead->getPanAngle(),defaultPTHead->getTiltAngle(),defaultModuleHead->getZoom());
+	else return grpc::Status::CANCELLED;
 	return grpc::Status::OK;
 }
 
@@ -713,12 +697,12 @@ grpc::Status PtzpDriver::PatternRun(grpc::ServerContext *context, const ptzp::Pa
 
 grpc::Status PtzpDriver::PatternStop(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
-	Q_UNUSED(context);
-
-	ptrn->stop(defaultPTHead->getPanAngle(),
-						 defaultPTHead->getTiltAngle(),
-						 defaultModuleHead->getZoom());
-
+	if (defaultPTHead && defaultModuleHead)
+		ptrn->stop(defaultPTHead->getPanAngle(),
+						defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom());
+	else
+		return grpc::Status::CANCELLED;
 	return grpc::Status::OK;
 }
 
@@ -726,20 +710,22 @@ grpc::Status PtzpDriver::PatternStartRecording(grpc::ServerContext *context, con
 {
 	Q_UNUSED(context);
 
-	ptrn->start(defaultPTHead->getPanAngle(),
-				defaultPTHead->getTiltAngle(),
-				defaultModuleHead->getZoom());
-
+	if (defaultPTHead && defaultModuleHead)
+		ptrn->start(defaultPTHead->getPanAngle(),
+					defaultPTHead->getTiltAngle(),
+					defaultModuleHead->getZoom());
+	else return grpc::Status::CANCELLED;
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternStopRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
-	ptrn->stop(defaultPTHead->getPanAngle(),
-			   defaultPTHead->getTiltAngle(),
-			   defaultModuleHead->getZoom());
+	if (defaultPTHead && defaultModuleHead)
+		ptrn->stop(defaultPTHead->getPanAngle(),
+				defaultPTHead->getTiltAngle(),
+				defaultModuleHead->getZoom());
+	else return grpc::Status::CANCELLED;
 
 	if(ptrn->save(QString::fromStdString(request->pattern_name())) == 0)
 		return grpc::Status::OK;
@@ -898,7 +884,6 @@ QVariantMap PtzpDriver::jsonToMap(const QByteArray& arr)
 	if(doc.isEmpty())
 		return QVariantMap();
 	QVariantMap sMap = doc.toVariant().toMap();
-
 	return sMap;
 }
 
@@ -911,7 +896,8 @@ QByteArray PtzpDriver::mapToJson(const QVariantMap &map)
 void PtzpDriver::timeout()
 {
 	if(config.ptSupport == 1){
-		ptrn->positionUpdate(defaultPTHead->getPanAngle(),
+		if (defaultPTHead && defaultModuleHead)
+			ptrn->positionUpdate(defaultPTHead->getPanAngle(),
 							 defaultPTHead->getTiltAngle(),
 							 defaultModuleHead->getZoom());
 		PatrolNg *ptrl = PatrolNg::getInstance();
@@ -945,4 +931,12 @@ QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
 	if (key == "status")
 		return head->getHeadStatus();
 	return QVariant();
+}
+
+
+void PtzpDriver::commandUpdate(int c, float arg1, float arg2)
+{
+	if (defaultPTHead && defaultModuleHead)
+		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
+						defaultModuleHead->getZoom(), c, arg1, arg2);
 }

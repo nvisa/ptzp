@@ -151,6 +151,8 @@ protected:
 	bool driverEnabled;
 	conf config;
 
+	void commandUpdate(int c, float arg1 = 0, float arg2 = 0);
+
 };
 
 #endif // PTZPDRIVER_H
