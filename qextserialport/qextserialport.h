@@ -185,6 +185,7 @@ public:
 
     ~QextSerialPort();
 
+	int getFileDescriptor();
     QString portName() const;
     QueryMode queryMode() const;
     BaudRateType baudRate() const;

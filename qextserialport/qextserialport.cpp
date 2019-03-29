@@ -763,7 +763,12 @@ QextSerialPort::~QextSerialPort()
     if (isOpen())
         close();
 
-    delete d_ptr;
+	delete d_ptr;
+}
+
+int QextSerialPort::getFileDescriptor()
+{
+	return d_ptr->fd;
 }
 
 /*!
