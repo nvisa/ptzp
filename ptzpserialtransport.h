@@ -3,6 +3,7 @@
 
 #include <ecl/ptzp/ptzptransport.h>
 
+class ExarConfig;
 class ReadThread;
 class WriteThread;
 class QextSerialPort;
@@ -16,6 +17,7 @@ public:
 	int send(const char *bytes, int len);
 
 protected:
+	ExarConfig *exar;
 	QextSerialPort *port;
 	ReadThread *readThread;
 	WriteThread *writeThread;
