@@ -165,20 +165,18 @@ int PtzpSerialTransport::connectTo(const QString &targetUri)
 	port->setParity(PAR_NONE);
 	port->setDataBits(DATA_8);
 	port->setStopBits(STOP_1);
-	for (int i = 0 ; i < values.size(); i++) {
-		if (values.contains("baud"))
-			port->setBaudRate((BaudRateType)values["baud"].toInt());
-		else if (values.contains("flow"))
-			port->setFlowControl((FlowType)values["flow"].toInt());
-		else if (values.contains("parity"))
-			port->setParity((ParityType)values["parity"].toInt());
-		else if (values.contains("databits"))
-			port->setDataBits((DataBitsType)values["databits"].toInt());
-		else if (values.contains("stopbits"))
-			port->setStopBits((StopBitsType)values["stopbits"].toInt());
-		else if (values.contains("protocol"))
-			protocolValue = values["protocol"];
-	}
+	if (values.contains("baud"))
+		port->setBaudRate((BaudRateType)values["baud"].toInt());
+	if (values.contains("flow"))
+		port->setFlowControl((FlowType)values["flow"].toInt());
+	if (values.contains("parity"))
+		port->setParity((ParityType)values["parity"].toInt());
+	if (values.contains("databits"))
+		port->setDataBits((DataBitsType)values["databits"].toInt());
+	if (values.contains("stopbits"))
+		port->setStopBits((StopBitsType)values["stopbits"].toInt());
+	if (values.contains("protocol"))
+		protocolValue = values["protocol"];
 	if (!port->open(QIODevice::ReadWrite)) {
 		fDebug("error opening serial port '%s': %s", qPrintable(port->portName()), strerror(errno));
 		return -EPERM;
