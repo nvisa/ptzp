@@ -104,9 +104,6 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 		else if (x == 0)
 			sendCommand(C_SET_CLOSE);
 		setRegister(R_CAM_STATUS, x);
-	} else if (r == C_SET_CLOSE) {
-		sendCommand(r);
-		setRegister(R_CAM_STATUS, 0);
 	} else if (r == C_SET_FOCUS_INC_START) {
 		sendCommand(r);
 	} else if (r == C_SET_FOCUS_STOP) {
