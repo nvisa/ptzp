@@ -234,7 +234,7 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray MgeoGunGorHead::transportReady()
 {
-	if (syncTimer.elapsed() > 100) {
+	if (syncTimer.elapsed() > 700) {
 		syncTimer.restart();
 		sendCommand(C_GET_ZOOM);
 	}
