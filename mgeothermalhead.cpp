@@ -420,14 +420,7 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(R_HPF_SPATIAL, p[1]);
 		else if (p[0] == 0xde)
 			setRegister(R_IMAGE_UPDATE_SPEED, p[1]);
-	} else if (p[0] == 0xa9)
-		setRegister(R_DIGITAL_ZOOM, p[0]);
-	else if (p[0] == 0xa5)
-			setRegister(R_POLARITY, p[0]);
-	else if (p[0] == 0xa1)
-			setRegister(R_FOV, p[0]);
-	else if (p[0] == 0xaa)
-			setRegister(R_IMAGE_FREEZE, p[0]);
+	}
 	return meslen;
 }
 
