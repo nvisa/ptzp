@@ -84,12 +84,9 @@ MgeoGunGorHead::MgeoGunGorHead()
 		{"focus_stop", {C_SET_FOCUS_STOP,R_FOCUS}},
 		{"chip_version",{ NULL, R_CHIP_VERSION}},
 		{"digi_zoom", { NULL, R_DIGI_ZOOM}},
-		{"cam_open", {C_SET_OPEN, R_CAM_STATUS}},
-		{"cam_close", {C_SET_CLOSE, R_CAM_STATUS}},
-		{"auto_focus_on", {C_SET_AUTO_FOCUS_ON, R_AUTO_FOCUS_STATUS}},
-		{"auto_focus_off", {C_SET_AUTO_FOCUS_OFF, R_AUTO_FOCUS_STATUS}},
-		{"digi_zoom_on", {C_SET_DIGI_ZOOM_ON, R_DIGI_ZOOM_STATUS}},
-		{"digi_zoom_off", {C_SET_DIGI_ZOOM_OFF, R_DIGI_ZOOM_STATUS}}
+		{"cam_status", {C_SET_OPEN, R_CAM_STATUS}},
+		{"auto_focus", {C_SET_AUTO_FOCUS_ON, R_AUTO_FOCUS_STATUS}},
+		{"digi_zoom", {C_SET_DIGI_ZOOM_ON, R_DIGI_ZOOM_STATUS}},
 	};
 #endif
 }
