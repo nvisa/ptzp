@@ -1,6 +1,7 @@
 #include "ptzpserialtransport.h"
 #include "debug.h"
 #include "drivers/qextserialport/qextserialport.h"
+#include "drivers/exarconfig.h"
 
 #include <QMutex>
 #include <QThread>
@@ -142,6 +143,7 @@ PtzpSerialTransport::PtzpSerialTransport()
 	port = NULL;
 	readThread = NULL;
 	writeThread = NULL;
+	exar = NULL;
 }
 
 int PtzpSerialTransport::connectTo(const QString &targetUri)
@@ -149,6 +151,7 @@ int PtzpSerialTransport::connectTo(const QString &targetUri)
 	QStringList fields = targetUri.split("?");
 	QString filename = fields.first();
 	QHash<QString, QString> values;
+	QString protocolValue = "232";
 	for (int i = 0; i < fields.size(); i++) {
 		if (fields[i].contains("="))
 			values.insert(fields[i].split("=")[0], fields[i].split("=")[1]);
@@ -162,24 +165,27 @@ int PtzpSerialTransport::connectTo(const QString &targetUri)
 	port->setParity(PAR_NONE);
 	port->setDataBits(DATA_8);
 	port->setStopBits(STOP_1);
-	for (int i = 0 ; i < values.size(); i++) {
-		if (values.contains("baud"))
-			port->setBaudRate((BaudRateType)values["baud"].toInt());
-		else if (values.contains("flow"))
-			port->setFlowControl((FlowType)values["flow"].toInt());
-		else if (values.contains("parity"))
-			port->setParity((ParityType)values["parity"].toInt());
-		else if (values.contains("databits"))
-			port->setDataBits((DataBitsType)values["databits"].toInt());
-		else if (values.contains("stopbits"))
-			port->setStopBits((StopBitsType)values["stopbits"].toInt());
-	}
+	if (values.contains("baud"))
+		port->setBaudRate((BaudRateType)values["baud"].toInt());
+	if (values.contains("flow"))
+		port->setFlowControl((FlowType)values["flow"].toInt());
+	if (values.contains("parity"))
+		port->setParity((ParityType)values["parity"].toInt());
+	if (values.contains("databits"))
+		port->setDataBits((DataBitsType)values["databits"].toInt());
+	if (values.contains("stopbits"))
+		port->setStopBits((StopBitsType)values["stopbits"].toInt());
+	if (values.contains("protocol"))
+		protocolValue = values["protocol"];
 	if (!port->open(QIODevice::ReadWrite)) {
 		fDebug("error opening serial port '%s': %s", qPrintable(port->portName()), strerror(errno));
 		return -EPERM;
 	}
+	if (filename.contains("ttyXRUSB")) {
+		exar = new ExarConfig(port->getFileDescriptor());
+		exar->setPort(protocolValue);
+	}
 	port->readAll();
-
 	readThread = new ReadThread(port, this->protocol);
 	readThread->start();
 	writeThread = new WriteThread(port, PtzpTransport::queueFreeCallback, this);
