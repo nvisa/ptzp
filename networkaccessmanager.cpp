@@ -14,67 +14,38 @@
 #include "networkaccessmanager.h"
 #include "debug.h"
 
-#include <QNetworkReply>
 #include <QNetworkAccessManager>
 
 NetworkAccessManager::NetworkAccessManager(QObject *parent) :
 	QObject(parent)
 {
-	netman = new QNetworkAccessManager(this);
-	connect(netman, SIGNAL(finished(QNetworkReply*)), SLOT(replyFinished(QNetworkReply*)));
 }
 
-void NetworkAccessManager::setUrl(const QString &host, int port)
+int NetworkAccessManager::post(const QString &host, const QString &uname, const QString &pass, const QString &cgipath, const QString &data)
 {
-	hostname = host;
-	url.setUrl(QString("http://%1").arg(host));
-	url.setPort(port);
-	url.setUserName(username);
-	url.setPassword(password);
-}
-
-void NetworkAccessManager::setAuthenticationInfo(const QString &user, const QString &pass)
-{
-	username = user;
-	password = pass;
-}
-
-void NetworkAccessManager::setPath(const QString &path)
-{
-	filePath = path;
-	url.setPath(path);
+	QNetworkAccessManager *netman = new QNetworkAccessManager(this);
+	connect(netman, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+	QUrl url(QString("http://%1").arg(host));
+	if (!uname.isEmpty())
+		url.setUserName(uname);
+	if (!pass.isEmpty())
+		url.setPassword(pass);
+	url.setPath(cgipath);
+	QNetworkRequest req;
+	req.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain");
+	req.setUrl(url);
+	netman->post(req, data.toLatin1());
+	return 0;
 }
 
 void NetworkAccessManager::replyFinished(QNetworkReply *reply)
 {
-	if (reply->error() != QNetworkReply::NoError) {
+	if (reply->error() != QNetworkReply::NoError)
 		mDebug("Network connection error, %s", qPrintable(reply->errorString()));
-		return;
-	}
-	QString data = reply->readAll();
+	lastError = reply->error();
+	lastErrorString = reply->errorString();
+
+	QByteArray data = reply->readAll();
 	mDebug("Reply Data : %s", qPrintable(data));
-}
-
-void NetworkAccessManager::GET(QString data)
-{
-	mDebug(": host %1, user %2, pass %3, path %4, data %5",
-			qPrintable(hostname),
-			qPrintable(username),
-			qPrintable(password),
-			qPrintable(filePath),
-			qPrintable(data));
-	request.setUrl(url);
-	netman->get(request);
-}
-
-void NetworkAccessManager::POST(const QString &data)
-{
-	mDebug(": host %1, user %2, pass %3, path %4, data %5",
-			qPrintable(hostname),
-			qPrintable(username),
-			qPrintable(password),
-			qPrintable(filePath),
-			qPrintable(data));
-	request.setUrl(url);
-	netman->post(request, data.toLatin1());
+	emit finished();
 }
