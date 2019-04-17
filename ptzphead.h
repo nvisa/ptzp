@@ -51,6 +51,7 @@ public:
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
+	virtual int headSystemChecker();
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();
@@ -66,6 +67,7 @@ public:
 	static int dataReady(const unsigned char *bytes, int len, void *priv);
 	static QByteArray transportReady(void *priv);
 	void setTransportInterval(int interval);
+	int getSystemStatus();
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();
@@ -80,6 +82,7 @@ protected:
 	QMutex rlock;
 	QHash<uint, uint> errorCount;
 	QElapsedTimer pingTimer;
+	int systemChecker;
 };
 
 #endif // PTZPHEAD_H

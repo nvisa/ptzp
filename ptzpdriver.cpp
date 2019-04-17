@@ -65,6 +65,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	sreg.enable = false;
 	sreg.zoomHead = NULL;
 	sleep = false;
+	usability = false;
 	timer = new QTimer(this);
 	time = new QElapsedTimer();
 	timeSettingsLoad = new QElapsedTimer();
@@ -303,6 +304,17 @@ void PtzpDriver::setPatternHandler(PatternNg *p)
 	if (ptrn)
 		delete ptrn;
 	ptrn = p;
+}
+
+int PtzpDriver::setZoomOverlay()
+{
+	return 0;
+}
+
+int PtzpDriver::setOverlay(QString data)
+{
+	Q_UNUSED(data);
+	return 0;
 }
 
 #ifdef HAVE_PTZP_GRPC_API

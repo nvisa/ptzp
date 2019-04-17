@@ -76,6 +76,7 @@ MgeoGunGorHead::MgeoGunGorHead()
 	for (int i = C_GET_ZOOM; i<=C_GET_DIGI_ZOOM; i++)
 		syncList << i;
 	nextSync = syncList.size();
+	syncTimer.start();
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"focus_in", {C_SET_FOCUS_INC_START,R_FOCUS}},
@@ -136,9 +137,24 @@ uint MgeoGunGorHead::getProperty(uint r)
 	return getRegister(r);
 }
 
+int MgeoGunGorHead::headSystemChecker()
+{
+	if (systemChecker == -1) {
+		int ret = sendCommand(C_GET_ZOOM);
+		mDebug("Gungor HEAD system checker started. %d", ret);
+		systemChecker = 0;
+	} else if (systemChecker == 0) {
+		mDebug("Waiting Response from GunGor CAM");
+	} else if (systemChecker == 1) {
+		mDebug("Completed System Check. Zoom: %f", getRegister(R_ZOOM));
+		systemChecker = 2;
+	}
+	return systemChecker;
+}
+
 int MgeoGunGorHead::getHeadStatus()
 {
-	if (nextSync != C_COUNT)
+	if (nextSync != syncList.size())
 		return ST_SYNCING;
 	if (pingTimer.elapsed() < 1500)
 		return ST_NORMAL;
@@ -194,9 +210,9 @@ int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)
 int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 {
 	if (bytes[0] != 0xF1)
-		return -1;
+		return len;
 	if (len < 5)
-		return -1;
+		return len;
 
 	if (nextSync != syncList.size()) {
 		if (++nextSync == syncList.size()) {
@@ -204,12 +220,15 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 		} else
 			syncNext();
 	}
-
+	pingTimer.restart();
 	uchar opcode = bytes[1];
 	const uchar *p = bytes + 2;
 
-	if (opcode == 0x0a)
+	if (opcode == 0x0a) {
+		if (systemChecker == 0)
+			systemChecker = 1;
 		setRegister(R_ZOOM, (p[1] << 8 | p[0]));
+	}
 	else if (opcode == 0x0b)
 		setRegister(R_FOCUS, (p[1] << 8 | p[0]));
 	else if (opcode == 0xa4)
@@ -221,7 +240,10 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray MgeoGunGorHead::transportReady()
 {
-	sendCommand(C_GET_ZOOM);
+	if (syncTimer.elapsed() > 100) {
+		syncTimer.restart();
+		sendCommand(C_GET_ZOOM);
+	}
 	return QByteArray();
 }
 

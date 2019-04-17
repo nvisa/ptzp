@@ -171,6 +171,21 @@ int AryaPTHead::panTiltGoPos(float ppos, float tpos)
 	return sendCommand(ptzCommandList.at(C_PAN_TILT_POS).arg((int)ppos).arg((int)tpos));
 }
 
+int AryaPTHead::headSystemChecker()
+{
+	if (systemChecker == -1) {
+		int ret = sendCommand(ptzCommandList.at(C_GET_PAN_POS).toLatin1());
+		mDebug("Pan-Tilt HEAD system checker started. %d", ret);
+		systemChecker = 0;
+	} else if (systemChecker == 0) {
+		mDebug("Waiting Response from Pan-Tilt HEAD");
+	} else if (systemChecker == 1) {
+		mDebug("Completed system check. Pan: %f Tilt: %f ", panPos, tiltPos);
+		systemChecker = 2;
+	}
+	return systemChecker;
+}
+
 int AryaPTHead::sendCommand(const QString &key)
 {
 	QString cmd = key;
@@ -184,6 +199,8 @@ int AryaPTHead::dataReady(const unsigned char *bytes, int len)
 {
 	const QString data = QString::fromUtf8((const char *)bytes, len);
 	if (data.contains(":")) {
+		if (systemChecker == 0)
+			systemChecker = 1;
 		QString value = data.split(":").last().split(";").first();
 		panPos = value.split(",").first().toInt();
 		tiltPos = value.split(",").last().toInt();

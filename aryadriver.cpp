@@ -11,15 +11,28 @@ AryaDriver::AryaDriver(QObject *parent)
 	: PtzpDriver(parent)
 {
 	aryapt = new AryaPTHead;
-	thermal = new MgeoThermalHead;
 	gungor = new MgeoGunGorHead;
+	thermal = new MgeoThermalHead;
 	tcp1 = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	tcp3 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
-	state = INIT;
+	state = SYSTEM_CHECK;
+
 	defaultPTHead = aryapt;
 	defaultModuleHead = thermal;
 	configLoad("config.json");
+
+	checker = new QElapsedTimer();
+	checker->start();
+
+	netman = new NetworkAccessManager();
+	olay.pos = LEFT_UP;
+	olay.posx = 0;
+	olay.posy = 0;
+	olay.textSize = 24;
+	olay.disabled = true;
+
+	connect(netman, SIGNAL(finished()), SLOT(overlayFinished()));
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
@@ -54,10 +67,39 @@ void AryaDriver::timeout()
 {
 	mLog("Driver state: %d", state);
 	switch (state) {
+	case SYSTEM_CHECK:
+		if (checker->elapsed() > 5000) {
+			if (aryapt->getSystemStatus() == 2)
+				tcp1->enableQueueFreeCallbacks(true);
+			if (gungor->getSystemStatus() == 2)
+				tcp3->enableQueueFreeCallbacks(true);
+			if (thermal->getSystemStatus() == 2) {
+				tcp2->enableQueueFreeCallbacks(true);
+			}
+			state = INIT;
+		}
+
+		if (aryapt->getSystemStatus() != 2) {
+			aryapt->headSystemChecker();
+		}
+		if (gungor->getSystemStatus() != 2) {
+			gungor->headSystemChecker();
+		}
+		if (thermal->getSystemStatus() != 2) {
+			thermal->headSystemChecker();
+		}
+		break;
 	case INIT:
-		state = SYNC_THERMAL_MODULES;
-		thermal->syncRegisters();
-		thermal->loadRegisters("thermal.json");
+		if (thermal->getSystemStatus() == 2) {
+			qDebug() << "thermal check 1";
+			thermal->syncRegisters();
+			thermal->loadRegisters("thermal.json");
+			state = SYNC_THERMAL_MODULES;
+		} else if (gungor->getSystemStatus() == 2) {
+			gungor->syncRegisters();
+			gungor->loadRegisters("gungor.json");
+			state = SYNC_GUNGOR_MODULES;
+		}
 		break;
 	case SYNC_THERMAL_MODULES:
 		if(thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
@@ -69,26 +111,27 @@ void AryaDriver::timeout()
 	case SYNC_GUNGOR_MODULES:
 		if(gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
-			tcp1->enableQueueFreeCallbacks(true);
-			tcp2->enableQueueFreeCallbacks(true);
-			tcp3->enableQueueFreeCallbacks(true);
 		}
 		break;
 	case NORMAL:
-		static int once = 1;
-		if (!once) {
-			once = 1;
-			thermal->startZoomIn(1);
-		}
+		usability = true;
 		if(time->elapsed() >= 10000) {
-			thermal->saveRegisters("thermal.json");
-			gungor->saveRegisters("gungor.json");
+			setZoomOverlay();
+			if (thermal->getSystemStatus() == 2)
+				thermal->saveRegisters("thermal.json");
+			if (gungor->getSystemStatus() == 2)
+				gungor->saveRegisters("gungor.json");
 			time->restart();
 		}
 		break;
 	}
-
 	PtzpDriver::timeout();
+}
+
+void AryaDriver::overlayFinished()
+{
+	if (netman->getLastError() != 0)
+		mDebug("Overlay process got an error. Error code %d, %s", netman->getLastError(), qPrintable(netman->getLastErrorString()));
 }
 
 QVariant AryaDriver::get(const QString &key)
@@ -194,9 +237,14 @@ QVariant AryaDriver::get(const QString &key)
 	else if (key == "camera.ir_led_support")
 		return QString("%1")
 				.arg(config.irLedSupport);
+	else if (key == "video.overlay")
+		return QString("%1;%2;%3;%4")
+				.arg(olay.pos).arg(olay.posx).arg(olay.posy).arg(olay.textSize);
+	else if (key == "video.overlay.disable")
+		return olay.disabled;
 
 	return PtzpDriver::get(key);
-	return  QVariant();
+	return QVariant();
 }
 
 int AryaDriver::set(const QString &key, const QVariant &value)
@@ -209,7 +257,6 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (key == "ptz.cmd.brightness") {
 		thermal->setProperty(0, value.toUInt());
-
 	} else if (key == "ptz.cmd.contrast")
 		thermal->setProperty(1, value.toUInt());
 	else if (key == "ptz.cmd.fov_change")
@@ -276,6 +323,19 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 		gungor->setProperty(10, value.toUInt());
 	else if (key == "ptz.cmd.gungor.digi_zoom")
 		gungor->setProperty(12, value.toUInt());
+	else if (key == "video.overlay") {
+		QString v = value.toString();
+		if (v.contains(";")) {
+			QStringList flds = v.split(";");
+			if (flds.size() != 4)
+				return -EINVAL;
+			olay.pos = (OverlayPos)flds.at(0).toInt();
+			olay.posx = flds.at(1).toInt();
+			olay.posy = flds.at(2).toInt();
+			olay.textSize = flds.at(3).toInt();
+		}
+	} else if (key == "video.overlay.disable")
+		olay.disabled = value.toBool();
 
 	else PtzpDriver::set(key, value);
 	return 0;
@@ -309,4 +369,49 @@ void AryaDriver::configLoad(const QString filename)
 	config.type = root["type"].toString();
 	config.cam_module = root["cam_module"].toString();
 	config.ptSupport = root["pan_tilt_support"].toInt();
+}
+
+int AryaDriver::setZoomOverlay()
+{
+	QString config = "ctoken=osdcfg01&action=setconfig";
+	QString type = "type=0";
+	QString display;
+	if (olay.disabled)
+		display = "display=0";
+	else display = "display=2";
+	QString position = QString("position=%1&posx=%2&posy=%3").arg(olay.pos).arg(olay.posx).arg(olay.posy);
+	QString bgspan = "bgspan=0";
+	QString textSize = QString("textsize=%1").arg(olay.textSize);
+	QString dateTimeFormat = "datetimeformat=0";
+	QString showDate = "showdate=0";
+	QString showTime = "showtime=0";
+	QString text = QString("text=%1").arg(QString("ZOOM %1x").arg(defaultModuleHead->getZoom()));
+	QString overlayData = config + "&"+
+			type + "&" +
+			display + "&" +
+			position + "&" +
+			bgspan + "&" +
+			textSize + "&" +
+			dateTimeFormat + "&" +
+			showDate + "&" +
+			showTime + "&" +
+			text;
+	netman->post("50.23.169.211", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayData);
+	return 0;
+}
+
+int AryaDriver::setOverlay(const QString data)
+{
+	if (vdParams.ip.isEmpty()) {
+		mDebug("Video Device parameter missing.");
+		return -1;
+	}
+	netman->post(vdParams.ip, vdParams.uname, vdParams.pass, "/moxa-cgi/imageoverlay.cgi", data);
+}
+
+void AryaDriver::setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass)
+{
+	vdParams.ip = ip;
+	vdParams.pass = pass;
+	vdParams.uname = uname;
 }

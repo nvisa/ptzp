@@ -77,6 +77,9 @@ public:
 	virtual void enableDriver(bool value);
 
 	void setPatternHandler(PatternNg *p);
+	virtual int setZoomOverlay();
+	virtual int setOverlay(QString data);
+	bool getDriverUsability() { return usability;}
 
 #ifdef HAVE_PTZP_GRPC_API
 public:
@@ -139,6 +142,7 @@ protected slots:
 
 protected:
 	bool sleep;
+	bool usability;
 	QTimer *timer;
 	QElapsedTimer *time;
 	QElapsedTimer *timeSettingsLoad;

@@ -49,6 +49,7 @@ public:
 	virtual int getHeadStatus();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
+	int headSystemChecker();
 
 protected:
 	int sendCommand(const QString &key);
