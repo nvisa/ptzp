@@ -27,9 +27,9 @@ int NtpControl::setupNtp()
 	return usd;
 }
 
-void NtpControl::setLoop(QString mode)
+void NtpControl::setLoop(bool mode)
 {
-	if(mode == "true")
+	if (mode)
 		ntpc.probe_count = 0;
 	else
 		ntpc.probe_count = 1;

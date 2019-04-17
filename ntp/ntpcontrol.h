@@ -12,7 +12,7 @@ class NtpControl
 public:
     NtpControl();
 	int start();
-	void setLoop(QString mode);
+	void setLoop(bool mode);
 	void setCycleTime(int secs);
 	void setServer(QString server);
 	void setCrossCheck(QString mode);
