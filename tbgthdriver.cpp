@@ -192,7 +192,7 @@ QByteArray TbgthDriver::sendFilter(const char *bytes, int len)
 	return QByteArray();
 }
 
-int TbgthDriver::readFilter(QTcpSocket *sock, QByteArray &ba)
+int TbgthDriver::readFilter(QAbstractSocket *sock, QByteArray &ba)
 {
 	int spcnt = fstate.prefix.count(QChar(' '));
 	if (spcnt < 3) {

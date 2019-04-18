@@ -7,7 +7,8 @@
 #include <QMutex>
 #include <QObject>
 
-class QTcpSocket;
+class QAbstractSocket;
+
 class PtzpTcpTransport : public QObject, public PtzpTransport
 {
 	Q_OBJECT
@@ -18,7 +19,7 @@ public:
 	{
 	public:
 		virtual QByteArray sendFilter(const char *bytes, int len) = 0;
-		virtual int readFilter(QTcpSocket *sock, QByteArray &ba) = 0;
+		virtual int readFilter(QAbstractSocket *sock, QByteArray &ba) = 0;
 	};
 
 	int connectTo(const QString &targetUri);
@@ -38,7 +39,7 @@ protected slots:
 	void sendSocketMessage(const QByteArray &ba);
 
 protected:
-	QTcpSocket *sock;
+	QAbstractSocket *sock;
 	QTimer *timer;
 	TransportFilterInteface *filterInterface;
 };

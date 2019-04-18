@@ -22,7 +22,7 @@ public:
 	void configLoad(const QString filename);
 
 	QByteArray sendFilter(const char *bytes, int len);
-	int readFilter(QTcpSocket *sock, QByteArray &ba);
+	int readFilter(QAbstractSocket *sock, QByteArray &ba);
 
 	void enableDriver(bool value) override;
 

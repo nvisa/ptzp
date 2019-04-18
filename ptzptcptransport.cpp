@@ -1,6 +1,7 @@
 #include "ptzptcptransport.h"
 #include "debug.h"
 
+#include <QUdpSocket>
 #include <QTcpSocket>
 #include <QHostAddress>
 
@@ -21,7 +22,13 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 	QStringList flds = targetUri.split(":");
 	if (flds.size() == 1)
 		flds << "4002";
-	sock = new QTcpSocket();
+	if (flds.size() == 2)
+		flds << "tcp";
+
+	if (flds[2] == "tcp")
+		sock = new QTcpSocket();
+	else
+		sock = new QUdpSocket();
 	sock->connectToHost(flds[0], flds[1].toInt());
 	connect(sock, SIGNAL(connected()), SLOT(connected()));
 	connect(sock, SIGNAL(disconnected()), SLOT(clientDisconnected()));
