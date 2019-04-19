@@ -24,10 +24,13 @@ public:
 	int panTiltGoPos(float ppos, float tpos);
 	int headSystemChecker();
 
+	void setMaxSpeed(int value);
+
 protected:
 	QStringList ptzCommandList;
 	int panPos;
 	int tiltPos;
+	int MaxSpeed;
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();

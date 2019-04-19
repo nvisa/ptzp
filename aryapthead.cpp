@@ -4,7 +4,7 @@
 
 #include <assert.h>
 
-#define MaxSpeed	0x3D0900 //4.000.000
+//#define MaxSpeed	0x3D0900 //4.000.000
 #define MaxPanPos	6399999.0
 #define MaxTiltPos	799999.0
 
@@ -75,6 +75,7 @@ static QStringList createPTZCommandList()
 AryaPTHead::AryaPTHead()
 	: PtzpHead()
 {
+	MaxSpeed = 4000000;
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
 }
@@ -184,6 +185,11 @@ int AryaPTHead::headSystemChecker()
 		systemChecker = 2;
 	}
 	return systemChecker;
+}
+
+void AryaPTHead::setMaxSpeed(int value)
+{
+	MaxSpeed = value;
 }
 
 int AryaPTHead::sendCommand(const QString &key)
