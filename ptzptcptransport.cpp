@@ -24,11 +24,17 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 		flds << "4002";
 	if (flds.size() == 2)
 		flds << "tcp";
+	if (flds.size() == 3)
+		flds << "0";
 
 	if (flds[2] == "tcp")
 		sock = new QTcpSocket();
 	else
 		sock = new QUdpSocket();
+	if (flds[3].toInt()) {
+		if (!sock->bind(flds[3].toUInt()))
+			mDebug("error binding to port %d", flds[3].toInt());
+	}
 	sock->connectToHost(flds[0], flds[1].toInt());
 	connect(sock, SIGNAL(connected()), SLOT(connected()));
 	connect(sock, SIGNAL(disconnected()), SLOT(clientDisconnected()));
