@@ -34,6 +34,7 @@ protected:
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
+	QElapsedTimer syncTimer;
 };
 
 #endif // ARYAPTHEAD_H
