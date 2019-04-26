@@ -57,34 +57,27 @@ int KayiDriver::set(const QString &key, const QVariant &value)
 
 void KayiDriver::timeout()
 {
-	state = NORMAL;
-		switch (state) {
-		case INIT:
-			headModule->syncRegisters();
-			state = SYNC_HEAD_MODULE;
-			break;
-		case SYNC_HEAD_MODULE:
-			if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
-				state = SYNC_HEAD_DOME;
-				tp1->enableQueueFreeCallbacks(true);
-				headDome->syncRegisters();
-			}
-			break;
-		case SYNC_HEAD_DOME:
-			if (headDome->getHeadStatus() == PtzpHead::ST_NORMAL) {
-				state = NORMAL;
-				headModule->loadRegisters("oemmodule.json");
-				tp2->enableQueueFreeCallbacks(true);
-				timer->setInterval(1000);
-			}
-			break;
-		case NORMAL:
-			if(time->elapsed() >= 10000) {
-				headModule->saveRegisters("oemmodule.json");
-				time->restart();
-			}
-			break;
+	mLog("Driver state: %d", state);
+	switch (state) {
+	case INIT:
+		headModule->syncRegisters();
+		state = SYNC_HEAD_MODULE;
+		break;
+	case SYNC_HEAD_MODULE:
+		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
+			state = NORMAL;
+			tp1->enableQueueFreeCallbacks(true);
+			tp2->enableQueueFreeCallbacks(true);
+			timer->setInterval(1000);
 		}
+		break;
+	case NORMAL:
+		if(time->elapsed() >= 10000) {
+			//			headModule->saveRegisters("oemmodule.json");
+			time->restart();
+		}
+		break;
+	}
 
-		PtzpDriver::timeout();
+	PtzpDriver::timeout();
 }

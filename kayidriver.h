@@ -25,7 +25,6 @@ protected:
 	enum DriverState {
 		INIT,
 		SYNC_HEAD_MODULE,
-		SYNC_HEAD_DOME,
 		NORMAL,
 	};
 
