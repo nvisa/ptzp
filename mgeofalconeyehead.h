@@ -96,7 +96,9 @@ protected:
 	uint nextSync;
 
 private:
+	void setPropertyInt(uint r, int x);
 	int sendCommand(const unsigned char *cmd, int len);
+	QElapsedTimer syncTimer;
 };
 
 #endif // MGEOFALCONEYEHEAD_H

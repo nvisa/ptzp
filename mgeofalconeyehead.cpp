@@ -59,6 +59,8 @@ enum Commands {
 	C_SET_LASER_FIRE_MODE,
 	C_SET_IBIT_START,
 	C_SET_GMT,
+	C_SET_BUTTON_PRESSED,
+	C_SET_BUTTON_RELEASED,
 
 	C_GET_TARGET_COORDINATES,
 	C_GET_ALL_SYSTEM_VALUES,
@@ -69,7 +71,7 @@ enum Commands {
 	C_GET_FOCUS_POS,
 	C_GET_GPS_DATE_TIME,
 	C_GET_FLASH_PROTECTION,
-	C_GET_CURRENT_TIME,
+//	C_GET_CURRENT_TIME,
 
 	C_COUNT
 };
@@ -110,6 +112,8 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{ 0x05, 0x1f, 0x01, 0xfa, 0x00, 0x00}, // laser fire mode
 	{ 0x04, 0x1f, 0x00, 0xb7, 0x00}, //start ibit
 	{ 0x05, 0x1f, 0x01, 0xcf, 0x00, 0x00}, //set gmt
+	{ 0x06, 0x1f, 0x02, 0xb0, 0x00, 0x01, 0x00}, //button pressed
+	{ 0x06, 0x1f, 0x02, 0xb0, 0x00, 0x00, 0x00}, // button released
 
 	{ 0x04, 0x1f, 0x00, 0xc1, 0x00}, // ask target coordinates
 	{ 0x04, 0x1f, 0x00, 0xb6, 0x00}, // get all system values - ok
@@ -120,7 +124,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{ 0x04, 0x1f, 0x00, 0xec, 0x00}, // focus pos - ok
 	{ 0x04, 0x1f, 0x00, 0xf1, 0x00}, // gps date time ok
 	{ 0x04, 0x1f, 0x00, 0xa2, 0x00}, // flash protection ok
-	{ 0x04, 0x1f, 0x00, 0xa3, 0x00}, // current time ok
+//	{ 0x04, 0x1f, 0x00, 0xa3, 0x00}, // current time ok
 
 };
 MgeoFalconEyeHead::MgeoFalconEyeHead()
@@ -147,26 +151,28 @@ MgeoFalconEyeHead::MgeoFalconEyeHead()
 		{"dmc_param", { C_SET_DMC_PARAM, R_DMC_PARAM}},
 		{"hekos_param", { C_SET_HEKOS_PARAM, R_HEKOS_PARAM}},
 		{"current_integration_mode", { C_SET_CURRENT_INTEGRATION_MODE, R_CURRENT_INTEGRATION_MODE}},
-		{"toggle_module_power", { C_SET_TOGGLE_MODULE_POWER_STATUS, NULL}},
-		{"optic_bypass", { C_SET_OPTIC_BYPASS, NULL}},
+		{"toggle_module_power", { C_SET_TOGGLE_MODULE_POWER_STATUS, 0}},
+		{"optic_bypass", { C_SET_OPTIC_BYPASS, 0}},
 		{"flas_protection", { C_SET_FLASH_PROTECTION, R_FLASH_PROTECTION}},
 		{"optic_step", { C_SET_OPTIC_STEP, R_OPTIC_STEP}},
 		{"dmc_azimuth", { C_SET_DMC_OFFSET_AZIMUTH, R_DMC_AZIMUTH}},
 		{"dmc_elevation", { C_SET_DMC_OFFSET_ELEVATION, R_DMC_ELEVATION}},
 		{"dmc_bank", { C_SET_DMC_OFFSET_BANK, R_DMC_BANK}},
-		{"dmc_offset_save", { C_SET_DMC_OFFSET_SAVE, NULL}},
+		{"dmc_offset_save", { C_SET_DMC_OFFSET_SAVE, 0}},
 		{"laser_up", { C_SET_LASER_UP, R_LASER_STATUS}},
-		{"laser_fire", { C_SET_LASER_FIRE, NULL}},
+		{"laser_fire", { C_SET_LASER_FIRE, 0}},
 		{"laser_mode" , {C_SET_LASER_FIRE_MODE, R_LASER_MODE}},
-		{"ibit_start", { C_SET_IBIT_START, NULL}},
+		{"ibit_start", { C_SET_IBIT_START, 0}},
 		{"gmt", { C_SET_GMT, R_GMT}},
+		{"button_press", { C_SET_BUTTON_PRESSED, 0}},
+		{"button_release", { C_SET_BUTTON_RELEASED, 0}},
 
-		{"software_version" , { NULL, R_SOFTWARE_VERSION}},
-		{"cooler", { NULL, R_COOLER}},
-		{"ibit_power", { NULL, R_IBIT_POWER}},
-		{"ibit_system", { NULL, R_IBIT_SYSTEM}},
-		{"ibit_optic", { NULL, R_IBIT_OPTIC}},
-		{"ibit_lrf", { NULL, R_IBIT_LRF}},
+		{"software_version" , { 0, R_SOFTWARE_VERSION}},
+		{"cooler", { 0, R_COOLER}},
+		{"ibit_power", { 0, R_IBIT_POWER}},
+		{"ibit_system", { 0, R_IBIT_SYSTEM}},
+		{"ibit_optic", { 0, R_IBIT_OPTIC}},
+		{"ibit_lrf", { 0, R_IBIT_LRF}},
 	};
 }
 
@@ -247,6 +253,165 @@ int MgeoFalconEyeHead::getHeadStatus()
 }
 
 void MgeoFalconEyeHead::setProperty(uint r, uint x)
+{
+	setPropertyInt(r, (int)x);
+}
+
+uint MgeoFalconEyeHead::getProperty(uint r)
+{
+	return getRegister(r);
+}
+
+int MgeoFalconEyeHead::syncNext()
+{
+	unsigned char *p = protoBytes[nextSync];
+	int len = p[0];
+	p++;
+	p[3] = chksum(p ,len - 1);
+	return sendCommand(p, len);
+}
+
+int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
+{
+	if (bytes[0] != 0x1f)
+		return -ENOENT;
+	if (len < bytes[1] + 4)
+		return -EAGAIN;
+	if (bytes[2] == 0x90)
+		return -ENOENT; //ack
+	if (bytes[2] == 0x95)
+		return -ENOENT; //alive
+	uchar chk = chksum(bytes, len - 1);
+	if (chk != bytes[len -1]){
+		fDebug("Checksum error");
+		return -ENOENT;
+	}
+	if (nextSync != C_COUNT){
+		mInfo("Next sync property: %d",nextSync);
+		if (++nextSync == C_COUNT) {
+			fDebug("FalconEye register syncing completed, activating auto-sync");
+		} else
+			syncNext();
+	}
+
+	if (bytes[2] == 0x92){
+		setRegister(R_SOFTWARE_VERSION, (bytes[3] + (bytes[4]/ 100)));
+		setRegister(R_COOLER, bytes[5]);
+		setRegister(R_IR_POLARITY, bytes[6]);
+		setRegister(R_FOV, bytes[7]);
+		setRegister(R_NUC, bytes[13]);
+		setRegister(R_RETICLE_MODE, bytes[14]);
+		setRegister(R_RETICLE_TYPE, bytes[15]);
+		setRegister(R_RETICLE_INTENSITY, bytes[16]);
+		setRegister(R_IBIT_POWER, bytes[17]);
+		setRegister(R_IBIT_SYSTEM, bytes[18]);
+		setRegister(R_IBIT_OPTIC, bytes[19]);
+		setRegister(R_IBIT_LRF, bytes[20]);
+		setRegister(R_SYMBOLOGY, bytes[22]);
+		setRegister(R_DMC_PARAM, bytes[24]);
+		setRegister(R_HEKOS_PARAM, ((bytes[25] * 10) + bytes[26]));
+		setRegister(R_DIGI_ZOOM_POS, bytes[27]);
+		setRegister(R_LASER_STATUS, bytes[29]);
+		setRegister(R_GMT, (bytes[39] * 10));
+	}
+	else if (bytes[2] == 0x96){
+		if (R_DMC_PARAM == 0){
+			setRegister(R_DMC_AZIMUTH, ((bytes[4] * 0x0100)
+						+ bytes[3] + (bytes[5]/100)));
+			setRegister(R_DMC_ELEVATION, ((bytes[7] * 0x0100)
+						+ bytes[6] + (bytes[8]/100)));
+			setRegister(R_DMC_BANK, ((bytes[10] * 0x0100)
+						+ bytes[9] + (bytes[11]/100)));
+		}
+		else if(R_DMC_PARAM == 1){
+			setRegister(R_DMC_AZIMUTH, ((bytes[4] * 0x0100) + bytes[3]));
+			setRegister(R_DMC_ELEVATION, ((bytes[6] * 0x0100) + bytes[5]));
+			setRegister(R_DMC_BANK, ((bytes[8] * 0x0100) + bytes[7]));
+		}
+	}
+	else if (bytes[2] == 0x97){
+		if (bytes[4] == 1){ //geo
+			setRegister(R_GPS_LAT_DEGREE, bytes[5]);
+			setRegister(R_GPS_LAT_MINUTE, bytes[6]);
+			setRegister(R_GPS_LAT_SECOND, (bytes[7] + (bytes[8] / 100)));
+			setRegister(R_GPS_LONG_DEGREE, bytes[9]);
+			setRegister(R_GPS_LONG_MINUTE, bytes[10]);
+			setRegister(R_GPS_LONG_SECOND, (bytes[11] + (bytes[12] / 100)));
+			setRegister(R_GPS_ALTITUDE, (bytes[13] + (bytes[14] * 0x0100)));
+		}
+		else if (bytes[4] == 0){ //utm
+			setRegister(R_GPS_UTM_NORTH,
+						(bytes[5] +
+						bytes[6] * 0x0100 +
+					bytes[7] * 0x010000));
+			setRegister(R_GPS_UTM_EAST,
+						(bytes[8] +
+						bytes[9] * 0x0100 +
+					bytes[10] * 0x010000));
+			setRegister(R_GPS_UTM_ZONE,
+						(bytes[11] +
+						bytes[12] * 0x0100));
+			setRegister(R_GPS_ALTITUDE, (bytes[13] + (bytes[14] * 0x0100)));
+		}
+	}
+	else if (bytes[2] == 0xa5) {
+		setRegister(R_FLASH_PROTECTION, bytes[3]);
+	}
+	else if (bytes[2] == 0xa6){
+		setRegister(R_CURRENT_INTEGRATION_MODE, bytes[6]);
+	}
+	else if (bytes[2] == 0x9a){
+		setRegister(R_RAYLEIGH_SIGMA, bytes[3]);
+		setRegister(R_RAYLEIGH_E, bytes[4]);
+		setRegister(R_IMAGE_PROC, bytes[5]);
+		setRegister(R_HF_SIGMA, bytes[6]);
+		setRegister(R_HF_FILTER, bytes[7]);
+	}
+	else if (bytes[2] == 0x9d){
+		setRegister(R_ZOOM,
+					(bytes[3] +
+					bytes[4] * 0x0100 +
+				bytes[5] * 0x010000 +
+				bytes[6] * 0x01000000));
+	}
+	else if (bytes[2] == 0x9e){
+		setRegister(R_FOCUS,
+					(bytes[3] +
+					bytes[4] * 0x0100 +
+				bytes[5] * 0x010000 +
+				bytes[6] * 0x01000000));
+	}
+	else if (bytes[2] == 0xa1){
+		setRegister(R_GPS_DATE_AND_TIME_DAY,bytes[3]);
+		setRegister(R_GPS_DATE_AND_TIME_MOUNTH, bytes[4]);
+		setRegister(R_GPS_DATE_AND_TIME_YEAR, bytes[5] + (bytes[6] * 0x0100));
+		setRegister(R_GPS_DATE_AND_TIME_HOURS, bytes[7]);
+		setRegister(R_GPS_DATE_AND_TIME_MIN, bytes[8]);
+	}
+	else if (bytes[2] == 0x98){
+		if(bytes[3] > 1){
+			for (int i = 0; i < bytes[3]; i++){
+
+			}
+		}
+	}
+	return len;
+}
+
+QByteArray MgeoFalconEyeHead::transportReady()
+{
+	if (syncTimer.elapsed() > 250) {
+		syncTimer.restart();
+		unsigned char *p = protoBytes[C_GET_ZOOM_POS];
+		int len = p[0];
+		p++;
+		p[3] = chksum(p ,len -1);
+		sendCommand(p, len);
+	}
+	return QByteArray();
+}
+
+void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 {
 	if (r == C_SET_CONTINUOUS_FOCUS){
 		unsigned char *p = protoBytes[r];
@@ -591,15 +756,6 @@ void MgeoFalconEyeHead::setProperty(uint r, uint x)
 		p[5] = chksum(p, len - 1);
 		sendCommand(p, len);
 	}
-}
-
-QByteArray MgeoFalconEyeHead::transportReady()
-{
-	unsigned char *p = protoBytes[C_GET_ZOOM_POS];
-	int len = p[0];
-	p++;
-	p[3] = chksum(p ,len);
-	sendCommand(p, len);
 }
 
 int MgeoFalconEyeHead::sendCommand(const unsigned char *cmd, int len)
