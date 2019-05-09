@@ -12,6 +12,7 @@ class PtzpSerialTransport : public PtzpTransport
 {
 public:
 	PtzpSerialTransport();
+	PtzpSerialTransport(LineProtocol proto);
 
 	int connectTo(const QString &targetUri);
 	int send(const char *bytes, int len);

@@ -146,6 +146,15 @@ PtzpSerialTransport::PtzpSerialTransport()
 	exar = NULL;
 }
 
+PtzpSerialTransport::PtzpSerialTransport(LineProtocol proto)
+	:PtzpTransport(proto)
+{
+	port = NULL;
+	readThread = NULL;
+	writeThread = NULL;
+	exar = NULL;
+}
+
 int PtzpSerialTransport::connectTo(const QString &targetUri)
 {
 	QStringList fields = targetUri.split("?");
