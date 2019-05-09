@@ -183,7 +183,7 @@ int PtzpSerialTransport::connectTo(const QString &targetUri)
 	if (values.contains("databits"))
 		port->setDataBits((DataBitsType)values["databits"].toInt());
 	if (values.contains("stopbits"))
-		port->setStopBits((StopBitsType)values["stopbits"].toInt());
+		port->setStopBits((StopBitsType)(values["stopbits"].toInt() - 1));
 	if (values.contains("protocol"))
 		protocolValue = values["protocol"];
 	if (!port->open(QIODevice::ReadWrite)) {
