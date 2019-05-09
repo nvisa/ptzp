@@ -37,7 +37,7 @@ int KayiDriver::setTarget(const QString &targetUri)
 	if (tp1->connectTo(fields[0]))
 		return -EPERM;
 
-	tp2 = new PtzpSerialTransport();
+	tp2 = new PtzpSerialTransport(PtzpTransport::PROTO_STRING_DELIM);
 	headDome->setTransport(tp2);
 	headDome->enableSyncing(true);
 	if (tp2->connectTo(fields[1]))
