@@ -221,8 +221,8 @@ QByteArray AryaPTHead::transportReady()
 {
 	if (syncTimer.elapsed() > 250) {
 		syncTimer.restart();
-		return ptzCommandList.at(C_GET_PAN_POS).toLatin1();
+		return ptzCommandList.at(C_GET_PAN_POS).toUtf8();
 	}
-	return 0;
+	return QByteArray();
 }
 
