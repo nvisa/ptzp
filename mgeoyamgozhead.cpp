@@ -16,12 +16,12 @@
 static uchar chksum(const uchar *buf, int len)
 {
 	uchar sum = 0;
-	for (int i = 0 ; i < len; i++)
+	for (int i = len - 10 ; i < len - 1; i++)
 		sum += buf[i];
 	return (0x100 - (sum & 0xff));
 }
 
-#define MAX_CMD_LEN 10
+#define MAX_CMD_LEN 19
 
 enum Commands {
 	C_SET_E_ZOOM,
@@ -57,9 +57,11 @@ int MgeoYamGozHead::startZoomIn(int speed)
 {
 	Q_UNUSED(speed);
 	uchar *cmd = protoBytes[C_SET_E_ZOOM];
-	cmd[3] = 0x10;
-	cmd[9] = chksum(cmd, cmd[1]);
-	sendCommand(cmd, cmd[1]);
+	int len = cmd[0];
+	cmd++;
+	cmd[11] = 0x10;
+	cmd[17] = chksum(cmd, len);
+	sendCommand(cmd, len);
 	return 0;
 }
 
@@ -67,9 +69,11 @@ int MgeoYamGozHead::startZoomOut(int speed)
 {
 	Q_UNUSED(speed);
 	uchar *cmd = protoBytes[C_SET_E_ZOOM];
-	cmd[3] = 0x20;
-	cmd[9] = chksum(cmd, cmd[1]);
-	sendCommand(cmd, cmd[1]);
+	int len = cmd[0];
+	cmd++;
+	cmd[11] = 0x20;
+	cmd[17] = chksum(cmd, len);
+	sendCommand(cmd, len);
 	return 0;
 }
 
@@ -82,9 +86,11 @@ int MgeoYamGozHead::setZoom(uint pos)
 {
 	Q_UNUSED(pos);
 	uchar *cmd = protoBytes[C_SET_E_ZOOM];
-	cmd[3] = pos;
-	cmd[9] = chksum(cmd, cmd[1]);
-	sendCommand(cmd, cmd[1]);
+	int len = cmd[0];
+	cmd++;
+	cmd[11] = pos;
+	cmd[17] = chksum(cmd, len);
+	sendCommand(cmd, len);
 	return 0;
 }
 
@@ -100,40 +106,55 @@ int MgeoYamGozHead::getHeadStatus()
 
 void MgeoYamGozHead::setProperty(uint r, uint x)
 {
-	 if(r == C_SET_FREEZE) {
-		 unsigned char *p = protoBytes[r];
-		 p[3] = x ? 0x01 : 0x00;
-		 p[9] = chksum(p, p[1]);
-		 sendCommand(p, p[1]);
-		 setRegister(R_FREEZE, p[3]);
-	 }
-	 else if (r == C_SET_POLARITY) {
-		 unsigned char *p = protoBytes[r];
-		 p[3] = x;
-		 p[9] = chksum(p, p[1]);
-		 sendCommand(p, p[1]);
-		 setRegister(R_POLARITY, p[3]);
-	 }
-	 else if (r == C_SET_1_POINT_NUC) {
-		 unsigned char *p = protoBytes[r];
-		 p[3] = x;
-		 p[9] = chksum(p, p[1]);
-		 sendCommand(p, p[1]);
-	 }
-	 else if (r == C_SET_VIDEO_SOURCE) {
-		 unsigned char *p = protoBytes[r];
-		 p[3] = x ? 0x01 : 0x00;
-		 p[9] = chksum(p, p[1]);
-		 sendCommand(p, p[1]);
-		 setRegister(R_VIDEO_SOURCE, p[3]);
-	 }
-	 else if (r == C_SET_IMAGE_FLIP) {
-		 unsigned char *p = protoBytes[r];
-		 p[3] = x;
-		 p[9] = chksum(p, p[1]);
-		 sendCommand(p, p[1]);
-		 setRegister(R_IMAGE_FLIP, p[3]);
-	 }
+	if(r == C_SET_FREEZE) {
+		mDebug("Freeze");
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[11] = x ? 0x01 : 0x00;
+		p[17] = chksum(p, len);
+		sendCommand(p, len);
+		setRegister(R_FREEZE, p[11]);
+	}
+	else if (r == C_SET_POLARITY) {
+		mDebug("Polarity");
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[11] = x;
+		p[17] = chksum(p, len);
+		sendCommand(p, len);
+		setRegister(R_POLARITY, p[11]);
+	}
+	else if (r == C_SET_1_POINT_NUC) {
+		mDebug("1 point nuc");
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[11] = x;
+		p[17] = chksum(p, len);
+		sendCommand(p, len);
+	}
+	else if (r == C_SET_VIDEO_SOURCE) {
+		mDebug("Video source");
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[11] = x ? 0x01 : 0x00;
+		p[17] = chksum(p, len);
+		sendCommand(p, len);
+		setRegister(R_VIDEO_SOURCE, p[11]);
+	}
+	else if (r == C_SET_IMAGE_FLIP) {
+		mDebug("Image rotation");
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[11] = x;
+		p[17] = chksum(p, len);
+		sendCommand(p, len);
+		setRegister(R_IMAGE_FLIP, p[11]);
+	}
 }
 
 uint MgeoYamGozHead::getProperty(uint r)
