@@ -17,6 +17,7 @@ public:
 		R_POLARITY,
 		R_VIDEO_SOURCE,
 		R_IMAGE_FLIP,
+		R_HEART_BEAT,
 
 		R_COUNT
 	};

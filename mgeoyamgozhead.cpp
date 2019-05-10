@@ -164,17 +164,18 @@ uint MgeoYamGozHead::getProperty(uint r)
 
 int MgeoYamGozHead::dataReady(const unsigned char *bytes, int len)
 {
-	dump(bytes, len)
 	if (bytes[0] != 0xCA)
 		return -ENOENT;
 	if (len < bytes[1])
 		return -EAGAIN;
-	if (bytes[2] == 0x10)
-		return -ENOENT; //alive
-	uchar chk = chksum(bytes, len - 1);
+	uchar chk = chksum(bytes, len);
 	if (chk != bytes[len -1]){
 		fDebug("Checksum error");
 		return -ENOENT;
+	}
+	if (bytes[2] == 0x10){
+		setRegister(R_HEART_BEAT, (getRegister(R_HEART_BEAT)) + 1);
+		return -ENOENT; //alive
 	}
 
 	if (bytes[2] == 0xb7)
@@ -187,6 +188,8 @@ int MgeoYamGozHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_VIDEO_SOURCE,bytes[3]);
 	else if (bytes[2] == 0x8e)
 		setRegister(R_IMAGE_FLIP,bytes[3]);
+
+	return len;
 }
 
 int MgeoYamGozHead::sendCommand(const unsigned char *cmd, int len)
