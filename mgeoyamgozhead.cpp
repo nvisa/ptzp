@@ -46,6 +46,13 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 MgeoYamGozHead::MgeoYamGozHead()
 {
 
+	settings = {
+		{"video_source", { C_SET_VIDEO_SOURCE, R_VIDEO_SOURCE}},
+		{"polarity", { C_SET_POLARITY, R_POLARITY}},
+		{"one_point_nuc", { C_SET_1_POINT_NUC, 0}},
+		{"image_flip", { C_SET_IMAGE_FLIP, R_IMAGE_FLIP}},
+		{"heart_beat", { 0, R_HEART_BEAT}}
+	};
 }
 
 int MgeoYamGozHead::getCapabilities()
