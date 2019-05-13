@@ -130,10 +130,10 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 
 };
 
-class I2CDriver : public I2CDevice
+class PCA9538Driver : public I2CDevice
 {
 public:
-	I2CDriver()
+	PCA9538Driver()
 	{
 	}
 
@@ -158,10 +158,9 @@ public:
 
 MgeoFalconEyeHead::MgeoFalconEyeHead()
 {
-	i2c = new I2CDriver;
+	i2c = new PCA9538Driver;
 	i2c->open();
 	i2c->resetAllPorts();
-	relayState = 0;
 
 	nextSync = C_COUNT;
 	settings = {

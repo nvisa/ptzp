@@ -7,7 +7,7 @@
 #include <QStringList>
 #include <QElapsedTimer>
 
-class I2CDriver;
+class PCA9538Driver;
 
 class MgeoFalconEyeHead : public PtzpHead
 {
@@ -103,7 +103,7 @@ private:
 	void setPropertyInt(uint r, int x);
 	int sendCommand(const unsigned char *cmd, int len);
 	QElapsedTimer syncTimer;
-	I2CDriver *i2c;
+	PCA9538Driver *i2c;
 	bool fastSwitch;
 };
 
