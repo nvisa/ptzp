@@ -61,6 +61,7 @@ enum Commands {
 	C_SET_GMT,
 	C_SET_BUTTON_PRESSED,
 	C_SET_BUTTON_RELEASED,
+	C_SET_RELAY_CONTROL,
 
 	C_GET_TARGET_COORDINATES,
 	C_GET_ALL_SYSTEM_VALUES,
@@ -114,6 +115,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{ 0x05, 0x1f, 0x01, 0xcf, 0x00, 0x00}, //set gmt
 	{ 0x06, 0x1f, 0x02, 0xb0, 0x00, 0x01, 0x00}, //button pressed
 	{ 0x06, 0x1f, 0x02, 0xb0, 0x00, 0x00, 0x00}, // button released
+	{}, // relay control
 
 	{ 0x04, 0x1f, 0x00, 0xc1, 0x00}, // ask target coordinates
 	{ 0x04, 0x1f, 0x00, 0xb6, 0x00}, // get all system values - ok
@@ -127,8 +129,40 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 //	{ 0x04, 0x1f, 0x00, 0xa3, 0x00}, // current time ok
 
 };
+
+class I2CDriver : public I2CDevice
+{
+public:
+	I2CDriver()
+	{
+	}
+
+	int open()
+	{
+		fd = openDevice(0x70);
+		if (fd < 0)
+			return fd;
+		return 0;
+	}
+
+	void resetAllPorts()
+	{
+		i2cWrite(0x03, 0x00);
+	}
+
+	uchar controlRelay(uchar reg, uint val)
+	{
+		return i2cWrite(reg, val);
+	}
+};
+
 MgeoFalconEyeHead::MgeoFalconEyeHead()
 {
+	i2c = new I2CDriver;
+	i2c->open();
+	i2c->resetAllPorts();
+	relayState = 0;
+
 	nextSync = C_COUNT;
 	settings = {
 		{"focus_in", { C_SET_CONTINUOUS_FOCUS, R_FOCUS}},
@@ -166,6 +200,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead()
 		{"gmt", { C_SET_GMT, R_GMT}},
 		{"button_press", { C_SET_BUTTON_PRESSED, 0}},
 		{"button_release", { C_SET_BUTTON_RELEASED, 0}},
+		{"relay_control", { C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
 
 		{"software_version" , { 0, R_SOFTWARE_VERSION}},
 		{"cooler", { 0, R_COOLER}},
@@ -448,13 +483,24 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		sendCommand(p, len);
 	}
 	else if (r == C_CHOOSE_CAM){
-		unsigned char *p = protoBytes[r];
-		int len = p[0];
-		p++;
-		p[3] = x;
-		p[4] = chksum(p, len - 1);
-		setRegister(R_CAM, x);
-		sendCommand(p, len);
+		if(fastSwitch) {
+			unsigned char *p = protoBytes[r];
+			int len = p[0];
+			p++;
+			p[3] = x;
+			p[4] = chksum(p, len - 1);
+			setRegister(R_CAM, x);
+			sendCommand(p, len);
+		} else {
+			/* TODO: implement relay control */
+			if (x == 0) {// Thermal
+				int ret = i2c->controlRelay(0x01, ((1 << 5) + (1 << 4)));
+				mDebug("I2C return Thermal cam: 0x%x", ret);
+			} else if (x == 1){
+				int ret = i2c->controlRelay(0x01, 1 << 3);
+				mDebug("I2C return Day cam: 0x%x", ret);
+			}
+		}
 	}
 	else if (r == C_SET_DIGITAL_ZOOM){
 		unsigned char *p = protoBytes[r];
@@ -755,6 +801,10 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		p[3] = x;
 		p[5] = chksum(p, len - 1);
 		sendCommand(p, len);
+	}
+	else if (r == C_SET_RELAY_CONTROL) { //switch mode selection
+		fastSwitch = x;
+		setRegister(R_RELAY_STATUS, fastSwitch);
 	}
 }
 

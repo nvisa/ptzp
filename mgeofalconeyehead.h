@@ -2,9 +2,12 @@
 #define MGEOFALCONEYEHEAD_H
 
 #include <ecl/ptzp/ptzphead.h>
+#include <drivers/i2cdevice.h>
 
 #include <QStringList>
 #include <QElapsedTimer>
+
+class I2CDriver;
 
 class MgeoFalconEyeHead : public PtzpHead
 {
@@ -73,6 +76,7 @@ public:
 		R_REF_3_GEO_LAT,
 		R_REF_3_GEO_LONG,
 		R_REF_3_GEO_HEIGHT,
+		R_RELAY_STATUS,
 
 
 		R_COUNT
@@ -99,6 +103,8 @@ private:
 	void setPropertyInt(uint r, int x);
 	int sendCommand(const unsigned char *cmd, int len);
 	QElapsedTimer syncTimer;
+	I2CDriver *i2c;
+	bool fastSwitch;
 };
 
 #endif // MGEOFALCONEYEHEAD_H
