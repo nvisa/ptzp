@@ -482,24 +482,13 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		sendCommand(p, len);
 	}
 	else if (r == C_CHOOSE_CAM){
-		if(fastSwitch) {
-			unsigned char *p = protoBytes[r];
-			int len = p[0];
-			p++;
-			p[3] = x;
-			p[4] = chksum(p, len - 1);
-			setRegister(R_CAM, x);
-			sendCommand(p, len);
-		} else {
-			/* TODO: implement relay control */
-			if (x == 0) {// Thermal
-				int ret = i2c->controlRelay(0x01, ((1 << 5) + (1 << 4)));
-				mDebug("I2C return Thermal cam: 0x%x", ret);
-			} else if (x == 1){
-				int ret = i2c->controlRelay(0x01, 1 << 3);
-				mDebug("I2C return Day cam: 0x%x", ret);
-			}
-		}
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[3] = x;
+		p[4] = chksum(p, len - 1);
+		setRegister(R_CAM, x);
+		sendCommand(p, len);
 	}
 	else if (r == C_SET_DIGITAL_ZOOM){
 		unsigned char *p = protoBytes[r];
@@ -802,7 +791,14 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		sendCommand(p, len);
 	}
 	else if (r == C_SET_RELAY_CONTROL) { //switch mode selection
-		fastSwitch = x;
+		/* TODO: implement relay control */
+		if (x == 0) {// Thermal
+			int ret = i2c->controlRelay(0x01, ((1 << 5) + (1 << 4)));
+			mDebug("I2C return Thermal cam: 0x%x", ret);
+		} else if (x == 1){
+			int ret = i2c->controlRelay(0x01, 1 << 3);
+			mDebug("I2C return Day cam: 0x%x", ret);
+		}
 		setRegister(R_RELAY_STATUS, fastSwitch);
 	}
 }
