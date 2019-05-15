@@ -16,7 +16,9 @@ HEADERS += \
     ptzp/tbgthdriver.h \
     ptzp/evpupthead.h \
     ptzp/mgeofalconeyehead.h \
-    ptzp/kayidriver.h
+    ptzp/kayidriver.h \
+    ptzp/mgeoyamgozhead.h \
+    ptzp/yamgozdriver.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -35,7 +37,9 @@ SOURCES += \
     ptzp/tbgthdriver.cpp \
     ptzp/evpupthead.cpp \
     ptzp/mgeofalconeyehead.cpp \
-    ptzp/kayidriver.cpp
+    ptzp/kayidriver.cpp \
+    ptzp/mgeoyamgozhead.cpp \
+    ptzp/yamgozdriver.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API

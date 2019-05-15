@@ -42,6 +42,9 @@ protected:
 	QAbstractSocket *sock;
 	QTimer *timer;
 	TransportFilterInteface *filterInterface;
+	/* udp connection flag*/
+	bool isUdp;
+	int sendDstPort;
 };
 
 #endif // PTZPTCPTRANSPORT_H
