@@ -37,25 +37,25 @@ using namespace std;
 class GRpcThread : public QThread
 {
 public:
-	GRpcThread(PtzpDriver *driver)
+	GRpcThread(int port, PtzpDriver *driver)
 	{
+		ep = QString("0.0.0.0:%1").arg(port);
 		service = driver;
 	}
 
 	void run()
 	{
-		qDebug() << "GRPC Starting @ 50058" ;
-		string ep("0.0.0.0:50058");
+		mDebug("Grpc starting with %s", qPrintable(ep));
+		string ep(this->ep.toStdString());
 		ServerBuilder builder;
 		builder.AddListeningPort(ep, grpc::InsecureServerCredentials());
 		builder.RegisterService(service);
 		std::unique_ptr<Server> server(builder.BuildAndStart());
 		server->Wait();
 	}
-	int port;
+	QString ep;
 	PtzpDriver *service;
 };
-
 #endif
 
 PtzpDriver::PtzpDriver(QObject *parent)
@@ -109,8 +109,7 @@ void PtzpDriver::startSocketApi(quint16 port)
 int PtzpDriver::startGrpcApi(quint16 port)
 {
 #ifdef HAVE_PTZP_GRPC_API
-	Q_UNUSED(port);
-	GRpcThread *thr = new GRpcThread(this);
+	GRpcThread *thr = new GRpcThread(port, this);
 	thr->start();
 	return 0;
 #else
