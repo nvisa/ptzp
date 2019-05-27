@@ -62,7 +62,7 @@ enum Commands {
 	//	C_VISCA_GET_WDRPARAM,		//24 //td:nd
 	C_VISCA_GET_GAMMA,			//25 //td.nd
 	C_VISCA_GET_AWB_MODE,		//26 //td:nd
-	C_VISCA_GET_DEFOG_MODE,		//27 //td:nd
+//	C_VISCA_GET_DEFOG_MODE,		//27 //td:nd
 	C_VISCA_GET_DIGI_ZOOM_STAT,	//28 //td:nd
 	C_VISCA_GET_ZOOM_TYPE,		//29 //td:nd
 	C_VISCA_GET_FOCUS_MODE,		//30 //td:nd
@@ -123,7 +123,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	//	{0x05, 0x08, 0x81, 0x09, 0x04, 0x2D, 0xff}, //getWDRparameter
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x5b, 0xff}, //getGamma
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x35, 0xff}, //getAWBmode
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x37, 0xff}, //getDefogMode
+//	{0x05, 0x04, 0x81, 0x09, 0x04, 0x37, 0xff}, //getDefogMode
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x06, 0xff}, //getDigiZoomStat
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x36, 0xff}, //getZoomType
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x38, 0xff}, //getFocusMode
@@ -377,10 +377,10 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		if (val > 0x03)
 			val -= 1;
 		setRegister(R_AWB_MODE , val);
-	} else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
+	}/* else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
 		mInfo("Defog Mode synced");
 		setRegister(R_DEFOG_MODE , (p[2] == 0x02));
-	} else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
+	}*/ else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
 		mInfo("Digi Zoom Status synced");
 		setRegister(R_DIGI_ZOOM_STAT,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TYPE){
