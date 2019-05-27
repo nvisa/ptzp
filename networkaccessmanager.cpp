@@ -41,11 +41,11 @@ int NetworkAccessManager::post(const QString &host, const QString &uname, const 
 void NetworkAccessManager::replyFinished(QNetworkReply *reply)
 {
 	if (reply->error() != QNetworkReply::NoError)
-		mDebug("Network connection error, %s", qPrintable(reply->errorString()));
+		mInfo("Network connection error, %s", qPrintable(reply->errorString()));
 	lastError = reply->error();
 	lastErrorString = reply->errorString();
 
 	QByteArray data = reply->readAll();
-	mDebug("Reply Data : %s", qPrintable(data));
+	mInfo("Reply Data : %s", qPrintable(data));
 	emit finished();
 }
