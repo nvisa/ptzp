@@ -309,12 +309,12 @@ int MgeoThermalHead::headSystemChecker()
 {
 	if (systemChecker == -1) {
 		int ret = sendCommand(C_GET_ZOOM_FOCUS);
-		mDebug("ThermalHead system checker started. %d", ret);
+		mInfo("ThermalHead system checker started. %d", ret);
 		systemChecker = 0;
 	} else if (systemChecker == 0) {
-		mDebug("Waiting Response from thermal CAM");
+		mInfo("Waiting Response from thermal CAM");
 	} else if (systemChecker == 1) {
-		mDebug("Completed System Check. Zoom: %f Focus: %f Angle: %f", getRegister(R_ZOOM), getRegister(R_FOCUS), getRegister(R_ANGLE));
+		mInfo("Completed System Check. Zoom: %f Focus: %f Angle: %f", getRegister(R_ZOOM), getRegister(R_FOCUS), getRegister(R_ANGLE));
 		systemChecker = 2;
 	}
 	return systemChecker;
@@ -341,14 +341,14 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 	if (nextSync != syncList.size()) {
 		/* we are in sync mode, let's sync next */
 		if (++nextSync == syncList.size()) {
-			fDebug("Thermal register syncing completed, activating auto-sync");
+			mDebug("Thermal register syncing completed, activating auto-sync");
 		} else
 			syncNext();
 	}
 
 	uchar chk = chksum(bytes, meslen - 1);
 	if (chk != bytes[meslen - 1]) {
-		fDebug("Checksum error");
+		mDebug("Checksum error");
 		return meslen;
 	}
 

@@ -82,7 +82,7 @@ void PtzpTcpTransport::setFilter(PtzpTcpTransport::TransportFilterInteface *ifac
 
 void PtzpTcpTransport::connected()
 {
-	ffDebug() << "connected";
+	mInfo("connected");
 }
 
 void PtzpTcpTransport::dataReady()

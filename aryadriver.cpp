@@ -91,7 +91,6 @@ void AryaDriver::timeout()
 		break;
 	case INIT:
 		if (thermal->getSystemStatus() == 2) {
-			qDebug() << "thermal check 1";
 			thermal->syncRegisters();
 			thermal->loadRegisters("thermal.json");
 			state = SYNC_THERMAL_MODULES;

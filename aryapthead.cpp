@@ -4,7 +4,6 @@
 
 #include <assert.h>
 
-//#define MaxSpeed	0x3D0900 //4.000.000
 #define MaxPanPos	6399999.0
 #define MaxTiltPos	799999.0
 
@@ -185,12 +184,12 @@ int AryaPTHead::headSystemChecker()
 {
 	if (systemChecker == -1) {
 		int ret = sendCommand(ptzCommandList.at(C_GET_PAN_POS).toLatin1());
-		mDebug("Pan-Tilt HEAD system checker started. %d", ret);
+		mInfo("Pan-Tilt HEAD system checker started. %d", ret);
 		systemChecker = 0;
 	} else if (systemChecker == 0) {
-		mDebug("Waiting Response from Pan-Tilt HEAD");
+		mInfo("Waiting Response from Pan-Tilt HEAD");
 	} else if (systemChecker == 1) {
-		mDebug("Completed system check. Pan: %f Tilt: %f ", panPos, tiltPos);
+		mInfo("Completed system check. Pan: %f Tilt: %f ", panPos, tiltPos);
 		systemChecker = 2;
 	}
 	return systemChecker;
@@ -206,7 +205,7 @@ int AryaPTHead::sendCommand(const QString &key)
 	QString cmd = key;
 	if (!cmd.contains(">"))
 		cmd = createPTZCommand(key);
-	fDebug("Sending command '%s'", qPrintable(key));
+	mInfo("Sending command '%s'", qPrintable(cmd));
 	return transport->send(cmd.toUtf8());
 }
 
