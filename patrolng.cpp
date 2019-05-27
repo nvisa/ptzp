@@ -14,7 +14,7 @@ PatrolNg::PatrolNg()
 	currentPatrol = new PatrolInfo();
 	currentPatrol->patrolName = "";
 	currentPatrol->state = STOP;
-	mDebug("Registered patrols '%s'", qPrintable(getList()));
+	mInfo("Registered patrols '%s'", qPrintable(getList()));
 }
 
 PatrolNg *PatrolNg::getInstance()
@@ -55,7 +55,7 @@ int PatrolNg::deletePatrol(const QString &name)
 	if(name.isEmpty())
 		return -EINVAL;
 	patrols.remove(name);
-	mDebug("'%s' patrol deleted", qPrintable(name));
+	mInfo("'%s' patrol deleted", qPrintable(name));
 	return save();
 }
 
@@ -71,7 +71,7 @@ int PatrolNg::save()
 
 	QFile f("patrols.bin");
 	if (!f.open(QIODevice::WriteOnly)) {
-		fDebug("Preset save error");
+		mDebug("Preset save error");
 		return -EPERM;
 	}
 	f.write(ba);
@@ -96,12 +96,12 @@ int PatrolNg::load()
 	in.setFloatingPointPrecision(QDataStream::SinglePrecision);
 	qint32 key; in >> key;
 	if (key != 0x77177177) {
-		fDebug("Wrong key '0x%x'", key);
+		mInfo("Wrong key '0x%x'", key);
 		return -1;
 	}
 	qint32 ver; in >> ver;
 	if (ver != 1) {
-		fDebug("Unsupported version '0x%x'", ver);
+		mInfo("Unsupported version '0x%x'", ver);
 		return -2;
 	}
 	patrols.clear();
@@ -116,7 +116,7 @@ int PatrolNg::setPatrolStateRun(const QString &name)
 	currentPatrol->patrolName = name;
 	currentPatrol->state = RUN;
 	currentPatrol->list = patrols.value(name);
-	mDebug("This patrol '%s' is running", qPrintable(name));
+	mInfo("This patrol '%s' is running", qPrintable(name));
 	return 0;
 }
 
@@ -126,7 +126,7 @@ int PatrolNg::setPatrolStateStop(const QString &name)
 		return -EINVAL;
 	currentPatrol->patrolName = name;
 	currentPatrol->state = STOP;
-	mDebug("This patrol '%s' is stopping", qPrintable(name));
+	mInfo("This patrol '%s' is stopping", qPrintable(name));
 	return 0;
 }
 
@@ -144,7 +144,7 @@ QString PatrolNg::getList()
 		patrol = patrol + tmp;
 	}
 	patrol = patrol.left(patrol.length() - 1);
-	mDebug("Patrol list '%s'", qPrintable(patrol));
+	mInfo("Patrol list '%s'", qPrintable(patrol));
 	return patrol;
 }
 

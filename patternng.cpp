@@ -62,7 +62,7 @@ PatternNg::PatternNg(PtzControlInterface *ctrl)
 	current = 0;
 	ptzctrl = ctrl;
 	rs = RS_FINALIZE;
-	mDebug("Registered patterns, '%s'", qPrintable(getList()));
+	mInfo("Registered patterns, '%s'", qPrintable(getList()));
 }
 
 void PatternNg::positionUpdate(int pan, int tilt, int zoom)
