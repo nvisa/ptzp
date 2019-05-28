@@ -134,13 +134,16 @@ static QString replyData(QNetworkReply* reply)
 static QString waitForReplyData(QNetworkReply* reply, int timeout)
 {
 	QEventLoop el;
-	QTimer::singleShot(timeout, &el, &QEventLoop::quit);
+	QTimer timer;
+	QObject::connect(&timer, &QTimer::timeout, [&el, reply]()
+	{
+		el.quit();
+		reply->abort();
+	});
 	QObject::connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), &el, SLOT(quit()));
 	QObject::connect(reply, &QNetworkReply::finished, &el, &QEventLoop::quit);
+	timer.start(timeout);
 	el.exec();
-	if (!reply->isFinished()) {
-		reply->abort();
-	}
 	return replyData(reply);
 }
 
