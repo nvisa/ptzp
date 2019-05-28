@@ -121,7 +121,7 @@ int IRDomePTHead::panTiltStop()
 	return panTilt(C_PELCOD_STOP, 0, 0);
 }
 
-void setCustomCommandParameters(uchar *p, uint cmd, int arg1, int arg2)
+static void setCustomCommandParameters(uchar *p, uint cmd, int arg1, int arg2)
 {
 	if (cmd == C_CUSTOM_GO_TO_POS) {
 		p[5] = (arg1 >> 8) & 0xff;
@@ -138,11 +138,17 @@ int IRDomePTHead::panTilt(uint cmd, int pspeed, int tspeed)
 	 * our dome has one serial channel and it is a slow one,
 	 * we disable other readers, zoom reading esspecially,
 	 * so that communication is not adversely affected
+	 *
+	 * TODO: connect this to a config option
 	 */
-	if (cmd == C_PELCOD_STOP)
+	if (0) {
+		if (cmd == C_PELCOD_STOP)
+			transport->setQueueFreeCallbackMask(0xffffffff);
+		else
+			transport->setQueueFreeCallbackMask(0xfffffffe);
 		transport->setQueueFreeCallbackMask(0xffffffff);
-	else
-		transport->setQueueFreeCallbackMask(0xfffffffe);
+	}
+
 	unsigned char *p = protoBytes[cmd];
 	if (p[2] == 0x3a) {
 		setCustomCommandParameters(p, cmd, pspeed, tspeed);
