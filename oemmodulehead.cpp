@@ -474,11 +474,34 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 {
 	QJsonObject root = node.toObject();
 	QString key = "reg%1";
-	for(int i = 0 ; i <= 21; i++) {
-		if(i == 2)
-			setZoom((uint)root.value(key.arg(i)).toInt());
-		setProperty(i,root.value(key.arg(i)).toInt());
-	}
+//	for(int i = 0 ; i <= 21; i++) {
+//		if(i == 2)
+//			setZoom((uint)root.value(key.arg(i)).toInt());
+//		setProperty(i,root.value(key.arg(i)).toInt());
+//	}
+	setProperty(C_VISCA_SET_EXPOSURE, root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
+	setProperty(C_VISCA_SET_EXPOSURE_TARGET, root.value(key.arg(R_EXPOSURE_TARGET)).toInt());
+	setProperty(C_VISCA_SET_GAIN, root.value(key.arg(R_GAIN_VALUE)).toInt());
+	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
+	setProperty(C_VISCA_SET_EXP_COMPMODE, root.value(key.arg(R_EXP_COMPMODE)).toInt());
+	setProperty(C_VISCA_SET_EXP_COMPVAL, root.value(key.arg(R_EXP_COMPVAL)).toInt());
+	setProperty(C_VISCA_SET_GAIN_LIM, root.value(key.arg(R_GAIN_LIM)).toInt());
+	setProperty(C_VISCA_SET_SHUTTER, root.value(key.arg(R_SHUTTER)).toInt());
+	setProperty(C_VISCA_SET_NOISE_REDUCT, root.value(key.arg(R_NOISE_REDUCT)).toInt());
+	setProperty(C_VISCA_SET_WDRSTAT, root.value(key.arg(R_WDRSTAT)).toInt());
+	setProperty(C_VISCA_SET_GAMMA, root.value(key.arg(R_GAMMA)).toInt());
+	setProperty(C_VISCA_SET_AWB_MODE, root.value(key.arg(R_AWB_MODE)).toInt());
+	setProperty(C_VISCA_SET_DEFOG_MODE, root.value(key.arg(R_DEFOG_MODE)).toInt());
+	setProperty(C_VISCA_SET_DIGI_ZOOM_STAT, root.value(key.arg(R_DIGI_ZOOM_STAT)).toInt());
+	setProperty(C_VISCA_SET_ZOOM_TYPE, root.value(key.arg(R_ZOOM_TYPE)).toInt());
+	setProperty(C_VISCA_SET_FOCUS_MODE, root.value(key.arg(R_FOCUS_MODE)).toInt());
+	setProperty(C_VISCA_SET_ZOOM_TRIGGER, root.value(key.arg(R_ZOOM_TRIGGER)).toInt());
+	setProperty(C_VISCA_SET_BLC_STATUS, root.value(key.arg(R_BLC_STATUS)).toInt());
+	setProperty(C_VISCA_SET_IRCF_STATUS, root.value(key.arg(R_IRCF_STATUS)).toInt());
+	setProperty(C_VISCA_SET_AUTO_ICR, root.value(key.arg(R_AUTO_ICR)).toInt());
+	setProperty(C_VISCA_SET_PROGRAM_AE_MODE, root.value(key.arg(R_PROGRAM_AE_MODE)).toInt());
+	setProperty(C_VISCA_SET_FLIP_MODE, root.value(key.arg(R_FLIP)).toInt());
+	setProperty(C_VISCA_SET_MIRROR_MODE, root.value(key.arg(R_MIRROR)).toInt());
 	deviceDefinition = root.value("deviceDefiniton").toString();
 	zoomRatio = root.value("zoomRatio").toInt();
 	setIRLed(root.value("irLedLevel").toInt());
