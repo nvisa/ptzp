@@ -102,9 +102,13 @@ protected:
 private:
 	void setPropertyInt(uint r, int x);
 	int sendCommand(const unsigned char *cmd, int len);
+	int readRelayConfig(QString filename);
 	QElapsedTimer syncTimer;
 	PCA9538Driver *i2c;
 	bool fastSwitch;
+	int thermalRelay;
+	int dayCamRelay;
+	int standbyRelay;
 };
 
 #endif // MGEOFALCONEYEHEAD_H

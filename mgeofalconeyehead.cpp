@@ -8,7 +8,7 @@
 #include <QJsonDocument>
 
 #include <errno.h>
-
+#define FILENAME "/etc/smartstreamer/smartconfig.json"
 #define dump(p, len) \
 	for (int i = 0; i < len; i++) \
 		qDebug("%s: %d: 0x%x", __func__, i, p[i]);
@@ -158,6 +158,7 @@ public:
 
 MgeoFalconEyeHead::MgeoFalconEyeHead()
 {
+	readRelayConfig(FILENAME);
 	i2c = new PCA9538Driver;
 	i2c->open();
 	i2c->resetAllPorts();
@@ -793,11 +794,17 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	else if (r == C_SET_RELAY_CONTROL) { //switch mode selection
 		/* TODO: implement relay control */
 		if (x == 0) {// Thermal
-			int ret = i2c->controlRelay(0x01, ((1 << 5) + (1 << 4)));
-			mDebug("I2C return Thermal cam: 0x%x", ret);
+			if(standbyRelay != 0 && thermalRelay != 0)
+			{
+				int ret = i2c->controlRelay(0x01, ((1 << (standbyRelay-1)) + (1 << (thermalRelay-1))));
+				mDebug("I2C return Thermal cam: 0x%x", ret);
+			}
 		} else if (x == 1){
-			int ret = i2c->controlRelay(0x01, 1 << 3);
-			mDebug("I2C return Day cam: 0x%x", ret);
+			if(dayCamRelay != 0)
+			{
+				int ret = i2c->controlRelay(0x01, 1 << (dayCamRelay-1));
+				mDebug("I2C return Day cam: 0x%x", ret);
+			}
 		}
 		setRegister(R_RELAY_STATUS, fastSwitch);
 	}
@@ -806,5 +813,40 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 int MgeoFalconEyeHead::sendCommand(const unsigned char *cmd, int len)
 {
 	return transport->send((const char *)cmd, len);
+}
+
+int MgeoFalconEyeHead::readRelayConfig(QString filename){
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly)) {
+		mDebug("File opening error %s", qPrintable(filename));
+		return -1;
+	}
+	QByteArray ba =f.readAll();
+	f.close();
+	QJsonDocument doc = QJsonDocument::fromJson(ba);
+	QJsonObject obj = doc.object();
+	QJsonArray arr = obj["ptzp"].toArray();
+	foreach (QJsonValue v, arr) {
+		QJsonObject src = v.toObject();
+		if(src["type"].isString())
+			if(src["type"] == "kayi")
+				obj = src["relay"].toObject();
+	}
+
+
+	if(obj["thermal"].isDouble() && obj["standby"].isDouble() && obj["daycam"].isDouble())
+	{
+		thermalRelay = obj["thermal"].toInt();
+		standbyRelay  =obj["standby"].toInt();
+		dayCamRelay = obj["daycam"].toInt();
+	}
+	else
+	{
+		dayCamRelay = 4;
+		thermalRelay = 5;
+		standbyRelay = 6;
+	}
+	mDebug("Read relay config :\n DAYCAM = %d \n STANDBY = %d\n THERMAL = %d",dayCamRelay , standbyRelay , thermalRelay);
+	return 0;
 }
 

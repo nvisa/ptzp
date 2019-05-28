@@ -62,7 +62,7 @@ enum Commands {
 	//	C_VISCA_GET_WDRPARAM,		//24 //td:nd
 	C_VISCA_GET_GAMMA,			//25 //td.nd
 	C_VISCA_GET_AWB_MODE,		//26 //td:nd
-	C_VISCA_GET_DEFOG_MODE,		//27 //td:nd
+//	C_VISCA_GET_DEFOG_MODE,		//27 //td:nd
 	C_VISCA_GET_DIGI_ZOOM_STAT,	//28 //td:nd
 	C_VISCA_GET_ZOOM_TYPE,		//29 //td:nd
 	C_VISCA_GET_FOCUS_MODE,		//30 //td:nd
@@ -123,7 +123,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	//	{0x05, 0x08, 0x81, 0x09, 0x04, 0x2D, 0xff}, //getWDRparameter
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x5b, 0xff}, //getGamma
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x35, 0xff}, //getAWBmode
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x37, 0xff}, //getDefogMode
+//	{0x05, 0x04, 0x81, 0x09, 0x04, 0x37, 0xff}, //getDefogMode
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x06, 0xff}, //getDigiZoomStat
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x36, 0xff}, //getZoomType
 	{0x05, 0x04, 0x81, 0x09, 0x04, 0x38, 0xff}, //getFocusMode
@@ -307,16 +307,16 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	}
 	const unsigned char *sptr = protoBytes[sendcmd];
 	int expected = sptr[1];
-	if (expected == 0x00) {
+	if (p[1] == 0x41 || p[1] == 0x51) {
+		mLogv("acknowledge");
+		return 3;
+	} else if (expected == 0x00) {
 		for (int i = 0; i < len; i++) {
-			ffDebug() << i << bytes[i];
+			mDebug("%s: %d: 0x%x", __func__, i, bytes[i]);
 			if (bytes[i] == 0xff)
 				return i+1;
 		}
 		return len;
-	} else if (p[1] == 0x41) {
-		mLogv("acknowledge");
-		return 3;
 	}
 	if (len < expected)
 		return -EAGAIN;
@@ -377,10 +377,10 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		if (val > 0x03)
 			val -= 1;
 		setRegister(R_AWB_MODE , val);
-	} else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
+	}/* else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
 		mInfo("Defog Mode synced");
 		setRegister(R_DEFOG_MODE , (p[2] == 0x02));
-	} else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
+	}*/ else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
 		mInfo("Digi Zoom Status synced");
 		setRegister(R_DIGI_ZOOM_STAT,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TYPE){
@@ -474,11 +474,34 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 {
 	QJsonObject root = node.toObject();
 	QString key = "reg%1";
-	for(int i = 0 ; i <= 21; i++) {
-		if(i == 2)
-			setZoom((uint)root.value(key.arg(i)).toInt());
-		setProperty(i,root.value(key.arg(i)).toInt());
-	}
+//	for(int i = 0 ; i <= 21; i++) {
+//		if(i == 2)
+//			setZoom((uint)root.value(key.arg(i)).toInt());
+//		setProperty(i,root.value(key.arg(i)).toInt());
+//	}
+	setProperty(C_VISCA_SET_EXPOSURE, root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
+	setProperty(C_VISCA_SET_EXPOSURE_TARGET, root.value(key.arg(R_EXPOSURE_TARGET)).toInt());
+	setProperty(C_VISCA_SET_GAIN, root.value(key.arg(R_GAIN_VALUE)).toInt());
+	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
+	setProperty(C_VISCA_SET_EXP_COMPMODE, root.value(key.arg(R_EXP_COMPMODE)).toInt());
+	setProperty(C_VISCA_SET_EXP_COMPVAL, root.value(key.arg(R_EXP_COMPVAL)).toInt());
+	setProperty(C_VISCA_SET_GAIN_LIM, root.value(key.arg(R_GAIN_LIM)).toInt());
+	setProperty(C_VISCA_SET_SHUTTER, root.value(key.arg(R_SHUTTER)).toInt());
+	setProperty(C_VISCA_SET_NOISE_REDUCT, root.value(key.arg(R_NOISE_REDUCT)).toInt());
+	setProperty(C_VISCA_SET_WDRSTAT, root.value(key.arg(R_WDRSTAT)).toInt());
+	setProperty(C_VISCA_SET_GAMMA, root.value(key.arg(R_GAMMA)).toInt());
+	setProperty(C_VISCA_SET_AWB_MODE, root.value(key.arg(R_AWB_MODE)).toInt());
+	setProperty(C_VISCA_SET_DEFOG_MODE, root.value(key.arg(R_DEFOG_MODE)).toInt());
+	setProperty(C_VISCA_SET_DIGI_ZOOM_STAT, root.value(key.arg(R_DIGI_ZOOM_STAT)).toInt());
+	setProperty(C_VISCA_SET_ZOOM_TYPE, root.value(key.arg(R_ZOOM_TYPE)).toInt());
+	setProperty(C_VISCA_SET_FOCUS_MODE, root.value(key.arg(R_FOCUS_MODE)).toInt());
+	setProperty(C_VISCA_SET_ZOOM_TRIGGER, root.value(key.arg(R_ZOOM_TRIGGER)).toInt());
+	setProperty(C_VISCA_SET_BLC_STATUS, root.value(key.arg(R_BLC_STATUS)).toInt());
+	setProperty(C_VISCA_SET_IRCF_STATUS, root.value(key.arg(R_IRCF_STATUS)).toInt());
+	setProperty(C_VISCA_SET_AUTO_ICR, root.value(key.arg(R_AUTO_ICR)).toInt());
+	setProperty(C_VISCA_SET_PROGRAM_AE_MODE, root.value(key.arg(R_PROGRAM_AE_MODE)).toInt());
+	setProperty(C_VISCA_SET_FLIP_MODE, root.value(key.arg(R_FLIP)).toInt());
+	setProperty(C_VISCA_SET_MIRROR_MODE, root.value(key.arg(R_MIRROR)).toInt());
 	deviceDefinition = root.value("deviceDefiniton").toString();
 	zoomRatio = root.value("zoomRatio").toInt();
 	setIRLed(root.value("irLedLevel").toInt());
