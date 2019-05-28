@@ -307,16 +307,16 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	}
 	const unsigned char *sptr = protoBytes[sendcmd];
 	int expected = sptr[1];
-	if (expected == 0x00) {
+	if (p[1] == 0x41 || p[1] == 0x51) {
+		mLogv("acknowledge");
+		return 3;
+	} else if (expected == 0x00) {
 		for (int i = 0; i < len; i++) {
-			ffDebug() << i << bytes[i];
+			mDebug("%s: %d: 0x%x", __func__, i, bytes[i]);
 			if (bytes[i] == 0xff)
 				return i+1;
 		}
 		return len;
-	} else if (p[1] == 0x41) {
-		mLogv("acknowledge");
-		return 3;
 	}
 	if (len < expected)
 		return -EAGAIN;
