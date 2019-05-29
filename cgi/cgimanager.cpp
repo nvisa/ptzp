@@ -282,6 +282,12 @@ static int readUpgradePercentage(UniqueReqManager& manager, int timeout, CgiDevi
 	return http::parseReply(data, "UPGRADE.state=").toInt();
 }
 
+static int rebootDevice(UniqueReqManager& manager, int timeout, CgiDeviceData const& devData)
+{
+	auto reply = manager->post(devData, "/cgi-bin/control.cgi?action=update&group=SYSCTRL&SYSCTRL.reboot=1");
+	return http::handlePostReply(reply, timeout);
+}
+
 CgiManager::CgiManager(const CgiDeviceData &devData, QObject *parent)
 	: QObject(parent),
 	  requestManager(new CgiRequestManager),
@@ -453,6 +459,11 @@ void CgiManager::startUpgrade(const QString &filePath)
 int CgiManager::getUpgradePercentage()
 {
 	return readUpgradePercentage(requestManager, timeout, devData);
+}
+
+int CgiManager::reboot()
+{
+	return rebootDevice(requestManager, timeout, devData);
 }
 
 void CgiManager::setTimeout(int msec)

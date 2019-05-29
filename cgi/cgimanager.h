@@ -53,12 +53,18 @@ public:
 	int increaseAperture(int speed);
 	int decreaseAperture(int speed);
 	int stopAperture();
+
 	//Various Camera Settings
 	QHash<QString, QString> getCamSettings();
 	int setCamSettings(QHash<QString, QString> const& settings);
 	QHash<QString, QString> getDeviceAbilities();
+
+	//Upgrade
 	void startUpgrade(QString const& filePath);
 	int getUpgradePercentage();
+
+	//Reboot
+	int reboot();
 
 	void setTimeout(int msec);
 
