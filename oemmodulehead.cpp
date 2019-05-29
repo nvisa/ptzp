@@ -312,7 +312,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		return 3;
 	} else if (expected == 0x00) {
 		for (int i = 0; i < len; i++) {
-			mDebug("%s: %d: 0x%x", __func__, i, bytes[i]);
+			mInfo("%s: %d: 0x%x", __func__, i, bytes[i]);
 			if (bytes[i] == 0xff)
 				return i+1;
 		}

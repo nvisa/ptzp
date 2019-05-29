@@ -331,6 +331,8 @@ int PtzpHead::saveRegisters(const QString &filename)
 int PtzpHead::loadRegisters(const QString &filename)
 {
 	QFile f(filename);
+	if (!f.exists())
+		return -ENOENT;
 	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
 		return -EPERM;
 
