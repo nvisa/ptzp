@@ -689,12 +689,13 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	else if (r == C_SET_DMC_OFFSET_AZIMUTH) {
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
+		p++;
 		p[3] = qAbs(x);
-		p[4] = R_DMC_ELEVATION;
-		p[5] = R_DMC_BANK;
+		p[4] = getRegister(R_DMC_ELEVATION);
+		p[5] = getRegister(R_DMC_BANK);
 		if (x < 0)
-			p[6] = 0x04 + R_DMC_OFFSET_SIGN;
-		else p[6] = R_DMC_OFFSET_SIGN;
+			p[6] = 0x04 + getRegister(R_DMC_OFFSET_SIGN);
+		else p[6] = getRegister(R_DMC_OFFSET_SIGN);
 		p[7] = chksum(p, len - 1);
 		setRegister(R_DMC_AZIMUTH, x);
 		setRegister(R_DMC_OFFSET_SIGN, p[6]);
@@ -703,12 +704,13 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	else if (r == C_SET_DMC_OFFSET_ELEVATION) {
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
-		p[3] = R_DMC_AZIMUTH;
+		p++;
+		p[3] = getRegister(R_DMC_AZIMUTH);
 		p[4] = qAbs(x);
-		p[5] = R_DMC_BANK;
+		p[5] = getRegister(R_DMC_BANK);
 		if (x < 0)
-			p[6] = 0x02 + R_DMC_OFFSET_SIGN;
-		else p[6] = R_DMC_OFFSET_SIGN;
+			p[6] = 0x02 + getRegister(R_DMC_OFFSET_SIGN);
+		else p[6] = getRegister(R_DMC_OFFSET_SIGN);
 		p[7] = chksum(p, len - 1);
 		setRegister(R_DMC_ELEVATION, x);
 		setRegister(R_DMC_OFFSET_SIGN, p[6]);
@@ -717,12 +719,13 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	else if (r == C_SET_DMC_OFFSET_BANK) {
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
-		p[3] = R_DMC_AZIMUTH;
-		p[4] = R_DMC_ELEVATION;
+		p++;
+		p[3] = getRegister(R_DMC_AZIMUTH);
+		p[4] = getRegister(R_DMC_ELEVATION);
 		p[5] = qAbs(x);
 		if (x < 0)
-			p[6] = 0x01 + R_DMC_OFFSET_SIGN;
-		else p[6] = R_DMC_OFFSET_SIGN;
+			p[6] = 0x01 + getRegister(R_DMC_OFFSET_SIGN);
+		else p[6] = getRegister(R_DMC_OFFSET_SIGN);
 		p[7] = chksum(p, len - 1);
 		setRegister(R_DMC_BANK, x);
 		setRegister(R_DMC_OFFSET_SIGN, p[6]);
