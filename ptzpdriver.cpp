@@ -587,8 +587,13 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context, const ptzp:
 		response->set_pan_pos(head->getPanAngle());
 	if ((cap & PtzpHead::CAP_TILT) == PtzpHead::CAP_TILT)
 		response->set_tilt_pos(head->getTiltAngle());
-	if ((cap & PtzpHead::CAP_ZOOM) == PtzpHead::CAP_ZOOM)
+	if ((cap & PtzpHead::CAP_ZOOM) == PtzpHead::CAP_ZOOM) {
 		response->set_zoom_pos(head->getZoom());
+		float fovh = -1, fovv = -1;
+		head->getFOV(fovh, fovv);
+		response->set_fovh(fovh);
+		response->set_fovv(fovv);
+	}
 
 	return grpc::Status::OK;
 }
