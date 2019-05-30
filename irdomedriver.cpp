@@ -77,6 +77,37 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 				return -EPERM;
 		}
 	}
+
+	QStringList zoomLines, hLines, vLines;
+	QFile f("/etc/smartstreamer/Zoom_value.txt");
+	if (f.open(QIODevice::ReadOnly)) {
+		zoomLines = QString::fromUtf8(f.readAll()).split("\n");
+		f.close();
+	}
+	f.setFileName("/etc/smartstreamer/Hfov.txt");
+	if (f.open(QIODevice::ReadOnly)) {
+		hLines = QString::fromUtf8(f.readAll()).split("\n");
+		f.close();
+	}
+	f.setFileName("/etc/smartstreamer/Vfov.txt");
+	if (f.open(QIODevice::ReadOnly)) {
+		vLines = QString::fromUtf8(f.readAll()).split("\n");
+		f.close();
+	}
+	if (zoomLines.size() && zoomLines.size() == vLines.size() && zoomLines.size() == hLines.size()) {
+		mDebug("Valid zoom mapping files found, parsing");
+		std::vector<float> hmap, vmap;
+		std::vector<int> zooms;
+		for (int i = 0; i < zoomLines.size(); i++) {
+			zooms.push_back(zoomLines[i].toInt());
+			hmap.push_back(hLines[i].toFloat());
+			vmap.push_back(vLines[i].toFloat());
+		}
+		headModule->getRangeMapper()->setLookUpValues(zooms);
+		headModule->getRangeMapper()->addMap(hmap);
+		headModule->getRangeMapper()->addMap(vmap);
+	}
+
 	return 0;
 }
 
