@@ -397,7 +397,7 @@ void IRDomeDriver::timeout()
 			state = SYNC_HEAD_DOME;
 			if(config.ptSupport == 0) {
 				state = NORMAL;
-				headModule->loadRegisters("oemmodule.json");
+				//headModule->loadRegisters("oemmodule.json");
 				time->start();
 			}
 			else headDome->syncRegisters();
@@ -407,7 +407,7 @@ void IRDomeDriver::timeout()
 	case SYNC_HEAD_DOME:
 		if (headDome->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
-			headModule->loadRegisters("oemmodule.json");
+			//headModule->loadRegisters("oemmodule.json");
 			timer->setInterval(1000);
 			tp1->enableQueueFreeCallbacks(true);
 			time->start();
@@ -415,7 +415,7 @@ void IRDomeDriver::timeout()
 		break;
 	case NORMAL:
 		if(time->elapsed() >= 10000) {
-			headModule->saveRegisters("oemmodule.json");
+			//headModule->saveRegisters("oemmodule.json");
 			time->restart();
 		}
 		break;
