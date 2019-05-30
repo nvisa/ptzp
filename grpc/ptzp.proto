@@ -132,6 +132,8 @@ message PTZPosInfo {
 	int32 pan_pos = 1;
 	int32 tilt_pos = 2;
 	int32 zoom_pos = 3;
+	float fovh = 4;
+	float fovv = 5;
 }
 
 message PatrolDefinition {
