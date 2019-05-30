@@ -512,6 +512,7 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	else if (r == C_SET_RETICLE_MODE){
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
+		p++;
 		p[3] = x;
 		p[4] = getRegister(R_RETICLE_TYPE);
 		p[5] = getRegister(R_RETICLE_INTENSITY);
@@ -522,6 +523,7 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	else if (r == C_SET_RETICLE_TYPE){
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
+		p++;
 		p[3] = getRegister(R_RETICLE_MODE);
 		p[4] = x;
 		p[5] = getRegister(R_RETICLE_INTENSITY);
@@ -532,6 +534,7 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	else if (r == C_SET_RETICLE_INTENSITY){
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
+		p++;
 		p[3] = getRegister(R_RETICLE_MODE);
 		p[4] = getRegister(R_RETICLE_TYPE);
 		p[5] = x;
