@@ -10,6 +10,9 @@
 #include <QVariantMap>
 #include <QElapsedTimer>
 
+#include <vector>
+#include <algorithm>
+
 class PtzpTransport;
 
 class PtzpHead: public QObject
@@ -30,6 +33,33 @@ public:
 		ST_ERROR,
 	};
 
+	class RangeMapper
+	{
+	public:
+		RangeMapper()
+		{
+
+		}
+
+		bool isAvailable() { return maps.size() > 1 ? true : false; }
+
+		std::vector<float> map(int value);
+
+		void setLookUpValues(std::vector<int> v)
+		{
+			lookup = v;
+		}
+
+		void addMap(std::vector<float> m)
+		{
+			maps.push_back(m);
+		}
+
+	protected:
+		std::vector<std::vector<float> > maps;
+		std::vector<int> lookup;
+	};
+
 	virtual int getCapabilities() = 0;
 	virtual int setTransport(PtzpTransport *tport);
 	virtual int syncRegisters();
@@ -48,6 +78,7 @@ public:
 	virtual float getTiltAngle();
 	virtual int getZoom();
 	virtual int setZoom(uint pos);
+	virtual int getFOV(float &hor, float &ver);
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
@@ -55,6 +86,7 @@ public:
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();
+	RangeMapper * getRangeMapper() { return &rmapper; }
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
@@ -83,6 +115,7 @@ protected:
 	QHash<uint, uint> errorCount;
 	QElapsedTimer pingTimer;
 	int systemChecker;
+	RangeMapper rmapper;
 };
 
 #endif // PTZPHEAD_H

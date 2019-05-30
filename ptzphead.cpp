@@ -183,6 +183,16 @@ int PtzpHead::setZoom(uint pos)
 	return 0;
 }
 
+int PtzpHead::getFOV(float &hor, float &ver)
+{
+	if (!rmapper.isAvailable())
+		return -ENOENT;
+	auto v = rmapper.map(getZoom());
+	hor = v[0];
+	ver = v[1];
+	return 0;
+}
+
 int PtzpHead::panTiltGoPos(float ppos, float tpos)
 {
 	Q_UNUSED(ppos);
@@ -353,6 +363,37 @@ int PtzpHead::communicationElapsed()
 {
 	return pingTimer.elapsed();
 }
+
+std::vector<float> PtzpHead::RangeMapper::map(int value)
+{
+	std::vector<float> m;
+	auto lower = std::lower_bound(lookup.begin(), lookup.end(), value);
+	auto upper = std::lower_bound(lookup.begin(), lookup.end(), value);
+	if (lower == lookup.begin()) {
+		for (size_t i = 0; i < maps.size(); i++)
+			m.push_back(maps[i].front());
+	} else if (upper == lookup.end()) {
+		for (size_t i = 0; i < maps.size(); i++)
+			m.push_back(maps[i].back());
+	} else {
+		size_t offl = lower - lookup.begin();
+		size_t offu = upper - lookup.begin();
+#if 0
+		if (offl >= lookup.size())
+			offl = lookup.size() - 1;
+		if (offu >= lookup.size())
+			offu = lookup.size() - 1;
+#endif
+		int lval = lookup[offl];
+		int uval = lookup[offu];
+		float w1 = uval - value;
+		float w0 = -value - lval;
+		for (size_t i = 0; i < maps.size(); i++)
+			m.push_back((w1 * maps[i][offu] + w0 * maps[i][offl]) / (w0 + w1));
+	}
+	return m;
+}
+
 #ifdef HAVE_PTZP_GRPC_API
 QVariantMap PtzpHead::getSettings()
 {
