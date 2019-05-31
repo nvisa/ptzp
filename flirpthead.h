@@ -11,6 +11,7 @@
 
 class FlirPTHead :public PtzpHead
 {
+	Q_OBJECT
 public:
 	FlirPTHead();
 
@@ -41,6 +42,8 @@ private:
 
 private slots:
 	void sendCommand();
+	void getPositions();
+	void dataReady(QNetworkReply* reply);
 
 protected:
 	QStringList ptzCommandList;
@@ -49,8 +52,6 @@ protected:
 	int nextSync;
 	QList<uint> syncList;
 	int saveCommand(const QString &key);
-	void dataReady(QNetworkReply* reply);
-	void getPositions();
 
 };
 

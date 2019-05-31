@@ -39,10 +39,10 @@ static QStringList createPTZCommandList()
 	QStringList cmdListFlir;
 	cmdListFlir << QString("H");
 	cmdListFlir << QString("PP&TP&PD&TD&C");
-	cmdListFlir << QString("C=V&PS=%1&TS=%2&PS=-%3");
-	cmdListFlir << QString("C=V&PS=%1&TS=%2&PS=%3");
-	cmdListFlir << QString("C=V&TS=%1&PS=%2&TS=%3");
-	cmdListFlir << QString("C=V&TS=%1&PS=%2&TS=-%3");
+	cmdListFlir << QString("C=V&PS=-%1"); //C=V&PS=%1&TS=%2&PS=-%3
+	cmdListFlir << QString("C=V&PS=%1"); //C=V&PS=%1&TS=%2&PS=%3
+	cmdListFlir << QString("C=V&TS=%1"); //C=V&TS=%1&PS=%2&TS=%3
+	cmdListFlir << QString("C=V&TS=-%1"); // C=V&TS=-%1&PS=%2&TS=-%3
 	cmdListFlir << QString("C=I&PP=0&TP=0&PS=2000&TS=2000");
 	cmdListFlir << QString("C=I&PS=%1&PO=%3");
 	cmdListFlir << QString("C=I&TS=%2&TO=%3");
@@ -57,38 +57,30 @@ static QStringList createPTZCommandList()
 FlirPTHead::FlirPTHead()
 	: PtzpHead()
 {
+	netman = NULL;
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
 
 	//Cihaz bufferı çok hızlı doluyor, (yaklaşık 3-4 mesajda), cevap dönme süresi 7ms, bu sebeple;
 	//+Gönderilecek komutlar bir queue objesinde tutularak timer yardımıyla 15ms'de 1 komut olacak şekilde gönderiliyor.
 	timerWrtData = new QTimer(this);
-	connect(timerWrtData, SIGNAL(timeout()), SLOT(sendData()));
+	connect(timerWrtData, &QTimer::timeout, this, &FlirPTHead::sendCommand);
 	timerWrtData->start(15);
 
 	//200ms'de bir pan-tilt pozisyon güncellemesi
 	timerGetData = new QTimer(this);
-	connect( timerGetData, SIGNAL(timeout()), this, SLOT(getPositions()) );
+	connect(timerGetData, &QTimer::timeout, this, &FlirPTHead::getPositions);
 	timerGetData->start(200);
+
+	netman = new QNetworkAccessManager(this);
+	connect(netman, SIGNAL(finished(QNetworkReply*)), this, SLOT(dataReady(QNetworkReply*)));
 }
 
 int FlirPTHead::connectHTTP(const QString &targetUri)
 {
-	netman = new QNetworkAccessManager(this);
-	connect(netman, SIGNAL(finished(QNetworkReply*)), SLOT(dataReady(QNetworkReply*)));
-
-	QString url = targetUri;
-	request.setUrl(QUrl(url));
+	request.setUrl(QUrl(targetUri));
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-	QNetworkConfigurationManager manager;
-	netman->setConfiguration(manager.defaultConfiguration());
-
-	qDebug() << "URL I Got: " << targetUri;
-
-	if( netman->networkAccessible() == QNetworkAccessManager::Accessible )
-		return 0;
-	return -1;
+	return 0;
 }
 
 int FlirPTHead::getCapabilities()
@@ -235,8 +227,6 @@ void FlirPTHead::dataReady(QNetworkReply *reply)
 	int indexTP = mes.indexOf("TP");
 	int indexETP = mes.indexOf(",",indexTP);
 	tiltPos = mes.mid(indexTP+7,indexETP-indexTP-8).toInt();
-
-	mInfo("Pan: %d Tilt: %d", panPos, tiltPos);
 }
 
 void FlirPTHead::getPositions()
