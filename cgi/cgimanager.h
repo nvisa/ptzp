@@ -57,6 +57,7 @@ public:
 	//Various Camera Settings
 	QHash<QString, QString> getCamSettings();
 	int setCamSettings(QHash<QString, QString> const& settings);
+	int setCamSettings(QString const& key, QString const& value);
 	QHash<QString, QString> getDeviceAbilities();
 
 	//Upgrade

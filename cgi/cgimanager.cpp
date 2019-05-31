@@ -446,6 +446,11 @@ int CgiManager::setCamSettings(const QHash<QString, QString> &settings)
 	return setSettings(requestManager, timeout, devData, settings, CgiGroup::Cam, 0);
 }
 
+int CgiManager::setCamSettings(const QString &key, const QString &value)
+{
+	return setSettings(requestManager, timeout, devData, key, value, CgiGroup::Cam, 0);
+}
+
 QHash<QString, QString> CgiManager::getDeviceAbilities()
 {
 	return readSettings(requestManager, timeout, devData, CgiGroup::Ability);
