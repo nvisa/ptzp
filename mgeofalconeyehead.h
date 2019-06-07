@@ -92,6 +92,8 @@ public:
 	virtual int getHeadStatus();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
+	virtual QVariant getProperty(const QString &key);
+	virtual void setProperty(const QString &key, const QVariant &value);
 
 protected:
 	int syncNext();
@@ -109,6 +111,17 @@ private:
 	int thermalRelay;
 	int dayCamRelay;
 	int standbyRelay;
+	struct LaserReflection {
+		int range;
+		int height;
+		float latdegree;
+		float latminute;
+		float latsecond;
+		float londegree;
+		float lonminute;
+		float lonsecond;
+	};
+	QList<LaserReflection> reflections;
 };
 
 #endif // MGEOFALCONEYEHEAD_H

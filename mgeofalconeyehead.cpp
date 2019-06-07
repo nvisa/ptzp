@@ -209,6 +209,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead()
 		{"ibit_optic", { 0, R_IBIT_OPTIC}},
 		{"ibit_lrf", { 0, R_IBIT_LRF}},
 	};
+	nonRegisterSettings << "laser_reflections";
 }
 
 int MgeoFalconEyeHead::getCapabilities()
@@ -295,6 +296,27 @@ void MgeoFalconEyeHead::setProperty(uint r, uint x)
 uint MgeoFalconEyeHead::getProperty(uint r)
 {
 	return getRegister(r);
+}
+
+QVariant MgeoFalconEyeHead::getProperty(const QString &key)
+{
+	if (key == "laser_reflections") {
+		QStringList lines;
+		foreach (const LaserReflection &r, reflections) {
+			lines << QString("%1,%2,%3,%4,%5,%6,%7,%8").arg(r.range).arg(r.height)
+					 .arg(r.latdegree).arg(r.latminute).arg(r.latsecond)
+					 .arg(r.londegree).arg(r.lonminute).arg(r.lonsecond);
+		}
+		return lines.join(";");
+	}
+
+	return QVariant();
+}
+
+void MgeoFalconEyeHead::setProperty(const QString &key, const QVariant &value)
+{
+	Q_UNUSED(key);
+	Q_UNUSED(value);
 }
 
 int MgeoFalconEyeHead::syncNext()
@@ -423,11 +445,24 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_GPS_DATE_AND_TIME_HOURS, bytes[7]);
 		setRegister(R_GPS_DATE_AND_TIME_MIN, bytes[8]);
 	}
-	else if (bytes[2] == 0x98){
-		if(bytes[3] > 1){
-			for (int i = 0; i < bytes[3]; i++){
-
-			}
+	else if (bytes[2] == 0x98) {
+		int refcnt = bytes[2 + 1];
+		mDebug("%d reflections found", refcnt);
+		reflections.clear();
+		for (int i = 0; i < refcnt; i++) {
+			LaserReflection r;
+			int off = 2 + 4 + i * 12;
+			r.range = bytes[off] + bytes[off + 1] * 256;
+			r.latdegree = bytes[off + 2];
+			r.latminute = bytes[off + 3];
+			r.latsecond = bytes[off + 4];
+			r.latsecond += bytes[off + 5] / 100.0;
+			r.latdegree = bytes[off + 6];
+			r.latminute = bytes[off + 7];
+			r.latsecond = bytes[off + 8];
+			r.latsecond += bytes[off + 9] / 100.0;
+			r.height = bytes[off + 10] + bytes[off + 11] * 256;
+			reflections << r;
 		}
 	}
 	return len;
