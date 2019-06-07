@@ -82,6 +82,8 @@ public:
 	virtual int panTiltGoPos(float ppos, float tpos);
 	virtual uint getProperty(uint r);
 	virtual void setProperty(uint r, uint x);
+	virtual QVariant getProperty(const QString &key);
+	virtual void setProperty(const QString &key, const QVariant &value);
 	virtual int headSystemChecker();
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
@@ -91,6 +93,7 @@ public:
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
 	QHash<QString, QPair<int, int> > settings {};
+	QStringList nonRegisterSettings;
 #endif
 	int getErrorCount(uint err);
 	virtual void enableSyncing(bool en);

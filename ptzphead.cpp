@@ -308,6 +308,18 @@ void PtzpHead::setProperty(uint r, uint x)
 	Q_UNUSED(x);
 }
 
+QVariant PtzpHead::getProperty(const QString &key)
+{
+	Q_UNUSED(key)
+	return QVariant();
+}
+
+void PtzpHead::setProperty(const QString &key, const QVariant &value)
+{
+	Q_UNUSED(key);
+	Q_UNUSED(value);
+}
+
 int PtzpHead::headSystemChecker()
 {
 	return 0;
@@ -400,12 +412,18 @@ QVariantMap PtzpHead::getSettings()
 	QVariantMap map;
 	for (auto key : settings.keys())
 		map.insert(key,getProperty(settings[key].second));
+	foreach (const QString &key, nonRegisterSettings)
+		map.insert(key, getProperty(key));
 	return map;
 }
 
 void PtzpHead::setSettings(QVariantMap keyMap)
 {
-	for (auto key : keyMap.keys())
-		setProperty(settings[key].first, keyMap[key].toUInt());
+	for (auto key : keyMap.keys()) {
+		if (settings.contains(key))
+			setProperty(settings[key].first, keyMap[key].toUInt());
+		else if (nonRegisterSettings.contains(key))
+			setProperty(key, keyMap[key]);
+	}
 }
 #endif
