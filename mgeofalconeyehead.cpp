@@ -8,7 +8,7 @@
 #include <QJsonDocument>
 
 #include <errno.h>
-#define FILENAME "/etc/smartstreamer/smartconfig.json"
+
 #define dump(p, len) \
 	for (int i = 0; i < len; i++) \
 		qDebug("%s: %d: 0x%x", __func__, i, p[i]);
@@ -156,9 +156,17 @@ public:
 	}
 };
 
-MgeoFalconEyeHead::MgeoFalconEyeHead()
+MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 {
-	readRelayConfig(FILENAME);
+	dayCamRelay = 4;
+	thermalRelay = 5;
+	standbyRelay = 6;
+	if (relayConfig.size() == 3) {
+		dayCamRelay = relayConfig[0];
+		thermalRelay = relayConfig[1];
+		standbyRelay = relayConfig[2];
+	}
+
 	i2c = new PCA9538Driver;
 	i2c->open();
 	i2c->resetAllPorts();

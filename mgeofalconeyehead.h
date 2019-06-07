@@ -12,7 +12,7 @@ class PCA9538Driver;
 class MgeoFalconEyeHead : public PtzpHead
 {
 public:
-	MgeoFalconEyeHead();
+	MgeoFalconEyeHead(QList<int> relayConfig);
 
 	enum Registers {
 		R_ZOOM,

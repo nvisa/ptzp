@@ -11,7 +11,7 @@ class KayiDriver : public PtzpDriver
 {
 	Q_OBJECT
 public:
-	explicit KayiDriver(QObject *parent = 0);
+	explicit KayiDriver(QList<int> relayConfig, QObject *parent = 0);
 
 	PtzpHead * getHead(int index);
 	int setTarget(const QString &targetUri);
