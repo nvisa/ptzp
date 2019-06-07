@@ -390,10 +390,10 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		if (bytes[4] == 1){ //geo
 			setRegister(R_GPS_LAT_DEGREE, bytes[5]);
 			setRegister(R_GPS_LAT_MINUTE, bytes[6]);
-			setRegister(R_GPS_LAT_SECOND, (bytes[7] + (bytes[8] / 100)));
+			setRegister(R_GPS_LAT_SECOND, (bytes[7] + (bytes[8] / 100.0)));
 			setRegister(R_GPS_LONG_DEGREE, bytes[9]);
 			setRegister(R_GPS_LONG_MINUTE, bytes[10]);
-			setRegister(R_GPS_LONG_SECOND, (bytes[11] + (bytes[12] / 100)));
+			setRegister(R_GPS_LONG_SECOND, (bytes[11] + (bytes[12] / 100.0)));
 			setRegister(R_GPS_ALTITUDE, (bytes[13] + (bytes[14] * 0x0100)));
 		}
 		else if (bytes[4] == 0){ //utm
