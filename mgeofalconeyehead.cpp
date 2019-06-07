@@ -846,6 +846,8 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 				int ret = i2c->controlRelay(0x01, 1 << (dayCamRelay-1));
 				mDebug("I2C return Day cam: 0x%x", ret);
 			}
+		} else if (x == 2){
+			i2c->controlRelay(0x01, ((1 << (standbyRelay-1))));
 		}
 		setRegister(R_RELAY_STATUS, fastSwitch);
 	}
