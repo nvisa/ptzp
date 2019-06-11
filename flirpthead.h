@@ -22,6 +22,7 @@ public:
 	int panRight(float speed);
 	int tiltUp(float speed);
 	int tiltDown(float speed);
+	int panTiltAbs(float pan, float tilt);
 	int home();
 	int panWOffset(int speed, int offset);
 	int tiltWOffset(int speed, int offset);

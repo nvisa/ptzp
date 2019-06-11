@@ -30,6 +30,10 @@ enum CommandList {
 	C_PAN_SET,
 	C_TILT_SET,
 	C_PANTILT_SET,
+	C_PAN_LEFT_TILT_UP,
+	C_PAN_LEFT_TILT_DOWN,
+	C_PAN_RIGHT_TILT_UP,
+	C_PAN_RIGHT_TILT_DOWN,
 
 	C_COUNT,
 };
@@ -44,12 +48,16 @@ static QStringList createPTZCommandList()
 	cmdListFlir << QString("C=V&TS=%1"); //C=V&TS=%1&PS=%2&TS=%3
 	cmdListFlir << QString("C=V&TS=-%1"); // C=V&TS=-%1&PS=%2&TS=-%3
 	cmdListFlir << QString("C=I&PP=0&TP=0&PS=2000&TS=2000");
-	cmdListFlir << QString("C=I&PS=%1&PO=%3");
-	cmdListFlir << QString("C=I&TS=%2&TO=%3");
+	cmdListFlir << QString("C=I&PS=%1&PO=%2");
+	cmdListFlir << QString("C=I&TS=%1&TO=%2");
 	cmdListFlir << QString("C=I&PS=%1&TS=%2&PO=%3&TO=%4");
 	cmdListFlir << QString("C=I&PP=%1&PS=%2");
 	cmdListFlir << QString("C=I&TP=%1&TS=%2");
 	cmdListFlir << QString("C=I&PP=%1&TP=%2&PS=%3&TS=%4");
+	cmdListFlir << QString("C=V&PS=%1&TS=%2");
+	cmdListFlir << QString("C=V&PS=%1&TS=%2");
+	cmdListFlir << QString("C=V&PS=%1&TS=%2");
+	cmdListFlir << QString("C=V&PS=%1&TS=%2");
 
 	return cmdListFlir;
 }
@@ -117,6 +125,40 @@ int FlirPTHead::tiltDown(float speed)
 {
 	speed = qAbs(speed) * MaxSpeed;
 	return saveCommand(ptzCommandList.at(C_TILT_DOWN).arg(speed));
+}
+
+int FlirPTHead::panTiltAbs(float pan, float tilt)
+{
+	int pspeed = qAbs(pan) * MaxSpeed;
+	int tspeed = qAbs(tilt) * MaxSpeed;
+	if (pspeed == 0 && tspeed == 0) {
+		saveCommand(ptzCommandList[C_STOP]);
+		return 0;
+	}
+	if (pan < 0) {
+		// left
+		if (tilt < 0) {
+			// up
+			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(-pspeed).arg(tspeed));			//	C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
+		} else if (tilt > 0) {
+			// down
+			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_DOWN).arg(-pspeed).arg(-tspeed));
+		} else {
+			saveCommand(ptzCommandList.at(C_PAN_LEFT).arg(-pspeed));
+		}
+	} else {
+		// right
+		if (tilt < 0) {
+			// up
+			saveCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_UP).arg(pspeed).arg(tspeed));
+		} else if (tilt > 0) {
+			// down
+			saveCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_DOWN).arg(pspeed).arg(-tspeed));
+		} else {
+			saveCommand(ptzCommandList.at(C_PAN_RIGHT).arg(pspeed));
+		}
+	}
+	return 0;
 }
 
 int FlirPTHead::home()
@@ -211,6 +253,7 @@ void FlirPTHead::sendCommand()
 int FlirPTHead::saveCommand(const QString &key)
 {
 	queue.enqueue(key);
+	return 0;
 }
 
 void FlirPTHead::dataReady(QNetworkReply *reply)
