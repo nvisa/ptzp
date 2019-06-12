@@ -267,6 +267,8 @@ void PtzpDriver::sendCommand(int c, float par1, int par2)
 			defaultPTHead->tiltUp(par1);
 		else if (c == PtzControlInterface::C_PAN_TILT_STOP)
 			defaultPTHead->panTiltStop();
+		else if (c == PtzControlInterface::C_PAN_TILT_ABS_MOVE)
+			defaultPTHead->panTiltAbs(par1, par2);
 	} else if (defaultModuleHead) {
 		if (c == PtzControlInterface::C_ZOOM_IN)
 			defaultModuleHead->startZoomIn((int)par1);
@@ -562,7 +564,7 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context, const ptzp::Pt
 	}
 
 	head->panTiltAbs(pan,tilt);
-	commandUpdate(PtzControlInterface::C_PAN_TILT_ABS_MOVE, 0, 0);
+	commandUpdate(PtzControlInterface::C_PAN_TILT_ABS_MOVE, pan, tilt);
 	return grpc::Status::OK;
 }
 
