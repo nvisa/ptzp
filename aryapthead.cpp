@@ -77,7 +77,6 @@ AryaPTHead::AryaPTHead()
 	MaxSpeed = 4000000;
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
-	syncTimer.start();
 }
 
 int AryaPTHead::getCapabilities()
@@ -226,10 +225,6 @@ int AryaPTHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray AryaPTHead::transportReady()
 {
-	if (syncTimer.elapsed() > 250) {
-		syncTimer.restart();
-		return ptzCommandList.at(C_GET_PAN_POS).toUtf8();
-	}
-	return QByteArray();
+	return ptzCommandList.at(C_GET_PAN_POS).toUtf8();
 }
 
