@@ -16,8 +16,9 @@ public:
 		C_PAN_TILT_GOTO_POS,//8
 		C_PAN_TILT_ABS_MOVE //9
 	};
-	virtual void sendCommand(int c, float par1, int par2) = 0;
+	virtual void sendCommand(int c, float par1, float par2) = 0;
 	virtual void goToPosition(float p, float t, int z) = 0;
+	virtual float getPanAngle() = 0;
 };
 
 #endif // PTZCONTROLINTERFACE
