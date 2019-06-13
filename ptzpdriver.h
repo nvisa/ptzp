@@ -69,8 +69,9 @@ public:
 	int startGrpcApi(quint16 port);
 	virtual QVariant get(const QString &key);
 	virtual int set(const QString &key, const QVariant &value);
+	float getPanAngle();
 	void goToPosition(float p, float t, int z);
-	void sendCommand(int c, float par1, int par2);
+	void sendCommand(int c, float par1, float par2);
 	virtual void sleepMode(bool stat);
 	void setSpeedRegulation(SpeedRegulation r);
 	SpeedRegulation getSpeedRegulation();

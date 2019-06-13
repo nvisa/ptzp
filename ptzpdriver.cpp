@@ -253,7 +253,12 @@ void PtzpDriver::goToPosition(float p, float t, int z)
 	}
 }
 
-void PtzpDriver::sendCommand(int c, float par1, int par2)
+float PtzpDriver::getPanAngle()
+{
+	return defaultPTHead->getPanAngle();
+}
+
+void PtzpDriver::sendCommand(int c, float par1, float par2)
 {
 	Q_UNUSED(par2);
 	if (defaultPTHead) {
@@ -706,10 +711,11 @@ grpc::Status PtzpDriver::PatternRun(grpc::ServerContext *context, const ptzp::Pa
 
 	if(ptrn->load(QString::fromStdString(request->pattern_name())) == 0)
 	{
-		ptrn->replay();
+		int ret = ptrn->replay();
+		response->set_err(ret);
 		return grpc::Status::OK;
 	}
-
+	response->set_err(ENODEV);
 	return grpc::Status::CANCELLED;
 }
 
