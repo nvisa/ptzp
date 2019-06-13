@@ -22,6 +22,7 @@ public:
 	};
 
 	enum ReplayState {
+		RS_PTZ_WAIT,
 		RS_PTZ_INIT,
 		RS_RUN,
 		RS_FINALIZE,

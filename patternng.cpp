@@ -115,6 +115,7 @@ void PatternNg::stop(int pan, int tilt, int zoom)
 	recording = false;
 	replaying = false;
 	positionUpdate(pan, tilt, zoom);
+	ptzctrl->sendCommand(ptzctrl->C_PAN_TILT_STOP, 0, 0);
 }
 
 int PatternNg::replay()
@@ -123,6 +124,8 @@ int PatternNg::replay()
 		return -ENOENT;
 	if (isRecording())
 		return -EINVAL;
+	if (isReplaying())
+		return -ENODEV;
 	replaying = true;
 	ptime.restart();
 	current = 0;
@@ -228,8 +231,15 @@ void PatternNg::replayCurrent(int pan, int tilt, int zoom)
 	switch (rs) {
 	case RS_PTZ_INIT: {
 		ptzctrl->goToPosition(st.pan, st.tilt, st.zoom);
-		rs = RS_RUN;
-		ptime.restart();
+		rs = RS_PTZ_WAIT;
+		break;
+	}
+	case RS_PTZ_WAIT: {
+		int diff = qAbs(st.pan - ptzctrl->getPanAngle());
+		if (diff < 2) {
+			ptime.restart();
+			rs = RS_RUN;
+		}
 		break;
 	}
 	case RS_RUN:
