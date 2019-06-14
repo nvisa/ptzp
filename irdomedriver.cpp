@@ -71,6 +71,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 			tp1 = new PtzpSerialTransport();
 			headDome->setTransport(tp1);
 			headDome->enableSyncing(true);
+			config.ptSupport = true;
 
 			defaultPTHead = headDome;
 			if (tp1->connectTo(fields[1]))
