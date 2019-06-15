@@ -171,6 +171,8 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 	i2c->open();
 	i2c->resetAllPorts();
 
+	syncTimer.start();
+
 	nextSync = C_COUNT;
 	settings = {
 		{"focus_in", { C_SET_CONTINUOUS_FOCUS, R_FOCUS}},
