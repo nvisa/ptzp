@@ -13,7 +13,7 @@ KayiDriver::KayiDriver(QList<int> relayConfig, QObject *parent) : PtzpDriver(par
 {
 	headModule = new MgeoFalconEyeHead(relayConfig);
 	headDome = new AryaPTHead;
-	headDome->setMaxSpeed(1000000);
+	headDome->setMaxSpeed(888889);
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
