@@ -23,6 +23,7 @@ public:
 	int tiltUp(float speed);
 	int tiltDown(float speed);
 	int panTiltAbs(float pan, float tilt);
+	int panTiltDegree(float pan, float tilt);
 	int panTiltStop();
 	float getPanAngle();
 	float getTiltAngle();
@@ -38,6 +39,7 @@ protected:
 	bool syncEnabled;
 	int syncInterval;
 	QElapsedTimer syncTime;
+	std::vector<float> speedTableMapping;
 };
 
 #endif // IRDOMEPTHEAD_H

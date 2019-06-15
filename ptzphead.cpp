@@ -115,6 +115,13 @@ int PtzpHead::panTiltAbs(float pan, float tilt)
 	return -ENOENT;
 }
 
+int PtzpHead::panTiltDegree(float pan, float tilt)
+{
+	Q_UNUSED(pan);
+	Q_UNUSED(tilt);
+	return -ENOENT;
+}
+
 int PtzpHead::panTiltStop()
 {
 	return -ENOENT;

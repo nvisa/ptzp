@@ -151,6 +151,14 @@ int AryaPTHead::panTiltAbs(float pan, float tilt)
 	return 0;
 }
 
+int AryaPTHead::panTiltDegree(float pan, float tilt)
+{
+	// 1 mil = 17.777
+	float pans = (pan * 17.777) * 1000 / MaxSpeed;
+	float tilts = (tilt * 17.777) * 1000 / MaxSpeed;
+	return panTiltAbs(pans, tilts);
+}
+
 int AryaPTHead::panTiltStop()
 {
 	return sendCommand(ptzCommandList[C_STOP_ALL]);

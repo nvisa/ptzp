@@ -70,6 +70,7 @@ public:
 	virtual int tiltUp(float speed);
 	virtual int tiltDown(float speed);
 	virtual int panTiltAbs(float pan, float tilt);
+	virtual int panTiltDegree(float pan, float tilt);
 	virtual int panTiltStop();
 	virtual int startZoomIn(int speed);
 	virtual int startZoomOut(int speed);

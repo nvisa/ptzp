@@ -53,6 +53,19 @@ IRDomePTHead::IRDomePTHead()
 	syncEnabled = true;
 	syncInterval = 20;
 	syncTime.start();
+
+	speedTableMapping.push_back(0.1);
+	speedTableMapping.push_back(0.3);
+	speedTableMapping.push_back(1);
+	speedTableMapping.push_back(2);
+	speedTableMapping.push_back(4);
+	speedTableMapping.push_back(7);
+	speedTableMapping.push_back(10);
+	speedTableMapping.push_back(15);
+	speedTableMapping.push_back(20);
+	speedTableMapping.push_back(25);
+	speedTableMapping.push_back(30);
+	speedTableMapping.push_back(35);
 }
 
 int IRDomePTHead::getCapabilities()
@@ -114,6 +127,21 @@ int IRDomePTHead::panTiltAbs(float pan, float tilt)
 			panTilt(C_PAN_RIGHT, pspeed, tspeed);
 	}
 	return 0;
+}
+
+int IRDomePTHead::panTiltDegree(float pan, float tilt)
+{
+	auto lowerp = std::lower_bound(speedTableMapping.begin(), speedTableMapping.end(), qAbs(pan)) - speedTableMapping.begin();
+	auto lowert = std::lower_bound(speedTableMapping.begin(), speedTableMapping.end(), qAbs(tilt)) - speedTableMapping.end();
+
+	int speed_pan = lowerp * 3 + 2;
+	int speed_tilt = lowert * 3 + 2;
+	if (pan < 0)
+		speed_pan *= -1;
+	if (tilt < 0)
+		speed_tilt *= -1;
+	ffDebug() << speed_pan << speed_tilt << pan << tilt;
+	return panTiltAbs((float)speed_pan/63.0, (float)speed_tilt/63.0);
 }
 
 int IRDomePTHead::panTiltStop()
