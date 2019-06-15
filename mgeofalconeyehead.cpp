@@ -486,7 +486,7 @@ QByteArray MgeoFalconEyeHead::transportReady()
 		int len = p[0];
 		p++;
 		p[3] = chksum(p ,len -1);
-		sendCommand(p, len);
+		return QByteArray((const char *)p, len);
 	}
 	return QByteArray();
 }
