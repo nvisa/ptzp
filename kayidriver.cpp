@@ -28,6 +28,11 @@ PtzpHead *KayiDriver::getHead(int index)
 	return NULL;
 }
 
+#define zoomEntry(zoomv, h) \
+	zooms.push_back(zoomv); \
+	hmap.push_back(h); \
+	vmap.push_back(h * (float)4 / 3)
+
 int KayiDriver::setTarget(const QString &targetUri)
 {
 	QStringList fields = targetUri.split(";");
@@ -42,6 +47,25 @@ int KayiDriver::setTarget(const QString &targetUri)
 	headDome->enableSyncing(true);
 	if (tp2->connectTo(fields[1]))
 		return -EPERM;
+
+	if (1) {
+		std::vector<float> hmap, vmap;
+		std::vector<int> zooms;
+		zoomEntry(9000, 11);
+		zoomEntry(9500, 10);
+		zoomEntry(10000, 9);
+		zoomEntry(10500, 8);
+		zoomEntry(11000, 7);
+		zoomEntry(11500, 6);
+		zoomEntry(12300, 5);
+		zoomEntry(13200, 4);
+		zoomEntry(14100, 3);
+		zoomEntry(15000, 2);
+		headModule->getRangeMapper()->setLookUpValues(zooms);
+		headModule->getRangeMapper()->addMap(hmap);
+		headModule->getRangeMapper()->addMap(vmap);
+	}
+
 	return 0;
 }
 
