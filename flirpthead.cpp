@@ -86,6 +86,9 @@ FlirPTHead::FlirPTHead()
 
 int FlirPTHead::connectHTTP(const QString &targetUri)
 {
+	QString url;
+	if (!targetUri.startsWith("http://"))
+		url = QString("http://%1").arg(targetUri);
 	request.setUrl(QUrl(targetUri));
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 	return 0;
