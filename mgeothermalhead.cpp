@@ -11,7 +11,7 @@
 
 #define dump(p, len) \
 	for (int i = 0; i < len; i++) \
-		qDebug("%s: %d: 0x%x", __func__, i, p[i]);
+		mDebug("%s: %d: 0x%x", __func__, i, p[i]);
 
 #define MAX_CMD_LEN	10
 
@@ -348,7 +348,7 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 
 	uchar chk = chksum(bytes, meslen - 1);
 	if (chk != bytes[meslen - 1]) {
-		mDebug("Checksum error");
+		mInfo("Checksum error");
 		return meslen;
 	}
 
