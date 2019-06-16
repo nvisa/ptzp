@@ -20,7 +20,6 @@ HEADERS += \
     ptzp/mgeoyamgozhead.h \
     ptzp/yamgozdriver.h \
     ptzp/flirpthead.h \
-    ptzp/flirpthead.h \
     ptzp/flirdriver.h \
     ptzp/flirmodulehead.h \
 
@@ -44,7 +43,6 @@ SOURCES += \
     ptzp/kayidriver.cpp \
     ptzp/mgeoyamgozhead.cpp \
     ptzp/yamgozdriver.cpp \
-    ptzp/flirpthead.cpp \
     ptzp/flirpthead.cpp \
     ptzp/flirdriver.cpp \
     ptzp/flirmodulehead.cpp \
