@@ -480,6 +480,8 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray MgeoFalconEyeHead::transportReady()
 {
+	/* we have nothing to sync atm, zoom reading is buggy */
+	return QByteArray();
 	if (syncTimer.elapsed() > 250) {
 		syncTimer.restart();
 		unsigned char *p = protoBytes[C_GET_ZOOM_POS];
