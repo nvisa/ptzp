@@ -884,7 +884,7 @@ int MgeoFalconEyeHead::readRelayConfig(QString filename){
 	foreach (QJsonValue v, arr) {
 		QJsonObject src = v.toObject();
 		if(src["type"].isString())
-			if(src["type"] == "kayi")
+			if(src["type"] == QString("kayi"))
 				obj = src["relay"].toObject();
 	}
 
