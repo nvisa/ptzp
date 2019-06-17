@@ -372,7 +372,6 @@ int PtzpHead::loadRegisters(const QString &filename)
 	QJsonObject root = doc.object();
 	if (root.isEmpty())
 		return -EINVAL;
-
 	unmarshallloadAllRegisters(root["registers"]);
 
 	return 0;
