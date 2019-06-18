@@ -30,7 +30,7 @@ enum Commands {
 };
 static QStringList commandList = {
 	"<0001#SET,ZOOM:IR~%1",
-	"<0002#SET,FOCUS:IR~%1",
+	"<00015#SET,FOCUS:IR~%1",
 	"<0003#SET,GAIN:IR~%1",
 	"<0004#GET,BIT:ALL",
 
