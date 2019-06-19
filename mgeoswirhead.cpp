@@ -82,6 +82,7 @@ int MgeoSwirHead::startZoomOut(int speed)
 int MgeoSwirHead::stopZoom()
 {
 	sendCommand(commandList.at(C_SET_ZOOM).arg("STOP"));
+	sendCommand(commandList.at(C_GET_ZOOM_POS));
 	return 0;
 }
 
@@ -144,6 +145,15 @@ QByteArray MgeoSwirHead::transportReady()
 
 int MgeoSwirHead::dataReady(const unsigned char *bytes, int len)
 {
+
+	if (nextSync != C_COUNT) {
+		/* we are in sync mode, let's sync next */
+		if (++nextSync == C_COUNT) {
+			ffDebug() << "Swir register syncing completed, activating auto-sync";
+		} else
+			syncNext();
+	}
+
 	const QString data = QString::fromUtf8((const char *)bytes, len);
 	if (data.contains("RET,ZMENC"))
 		setRegister(R_ZOOM_POS, data.split("~").at(1).toInt());
