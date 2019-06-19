@@ -20,6 +20,7 @@ enum Commands {
 	C_SET_FOCUS,
 	C_SET_GAIN,
 	C_START_IBIT,
+	C_SET_SYMBOLOGY,
 
 	C_GET_ZOOM_POS,
 	C_GET_FOCUS_POS,
@@ -33,6 +34,7 @@ static QStringList commandList = {
 	"<00015#SET,FOCUS:IR~%1",
 	"<0003#SET,GAIN:IR~%1",
 	"<0004#GET,BIT:ALL",
+	"<0005#SET,SYMBOLOGY:%1",
 
 	"<0005#GET,ZMENC:IR",
 	"<0006#GET,FCSENC:IR",
@@ -46,6 +48,7 @@ MgeoSwirHead::MgeoSwirHead()
 		{"focus", { C_SET_FOCUS, R_FOCUS_POS}},
 		{"gain", { C_SET_GAIN, R_GAIN}},
 		{"ibit", { C_START_IBIT, C_GET_IBIT_RESULT}},
+		{"symbology", { C_SET_SYMBOLOGY, 0}},
 	};
 }
 
@@ -116,6 +119,12 @@ void MgeoSwirHead::setProperty(uint r, uint x)
 		sendCommand(commandList.at(r));
 	else if (r == C_GET_IBIT_RESULT)
 		sendCommand(commandList.at(r));
+	else if (r == C_SET_SYMBOLOGY){
+		if (x == 0) //off
+			sendCommand(commandList.at(r).arg("OFF"));
+		else if (x == 1) // on
+			sendCommand(commandList.at(r).arg("ON"));
+	}
 }
 
 uint MgeoSwirHead::getProperty(uint r)
