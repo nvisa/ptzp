@@ -220,6 +220,7 @@ int IRDomePTHead::dataReady(const unsigned char *bytes, int len)
 		setIOError(IOE_SPECIAL_LAST);
 	setRegister(R_PAN_ANGLE, (p[3] << 8) + p[4]);
 	setRegister(R_TILT_ANGLE, (p[5] << 8) + p[6]);
+	pingTimer.restart();
 	return 9;
 }
 
