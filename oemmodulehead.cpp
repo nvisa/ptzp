@@ -329,6 +329,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		return expected;
 	}
 
+	pingTimer.restart();
 	/* register sync support */
 	if (nextSync != C_COUNT) {
 		/* we are in sync mode, let's sync next */
