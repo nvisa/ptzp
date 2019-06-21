@@ -270,6 +270,11 @@ int MgeoFalconEyeHead::stopZoom()
 	cmd[4] = 0x00;
 	cmd[5] = chksum(cmd, len - 1);
 	sendCommand(cmd, len);
+	unsigned char *p = protoBytes[C_GET_ZOOM_POS];
+	len = p[0];
+	p++;
+	p[3] = chksum(p ,len -1);
+	sendCommand(p, len);
 	return 0;
 }
 
