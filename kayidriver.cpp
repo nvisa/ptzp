@@ -17,6 +17,7 @@ KayiDriver::KayiDriver(QList<int> relayConfig, QObject *parent) : PtzpDriver(par
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
+	configLoad(QJsonObject());
 }
 
 PtzpHead *KayiDriver::getHead(int index)
@@ -77,6 +78,17 @@ int KayiDriver::set(const QString &key, const QVariant &value)
 	else if (key == "laser.up")
 		headModule->setProperty(40,value.toUInt());
 	return 0;
+}
+
+void KayiDriver::configLoad(const QJsonObject &obj)
+{
+	Q_UNUSED(obj);
+	QJsonObject o;
+	o.insert("model",QString("Kayi"));
+	o.insert("type" , QString("moving"));
+	o.insert("pan_tilt_support", 1);
+	o.insert("cam_module", QString("thermal"));
+	return PtzpDriver::configLoad(o);
 }
 
 void KayiDriver::timeout()

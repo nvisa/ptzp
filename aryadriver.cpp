@@ -20,7 +20,7 @@ AryaDriver::AryaDriver(QObject *parent)
 
 	defaultPTHead = aryapt;
 	defaultModuleHead = thermal;
-	configLoad("config.json");
+	configLoad(QJsonObject());
 
 	checker = new QElapsedTimer();
 	checker->start();
@@ -340,34 +340,15 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	return 0;
 }
 
-void AryaDriver::configLoad(const QString filename)
+void AryaDriver::configLoad(const QJsonObject &obj)
 {
-	if (!QFile::exists(filename)) {
-		// create default
-		QJsonDocument doc;
-		QJsonObject o;
-		o.insert("model",QString("Arya"));
-		o.insert("type" , QString("moving"));
-		o.insert("pan_tilt_support", 1);
-		o.insert("cam_module", QString("Thermal"));
-		doc.setObject(o);
-		QFile f(filename);
-		f.open(QIODevice::WriteOnly);
-		f.write(doc.toJson());
-		f.close();
-	}
-	QFile f(filename);
-	if (!f.open(QIODevice::ReadOnly))
-		return ;
-	const QByteArray &json = f.readAll();
-	f.close();
-	const QJsonDocument &doc = QJsonDocument::fromJson(json);
-
-	QJsonObject root = doc.object();
-	config.model = root["model"].toString();
-	config.type = root["type"].toString();
-	config.cam_module = root["cam_module"].toString();
-	config.ptSupport = root["pan_tilt_support"].toInt();
+	Q_UNUSED(obj);
+	QJsonObject o;
+	o.insert("model",QString("Arya"));
+	o.insert("type" , QString("moving"));
+	o.insert("pan_tilt_support", 1);
+	o.insert("cam_module", QString("Thermal"));
+	return PtzpDriver::configLoad(o);
 }
 
 int AryaDriver::setZoomOverlay()

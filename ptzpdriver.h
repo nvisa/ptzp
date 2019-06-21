@@ -21,15 +21,6 @@ class PtzpHead;
 class PatternNg;
 class PtzpTransport;
 
-struct conf
-{
-	QString model;
-	QString type;
-	QString cam_module;
-	bool ptSupport;
-	bool irLedSupport;
-};
-
 #ifdef HAVE_PTZP_GRPC_API
 class PtzpDriver : public QObject, public KeyValueInterface, public PtzControlInterface, public ptzp::PTZService::Service
 #else
@@ -58,12 +49,21 @@ public:
 		interOp interFunc;
 	};
 
+	struct Conf
+	{
+		QString model;
+		QString type;
+		QString cam_module;
+		bool ptSupport;
+		bool irLedSupport;
+	};
+
 	explicit PtzpDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri) = 0;
 	virtual PtzpHead * getHead(int index) = 0;
 	virtual int getHeadCount();
-	virtual void configLoad(const QString filename);
+	virtual void configLoad(const QJsonObject &obj);
 
 	void startSocketApi(quint16 port);
 	int startGrpcApi(quint16 port);
@@ -154,7 +154,7 @@ protected:
 	SpeedRegulation sreg;
 	int patrolListPos;
 	bool driverEnabled;
-	conf config;
+	Conf config;
 
 	void commandUpdate(int c, float arg1 = 0, float arg2 = 0);
 

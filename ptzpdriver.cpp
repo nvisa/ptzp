@@ -87,9 +87,22 @@ int PtzpDriver::getHeadCount()
 	return count - 1;
 }
 
-void PtzpDriver::configLoad(const QString filename)
+void PtzpDriver::configLoad(const QJsonObject &obj)
 {
-	Q_UNUSED(filename);
+	QString name = "config.json";
+	if (!QFile::exists(name)) {
+		// create default
+		QJsonDocument doc(obj);
+		QFile f(name);
+		f.open(QIODevice::WriteOnly);
+		f.write(doc.toJson());
+		f.close();
+	}
+	config.model = obj["model"].toString();
+	config.type = obj["type"].toString();
+	config.cam_module = obj["cam_module"].toString();
+	config.ptSupport = obj["pan_tilt_support"].toInt();
+	return;
 }
 
 /**

@@ -15,8 +15,8 @@ public:
 
 	PtzpHead * getHead(int index);
 	int setTarget(const QString &targetUri);
-		int set(const QString &key, const QVariant &value);
-//	void configLoad(const QString filename);
+	int set(const QString &key, const QVariant &value);
+	void configLoad(const QJsonObject &obj);
 
 protected slots:
 	void timeout();
@@ -28,7 +28,6 @@ protected:
 		NORMAL,
 	};
 
-	conf config;
 	MgeoFalconEyeHead *headModule;
 	AryaPTHead *headDome;
 	DriverState state;

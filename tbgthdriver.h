@@ -19,7 +19,7 @@ public:
 	int setTarget(const QString &targetUri);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
-	void configLoad(const QString filename);
+	void configLoad(const QJsonObject &obj);
 
 	QByteArray sendFilter(const char *bytes, int len);
 	int readFilter(QAbstractSocket *sock, QByteArray &ba);
@@ -57,7 +57,6 @@ protected:
 	PtzpTransport *tp;
 	PtzpTransport *tp1;
 	DriverState state;
-	conf config;
 	bool yamanoActive;
 	bool evpuActive;
 	bool controlThermal;

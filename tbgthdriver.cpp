@@ -20,7 +20,7 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	state = INIT;
 	defaultPTHead = headEvpuPt;
 	defaultModuleHead = headLens;
-	configLoad("config.json");
+	configLoad(QJsonObject());
 	yamanoActive = false;
 	evpuActive = false;
 	controlThermal = useThermal;
@@ -150,34 +150,15 @@ int TbgthDriver::set(const QString &key, const QVariant &value)
 	return PtzpDriver::set(key,value);
 }
 
-void TbgthDriver::configLoad(const QString filename)
+void TbgthDriver::configLoad(const QJsonObject &obj)
 {
-	if (!QFile::exists(filename)) {
-		// create default
-		QJsonDocument doc;
-		QJsonObject o;
-		o.insert("model",QString("Tbgth"));
-		o.insert("type" , QString("moving"));
-		o.insert("pan_tilt_support", 1);
-		o.insert("cam_module", QString("Yamano"));
-		doc.setObject(o);
-		QFile f(filename);
-		f.open(QIODevice::WriteOnly);
-		f.write(doc.toJson());
-		f.close();
-	}
-	QFile f(filename);
-	if (!f.open(QIODevice::ReadOnly))
-		return ;
-	const QByteArray &json = f.readAll();
-	f.close();
-	const QJsonDocument &doc = QJsonDocument::fromJson(json);
-
-	QJsonObject root = doc.object();
-	config.model = root["model"].toString();
-	config.type = root["type"].toString();
-	config.cam_module = root["cam_module"].toString();
-	config.ptSupport = root["pan_tilt_support"].toInt();
+	Q_UNUSED(obj);
+	QJsonObject o;
+	o.insert("model",QString("Tbgth"));
+	o.insert("type" , QString("moving"));
+	o.insert("pan_tilt_support", 1);
+	o.insert("cam_module", QString("Yamano"));
+	return PtzpDriver::configLoad(o);
 }
 
 QByteArray TbgthDriver::sendFilter(const char *bytes, int len)
