@@ -1,5 +1,6 @@
 #include "mgeofalconeyehead.h"
 #include "debug.h"
+#include "unistd.h"
 #include "ptzptransport.h"
 
 #include <QFile>
@@ -851,6 +852,10 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	}
 	else if (r == C_SET_RELAY_CONTROL) { //switch mode selection
 		/* TODO: implement relay control */
+		ffDebug() << "relay con";
+		i2c->controlRelay(0x01, 0x00);
+		sleep(3);
+		ffDebug() << "relay con after 3 sec";
 		if (x == 0) {// Thermal
 			if(standbyRelay != 0 && thermalRelay != 0)
 			{
@@ -866,7 +871,7 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		} else if (x == 2){
 			i2c->controlRelay(0x01, ((1 << (standbyRelay-1))));
 		}
-		setRegister(R_RELAY_STATUS, fastSwitch);
+		setRegister(R_RELAY_STATUS, x);
 	}
 }
 
