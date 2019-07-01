@@ -17,14 +17,18 @@ public:
 		OUTPUT,
 	};
 
+	int setName(int gpio, const QString &name);
+	QString getName(int gpio);
+	int getGpioNo(const QString &name);
 	int registerGpio(int gpio);
-	int requestGpio(int gpio, Direction d);
+	int requestGpio(int gpio, Direction d, const QString &name = "");
 	int releaseGpio(int gpio);
 	int setGpio(int gpio);
 	int setGpio(int gpio, int value);
 	int toggleGpio(int gpio);
 	int clearGpio(int gpio);
 	int getGpioValue(int gpio);
+	Direction getDirection(int gpio);
 
 protected:
 	int exportGpio(int gpio);
@@ -35,9 +39,11 @@ protected:
 	struct Gpio {
 		QFile *h;
 		Direction d;
+		QString name;
 	};
 
 	QHash<int, Gpio *> requested;
+	QHash<QString, int> namemap;
 
 };
 

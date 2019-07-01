@@ -9,13 +9,36 @@ GpioController::GpioController(QObject *parent) :
 {
 }
 
+int GpioController::setName(int gpio, const QString &name)
+{
+	if (!requested.contains(gpio))
+		return -ENOENT;
+	requested[gpio]->name = name;
+	namemap.insert(name, gpio);
+	return 0;
+}
+
+QString GpioController::getName(int gpio)
+{
+	if (!requested.contains(gpio))
+		return "";
+	return requested[gpio]->name;
+}
+
+int GpioController::getGpioNo(const QString &name)
+{
+	if (!namemap.contains(name))
+		return -1;
+	return namemap[name];
+}
+
 int GpioController::registerGpio(int gpio)
 {
 	gpios << gpio;
 	return 0;
 }
 
-int GpioController::requestGpio(int gpio, Direction d)
+int GpioController::requestGpio(int gpio, Direction d, const QString &name)
 {
 	QString dname = QString(QString("/sys/class/gpio/gpio%1").arg(gpio));
 	if (!QFile::exists(dname)) {
@@ -37,6 +60,7 @@ int GpioController::requestGpio(int gpio, Direction d)
 	g->h = f;
 	g->d = d;
 	requested.insert(gpio, g);
+	setName(gpio, name);
 
 	return 0;
 }
@@ -103,6 +127,13 @@ int GpioController::getGpioValue(int gpio)
 	Gpio *g = requested[gpio];
 	g->h->seek(0);
 	return QString::fromUtf8(g->h->readAll()).trimmed().toInt();
+}
+
+GpioController::Direction GpioController::getDirection(int gpio)
+{
+	if (!requested.contains(gpio))
+		return INPUT;
+	return requested[gpio]->d;
 }
 
 int GpioController::exportGpio(int gpio)
