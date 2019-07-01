@@ -73,6 +73,20 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	headLens->getRangeMapper()->setLookUpValues(zooms);
 	headLens->getRangeMapper()->addMap(hmap);
 	headLens->getRangeMapper()->addMap(vmap);
+	hmap.clear();
+	vmap.clear();
+	zooms.clear();
+	zoomEntry(6875, 9.38, 7.44);
+	zoomEntry(10625, 5.28, 3.98);
+	zoomEntry(13750, 3.19, 2.25);
+	zoomEntry(17500, 1.46, 1.28);
+	zoomEntry(20625, 1.42, 1.08);
+	zoomEntry(24375, 1.25, 0.93);
+	zoomEntry(27656, 0.92, 0.75);
+	zoomEntry(31249, 0.82, 0.66);
+	headThermal->getRangeMapper()->setLookUpValues(zooms);
+	headThermal->getRangeMapper()->addMap(hmap);
+	headThermal->getRangeMapper()->addMap(vmap);
 }
 
 PtzpHead *TbgthDriver::getHead(int index)
