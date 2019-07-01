@@ -5,11 +5,17 @@
 #include "ptzptcptransport.h"
 #include "mgeothermalhead.h"
 #include "debug.h"
+#include "drivers/gpiocontroller.h"
 
 #include <QFile>
 #include <QTimer>
 #include <errno.h>
 #include <QTcpSocket>
+
+#define GPIO_WIPER			187
+#define GPIO_WATER			186
+#define GPIO_WIPER_STATUS	89
+#define GPIO_WATER_STATUS	202
 
 TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	: PtzpDriver(parent)
@@ -24,6 +30,11 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	yamanoActive = false;
 	evpuActive = false;
 	controlThermal = useThermal;
+
+	gpiocont->requestGpio(GPIO_WATER, GpioController::OUTPUT, "WaterControl");
+	gpiocont->requestGpio(GPIO_WIPER, GpioController::OUTPUT, "WiperControl");
+	gpiocont->requestGpio(GPIO_WATER_STATUS, GpioController::INPUT, "WaterStatus");
+	gpiocont->requestGpio(GPIO_WIPER_STATUS, GpioController::INPUT, "WiperStatus");
 }
 
 PtzpHead *TbgthDriver::getHead(int index)
