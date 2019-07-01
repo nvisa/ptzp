@@ -17,6 +17,11 @@
 #define GPIO_WIPER_STATUS	89
 #define GPIO_WATER_STATUS	202
 
+#define zoomEntry(zoomv, h, v) \
+	zooms.push_back(zoomv); \
+	hmap.push_back(h); \
+	vmap.push_back(v)
+
 TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	: PtzpDriver(parent)
 {
@@ -35,6 +40,39 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	gpiocont->requestGpio(GPIO_WIPER, GpioController::OUTPUT, "WiperControl");
 	gpiocont->requestGpio(GPIO_WATER_STATUS, GpioController::INPUT, "WaterStatus");
 	gpiocont->requestGpio(GPIO_WIPER_STATUS, GpioController::INPUT, "WiperStatus");
+
+	/* yamano fov mapping */
+	std::vector<float> hmap, vmap;
+	std::vector<int> zooms;
+	zoomEntry(88, 25.6, 15);
+	zoomEntry(122, 22.8, 13.3);
+	zoomEntry(157, 20.4, 12);
+	zoomEntry(191, 18.2, 10.7);
+	zoomEntry(225, 16.2, 9.6);
+	zoomEntry(259, 14.4, 8.5);
+	zoomEntry(294, 12.8, 7.6);
+	zoomEntry(328, 11.3, 6.7);
+	zoomEntry(362, 9.9, 6);
+	zoomEntry(397, 8.8, 5.3);
+	zoomEntry(431, 7.7, 4.7);
+	zoomEntry(465, 6.7, 4.1);
+	zoomEntry(499, 5.9, 3.6);
+	zoomEntry(534, 5.1, 3.2);
+	zoomEntry(568, 4.4, 2.8);
+	zoomEntry(602, 3.8, 2.5);
+	zoomEntry(637, 3.3, 2.2);
+	zoomEntry(671, 2.8, 1.9);
+	zoomEntry(705, 2.4, 1.6);
+	zoomEntry(740, 2.1, 1.4);
+	zoomEntry(774, 1.7, 1.2);
+	zoomEntry(808, 1.5, 1);
+	zoomEntry(843, 1.3, 0.9);
+	zoomEntry(877, 1.1, 0.7);
+	zoomEntry(911, 0.9, 0.6);
+	zoomEntry(945, 0.8, 0.46);
+	headLens->getRangeMapper()->setLookUpValues(zooms);
+	headLens->getRangeMapper()->addMap(hmap);
+	headLens->getRangeMapper()->addMap(vmap);
 }
 
 PtzpHead *TbgthDriver::getHead(int index)
