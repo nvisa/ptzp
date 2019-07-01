@@ -134,6 +134,17 @@ int TbgthDriver::setTarget(const QString &targetUri)
 		}
 	}
 
+	if (yamanoActive) {
+		SpeedRegulation sreg = getSpeedRegulation();
+		sreg.enable = true;
+		sreg.ipol = SpeedRegulation::LINEAR;
+		sreg.minSpeed = 0.01;
+		sreg.minZoom = 88;
+		sreg.maxZoom = 945;
+		sreg.zoomHead = headLens;
+		setSpeedRegulation(sreg);
+	}
+
 	return 0;
 }
 
