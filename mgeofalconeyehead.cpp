@@ -200,9 +200,9 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 		{"optic_bypass", { C_SET_OPTIC_BYPASS, 0}},
 		{"flas_protection", { C_SET_FLASH_PROTECTION, R_FLASH_PROTECTION}},
 		{"optic_step", { C_SET_OPTIC_STEP, R_OPTIC_STEP}},
-		{"dmc_azimuth", { C_SET_DMC_OFFSET_AZIMUTH, R_DMC_AZIMUTH}},
-		{"dmc_elevation", { C_SET_DMC_OFFSET_ELEVATION, R_DMC_ELEVATION}},
-		{"dmc_bank", { C_SET_DMC_OFFSET_BANK, R_DMC_BANK}},
+		{"dmc_azimuth", { 0, R_DMC_AZIMUTH}},
+		{"dmc_elevation", { 0, R_DMC_ELEVATION}},
+		{"dmc_bank", { 0, R_DMC_BANK}},
 		{"dmc_offset_save", { C_SET_DMC_OFFSET_SAVE, 0}},
 		{"laser_up", { C_SET_LASER_UP, R_LASER_STATUS}},
 		{"laser_fire", { C_SET_LASER_FIRE, 0}},
@@ -212,6 +212,9 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 		{"button_press", { C_SET_BUTTON_PRESSED, 0}},
 		{"button_release", { C_SET_BUTTON_RELEASED, 0}},
 		{"relay_control", { C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
+		{"dmc_azimuth_offset", { C_SET_DMC_OFFSET_AZIMUTH, R_DMC_OFFSET_AZIMUTH}},
+		{"dmc_elevation_offset", { C_SET_DMC_OFFSET_ELEVATION, R_DMC_OFFSET_ELEVATION}},
+		{"dmc_bank_offset", { C_SET_DMC_OFFSET_BANK, R_DMC_OFFSET_BANK}},
 
 		{"software_version" , { 0, R_SOFTWARE_VERSION}},
 		{"cooler", { 0, R_COOLER}},
@@ -422,7 +425,7 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_GMT, (bytes[39] * 10));
 	}
 	else if (bytes[2] == 0x96){
-		if (R_DMC_PARAM == 0){
+		if (getRegister(R_DMC_PARAM) == 0){
 			setRegister(R_DMC_AZIMUTH, ((bytes[4] * 0x0100)
 						+ bytes[3] + (bytes[5]/100)));
 			setRegister(R_DMC_ELEVATION, ((bytes[7] * 0x0100)
@@ -430,7 +433,7 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(R_DMC_BANK, ((bytes[10] * 0x0100)
 						+ bytes[9] + (bytes[11]/100)));
 		}
-		else if(R_DMC_PARAM == 1){
+		else if(getRegister(R_DMC_PARAM) == 1){
 			setRegister(R_DMC_AZIMUTH, ((bytes[4] * 0x0100) + bytes[3]));
 			setRegister(R_DMC_ELEVATION, ((bytes[6] * 0x0100) + bytes[5]));
 			setRegister(R_DMC_BANK, ((bytes[8] * 0x0100) + bytes[7]));
@@ -778,13 +781,13 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		int len = p[0];
 		p++;
 		p[3] = qAbs(x);
-		p[4] = getRegister(R_DMC_ELEVATION);
-		p[5] = getRegister(R_DMC_BANK);
+		p[4] = getRegister(R_DMC_OFFSET_ELEVATION);
+		p[5] = getRegister(R_DMC_OFFSET_BANK);
 		if (x < 0)
 			p[6] = 0x04 + getRegister(R_DMC_OFFSET_SIGN);
 		else p[6] = getRegister(R_DMC_OFFSET_SIGN);
 		p[7] = chksum(p, len - 1);
-		setRegister(R_DMC_AZIMUTH, x);
+		setRegister(R_DMC_OFFSET_AZIMUTH, x);
 		setRegister(R_DMC_OFFSET_SIGN, p[6]);
 		sendCommand(p, len);
 	}
@@ -792,14 +795,14 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		p[3] = getRegister(R_DMC_AZIMUTH);
+		p[3] = getRegister(R_DMC_OFFSET_AZIMUTH);
 		p[4] = qAbs(x);
-		p[5] = getRegister(R_DMC_BANK);
+		p[5] = getRegister(R_DMC_OFFSET_BANK);
 		if (x < 0)
 			p[6] = 0x02 + getRegister(R_DMC_OFFSET_SIGN);
 		else p[6] = getRegister(R_DMC_OFFSET_SIGN);
 		p[7] = chksum(p, len - 1);
-		setRegister(R_DMC_ELEVATION, x);
+		setRegister(R_DMC_OFFSET_ELEVATION, x);
 		setRegister(R_DMC_OFFSET_SIGN, p[6]);
 		sendCommand(p, len);
 	}
@@ -807,14 +810,14 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		p[3] = getRegister(R_DMC_AZIMUTH);
-		p[4] = getRegister(R_DMC_ELEVATION);
+		p[3] = getRegister(R_DMC_OFFSET_AZIMUTH);
+		p[4] = getRegister(R_DMC_OFFSET_ELEVATION);
 		p[5] = qAbs(x);
 		if (x < 0)
 			p[6] = 0x01 + getRegister(R_DMC_OFFSET_SIGN);
 		else p[6] = getRegister(R_DMC_OFFSET_SIGN);
 		p[7] = chksum(p, len - 1);
-		setRegister(R_DMC_BANK, x);
+		setRegister(R_DMC_OFFSET_BANK, x);
 		setRegister(R_DMC_OFFSET_SIGN, p[6]);
 		sendCommand(p, len);
 	}
