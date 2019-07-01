@@ -338,7 +338,9 @@ void MgeoFalconEyeHead::setProperty(const QString &key, const QVariant &value)
 int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
 {
 	bool day = true;
-	int fov_type = 0; //wide: 0, narrow: 2, middle: 1
+	if (getRegister(R_RELAY_STATUS) == 0 && getRegister(R_CAM) == 0)
+		day = false;
+	int fov_type = getRegister(R_FOV); //wide: 0, narrow: 2, middle: 1
 	if (day) {
 		if (fov_type == 0) {
 			hor = 11.0;
