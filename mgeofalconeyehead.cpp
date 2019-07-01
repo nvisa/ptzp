@@ -335,6 +335,38 @@ void MgeoFalconEyeHead::setProperty(const QString &key, const QVariant &value)
 	Q_UNUSED(value);
 }
 
+int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
+{
+	bool day = true;
+	int fov_type = 0; //wide: 0, narrow: 2, middle: 1
+	if (day) {
+		if (fov_type == 0) {
+			hor = 11.0;
+			ver = 8.25;
+		} else if (fov_type == 1) {
+			hor = 6.0;
+			ver = 4.5;
+		} else {
+			hor = 2.0;
+			ver = 1.5;
+		}
+		return 0;
+	}
+
+	/* thermal */
+	if (fov_type == 0) { // thermal
+		hor = 25.0;
+		ver = 20.0;
+	} else if (fov_type == 1) {
+		hor = 6.0;
+		ver = 4.8;
+	} else {
+		hor = 2.0;
+		ver = 1.6;
+	}
+	return 0;
+}
+
 int MgeoFalconEyeHead::syncNext()
 {
 	unsigned char *p = protoBytes[nextSync];

@@ -94,6 +94,7 @@ public:
 	virtual uint getProperty(uint r);
 	virtual QVariant getProperty(const QString &key);
 	virtual void setProperty(const QString &key, const QVariant &value);
+	virtual int getFOV(float &hor, float &ver);
 
 protected:
 	int syncNext();
