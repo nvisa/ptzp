@@ -59,7 +59,8 @@ public:
 #endif
 
 PtzpDriver::PtzpDriver(QObject *parent)
-	: QObject(parent)
+	: QObject(parent),
+	  gpiocont(new GpioController)
 {
 	driverEnabled = true;
 	sreg.enable = false;
@@ -859,6 +860,56 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	map["focus_stop"] = 0;
 	head->setSettings(map);
 
+	return grpc::Status::OK;
+}
+
+grpc::Status PtzpDriver::GetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response)
+{
+	Q_UNUSED(context);
+	if (request->name_size() != request->state_size())
+		return grpc::Status::CANCELLED;
+
+	for (int i = 0; i < request->name_size(); i++) {
+		std::string name = request->name(i);
+		int gpio = gpiocont->getGpioNo(QString::fromStdString(name));
+		if (gpio < 0)
+			continue;
+		if (gpiocont->getDirection(gpio) != GpioController::INPUT)
+			continue;
+		response->add_name(name);
+		ptzp::IOState *state = response->add_state();
+		state->set_direction(ptzp::IOState_Direction_INPUT);
+		if (gpiocont->getGpioValue(gpio))
+			state->set_value(ptzp::IOState_OutputValue_HIGH);
+		else
+			state->set_value(ptzp::IOState_OutputValue_LOW);
+	}
+	return grpc::Status::OK;
+}
+
+grpc::Status PtzpDriver::SetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response)
+{
+	Q_UNUSED(context);
+	if (request->name_size() != request->state_size())
+		return grpc::Status::CANCELLED;
+
+	for (int i = 0; i < request->name_size(); i++) {
+		std::string name = request->name(i);
+		int gpio = gpiocont->getGpioNo(QString::fromStdString(name));
+		if (gpio < 0)
+			continue;
+		if (gpiocont->getDirection(gpio) != GpioController::OUTPUT)
+			continue;
+		response->add_name(name);
+		const ptzp::IOState &sin = request->state(i);
+		ptzp::IOState *sout = response->add_state();
+		sout->set_direction(ptzp::IOState_Direction_OUTPUT);
+		sout->set_value(sin.value());
+		if (sin.value() == ptzp::IOState_OutputValue_HIGH)
+			gpiocont->setGpio(gpio, 1);
+		else
+			gpiocont->setGpio(gpio, 2);
+	}
 	return grpc::Status::OK;
 }
 

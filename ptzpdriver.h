@@ -11,6 +11,7 @@
 #include <ecl/interfaces/ptzcontrolinterface.h>
 
 #ifdef HAVE_PTZP_GRPC_API
+#include <ecl/drivers/gpiocontroller.h>
 #include <ecl/ptzp/grpc/ptzp.pb.h>
 #include <ecl/ptzp/grpc/ptzp.grpc.pb.h>
 #endif
@@ -132,6 +133,9 @@ public:
 	grpc::Status FocusIn(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response);
 	grpc::Status FocusOut(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response);
 	grpc::Status FocusStop(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response);
+	// IO
+	grpc::Status GetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response);
+	grpc::Status SetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response);
 #endif
 
 protected:
@@ -155,9 +159,9 @@ protected:
 	int patrolListPos;
 	bool driverEnabled;
 	Conf config;
+	GpioController *gpiocont;
 
 	void commandUpdate(int c, float arg1 = 0, float arg2 = 0);
-
 };
 
 #endif // PTZPDRIVER_H
