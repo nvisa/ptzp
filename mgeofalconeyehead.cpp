@@ -1,5 +1,6 @@
 #include "mgeofalconeyehead.h"
 #include "debug.h"
+#include "unistd.h"
 #include "ptzptransport.h"
 
 #include <QFile>
@@ -332,6 +333,38 @@ void MgeoFalconEyeHead::setProperty(const QString &key, const QVariant &value)
 {
 	Q_UNUSED(key);
 	Q_UNUSED(value);
+}
+
+int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
+{
+	bool day = true;
+	int fov_type = 0; //wide: 0, narrow: 2, middle: 1
+	if (day) {
+		if (fov_type == 0) {
+			hor = 11.0;
+			ver = 8.25;
+		} else if (fov_type == 1) {
+			hor = 6.0;
+			ver = 4.5;
+		} else {
+			hor = 2.0;
+			ver = 1.5;
+		}
+		return 0;
+	}
+
+	/* thermal */
+	if (fov_type == 0) { // thermal
+		hor = 25.0;
+		ver = 20.0;
+	} else if (fov_type == 1) {
+		hor = 6.0;
+		ver = 4.8;
+	} else {
+		hor = 2.0;
+		ver = 1.6;
+	}
+	return 0;
 }
 
 int MgeoFalconEyeHead::syncNext()
@@ -851,6 +884,10 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 	}
 	else if (r == C_SET_RELAY_CONTROL) { //switch mode selection
 		/* TODO: implement relay control */
+		ffDebug() << "relay con";
+		i2c->controlRelay(0x01, 0x00);
+		sleep(3);
+		ffDebug() << "relay con after 3 sec";
 		if (x == 0) {// Thermal
 			if(standbyRelay != 0 && thermalRelay != 0)
 			{
@@ -866,7 +903,7 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		} else if (x == 2){
 			i2c->controlRelay(0x01, ((1 << (standbyRelay-1))));
 		}
-		setRegister(R_RELAY_STATUS, fastSwitch);
+		setRegister(R_RELAY_STATUS, x);
 	}
 }
 
