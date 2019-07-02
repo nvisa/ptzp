@@ -22,6 +22,38 @@
 	hmap.push_back(h); \
 	vmap.push_back(v)
 
+static float speedRegulateDay(float speed, float fovs[])
+{
+	int fov = fovs[0];
+	if (fov < 0.8)
+		return 0.01;
+	if (fov > 25.6)
+		return 1.0;
+	float zoomr = (fov - 0.8) / (float)(25.6 - 0.8);
+	speed *= zoomr;
+	if (speed < 0.01)
+		speed = 0.01;
+	if (speed > 1.0)
+		speed = 1.0;
+	return speed;
+}
+
+static float speedRegulateThermal(float speed, float fovs[])
+{
+	int fov = fovs[0];
+	if (fov < 0.82)
+		return 0.01;
+	if (fov > 9.38)
+		return 1.0;
+	float zoomr = (fov - 0.82) / (float)(9.38 - 0.82);
+	speed *= zoomr;
+	if (speed < 0.01)
+		speed = 0.01;
+	if (speed > 1.0)
+		speed = 1.0;
+	return speed;
+}
+
 TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	: PtzpDriver(parent)
 {
@@ -137,11 +169,16 @@ int TbgthDriver::setTarget(const QString &targetUri)
 	if (yamanoActive) {
 		SpeedRegulation sreg = getSpeedRegulation();
 		sreg.enable = true;
-		sreg.ipol = SpeedRegulation::LINEAR;
-		sreg.minSpeed = 0.01;
-		sreg.minZoom = 88;
-		sreg.maxZoom = 945;
+		sreg.ipol = SpeedRegulation::CUSTOM;
+		sreg.interFunc = speedRegulateDay;
 		sreg.zoomHead = headLens;
+		setSpeedRegulation(sreg);
+	} else if (controlThermal) {
+		SpeedRegulation sreg = getSpeedRegulation();
+		sreg.enable = true;
+		sreg.ipol = SpeedRegulation::CUSTOM;
+		sreg.interFunc = speedRegulateThermal;
+		sreg.zoomHead = headThermal;
 		setSpeedRegulation(sreg);
 	}
 
