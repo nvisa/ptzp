@@ -46,7 +46,7 @@ public:
 		float minSpeed;
 		Interpolation ipol;
 		PtzpHead *zoomHead;
-		typedef float (*interOp)(float, int);
+		typedef float (*interOp)(float, float[]);
 		interOp interFunc;
 	};
 

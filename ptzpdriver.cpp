@@ -917,8 +917,11 @@ float PtzpDriver::regulateSpeed(float raw, int zoom)
 {
 	if (!sreg.enable)
 		return raw;
-	if (sreg.ipol == SpeedRegulation::CUSTOM)
-		return sreg.interFunc(raw, zoom);
+	if (sreg.ipol == SpeedRegulation::CUSTOM) {
+		float fovs[2];
+		sreg.zoomHead->getFOV(fovs[0], fovs[1]);
+		return sreg.interFunc(raw, fovs);
+	}
 	if (sreg.minZoom < sreg.maxZoom) {
 		if (zoom < sreg.minZoom)
 			return raw;
