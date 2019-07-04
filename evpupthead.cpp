@@ -147,6 +147,14 @@ int EvpuPTHead::panTiltAbs(float pan, float tilt)
 	return 0;
 }
 
+int EvpuPTHead::panTiltDegree(float pan, float tilt)
+{
+	float pans = pan / 120.0;
+	float tilts = tilt / 120.0;
+
+	return panTiltAbs(pans,tilts);
+}
+
 int EvpuPTHead::sendCommand(const QString &key)
 {
 	QByteArray cmd = key.toStdString().c_str();
@@ -182,7 +190,7 @@ int EvpuPTHead::dataReady(const unsigned char *bytes, int len)
 		return flds[0].size() + flds[1].size() + flds[2].size() + 4;
 	} else /* this is not for us */ {
 		mLog("Incoming message from EVPU: %s", bytes);
-		return 0;
+		return len;
 	}
 
 	return len;
