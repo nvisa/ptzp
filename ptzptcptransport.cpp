@@ -124,6 +124,8 @@ void PtzpTcpTransport::callback()
 
 void PtzpTcpTransport::sendSocketMessage(const QByteArray &ba)
 {
+	if (!sock)
+		return;
 	if (isUdp && sendDstPort)
 		((QUdpSocket*) sock)->writeDatagram(ba, sock->peerAddress(), sendDstPort);
 	else if (sock)
