@@ -35,6 +35,9 @@ protected:
 		SYNC_HEAD_LENS,
 		SYNC_HEAD_THERMAL,
 		NORMAL,
+		EVPU_RELEASE,
+		EVPU_GRAB,
+		EVPU_GRAB_WAIT,
 	};
 
 	class FilteringState {

@@ -336,9 +336,9 @@ void TbgthDriver::enableDriver(bool value)
 {
 	PtzpDriver::enableDriver(value);
 	if (!driverEnabled) {
-		((PtzpTcpTransport *)tp1)->disconnectFrom();
+		state = EVPU_RELEASE;
 	} else {
-		tp1->connectTo(tp1ConnectionString);
+		state = EVPU_GRAB;
 	}
 }
 
@@ -381,6 +381,16 @@ void TbgthDriver::timeout()
 		if(time->elapsed() >= 10000) {
 			time->restart();
 		}
+		break;
+	case EVPU_GRAB:
+		tp1->connectTo(tp1ConnectionString);
+		state = NORMAL;
+		break;
+	case EVPU_RELEASE:
+		((PtzpTcpTransport *)tp1)->disconnectFrom();
+		state = EVPU_GRAB_WAIT;
+		break;
+	case EVPU_GRAB_WAIT:
 		break;
 	}
 
