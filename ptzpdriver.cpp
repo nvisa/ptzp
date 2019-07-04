@@ -288,7 +288,8 @@ void PtzpDriver::sendCommand(int c, float par1, float par2)
 			defaultPTHead->panTiltStop();
 		else if (c == PtzControlInterface::C_PAN_TILT_ABS_MOVE)
 			defaultPTHead->panTiltAbs(par1, par2);
-	} else if (defaultModuleHead) {
+	}
+	if (defaultModuleHead) {
 		if (c == PtzControlInterface::C_ZOOM_IN)
 			defaultModuleHead->startZoomIn((int)par1);
 		else if (c == PtzControlInterface::C_ZOOM_OUT)
