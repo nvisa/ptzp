@@ -132,7 +132,7 @@ int IRDomePTHead::panTiltAbs(float pan, float tilt)
 int IRDomePTHead::panTiltDegree(float pan, float tilt)
 {
 	auto lowerp = std::lower_bound(speedTableMapping.begin(), speedTableMapping.end(), qAbs(pan)) - speedTableMapping.begin();
-	auto lowert = std::lower_bound(speedTableMapping.begin(), speedTableMapping.end(), qAbs(tilt)) - speedTableMapping.end();
+	auto lowert = std::lower_bound(speedTableMapping.begin(), speedTableMapping.end(), qAbs(tilt)) - speedTableMapping.begin();
 
 	int speed_pan = lowerp * 3 + 2;
 	int speed_tilt = lowert * 3 + 2;
