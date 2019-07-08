@@ -105,6 +105,8 @@ void KayiDriver::timeout()
 			state = NORMAL;
 //			tp1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
+			headModule->setProperty(5, 1);
+			headModule->setProperty(37, 1);
 		}
 		break;
 	case NORMAL:
