@@ -48,6 +48,17 @@ int YamGozDriver::setTarget(const QString &targetUri)
 
 void YamGozDriver::timeout()
 {
+	switch (state) {
+	case INIT:
+		head0->setProperty(4, 0);
+		head1->setProperty(4, 0);
+		head2->setProperty(4, 0);
+		state = NORMAL;
+		break;
+	case NORMAL:
+		break;
+	}
+
 	PtzpDriver::timeout();
 }
 
