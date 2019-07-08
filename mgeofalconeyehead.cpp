@@ -4,6 +4,8 @@
 #include "ptzptransport.h"
 
 #include <QFile>
+#include <QThread>
+#include <QSemaphore>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -157,6 +159,53 @@ public:
 	}
 };
 
+class RelayControlThread : public QThread
+{
+public:
+	RelayControlThread()
+	{
+		switching = false;
+		x = 0;
+	}
+
+	int switch2(int x)
+	{
+		if (switching)
+			return -1;
+		this->x = x;
+		gosem.release();
+		return 0;
+	}
+
+	void run()
+	{
+		while (1) {
+			gosem.acquire();
+
+			switching = true;
+			i2c->controlRelay(0x01, 0x00);
+			sleep(3);
+			if (x == 0) // Thermal
+				i2c->controlRelay(0x01, ((1 << (standbyRelay-1)) + (1 << (thermalRelay-1))));
+			else if (x == 1)
+				i2c->controlRelay(0x01, 1 << (dayCamRelay-1));
+			else if (x == 2)
+				i2c->controlRelay(0x01, ((1 << (standbyRelay-1))));
+			sleep(2);
+			switching = false;
+		}
+	}
+
+	QSemaphore gosem;
+	bool switching;
+	int x;
+	int dayCamRelay;
+	int thermalRelay;
+	int standbyRelay;
+	PCA9538Driver *i2c;
+
+};
+
 MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 {
 	dayCamRelay = 4;
@@ -171,6 +220,12 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 	i2c = new PCA9538Driver;
 	i2c->open();
 	i2c->resetAllPorts();
+	relth = new RelayControlThread;
+	relth->i2c = i2c;
+	relth->dayCamRelay = dayCamRelay;
+	relth->thermalRelay = thermalRelay;
+	relth->standbyRelay = standbyRelay;
+	relth->start();
 
 	syncTimer.start();
 
@@ -895,6 +950,7 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		sendCommand(p, len);
 	}
 	else if (r == C_SET_RELAY_CONTROL) { //switch mode selection
+#if 0
 		/* TODO: implement relay control */
 		ffDebug() << "relay con";
 		i2c->controlRelay(0x01, 0x00);
@@ -915,6 +971,9 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		} else if (x == 2){
 			i2c->controlRelay(0x01, ((1 << (standbyRelay-1))));
 		}
+#else
+		relth->switch2(x);
+#endif
 		setRegister(R_RELAY_STATUS, x);
 	}
 }

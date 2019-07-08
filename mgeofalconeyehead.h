@@ -8,6 +8,7 @@
 #include <QElapsedTimer>
 
 class PCA9538Driver;
+class RelayControlThread;
 
 class MgeoFalconEyeHead : public PtzpHead
 {
@@ -111,6 +112,7 @@ private:
 	int readRelayConfig(QString filename);
 	QElapsedTimer syncTimer;
 	PCA9538Driver *i2c;
+	RelayControlThread *relth;
 	bool fastSwitch;
 	int thermalRelay;
 	int dayCamRelay;
