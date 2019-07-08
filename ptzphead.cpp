@@ -332,6 +332,11 @@ int PtzpHead::headSystemChecker()
 	return 0;
 }
 
+QString PtzpHead::whoAmI()
+{
+	return "";
+}
+
 int PtzpHead::getSystemStatus()
 {
 	// this function using just check system healt state

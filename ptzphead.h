@@ -86,6 +86,7 @@ public:
 	virtual QVariant getProperty(const QString &key);
 	virtual void setProperty(const QString &key, const QVariant &value);
 	virtual int headSystemChecker();
+	virtual QString whoAmI();
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();

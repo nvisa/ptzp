@@ -372,6 +372,13 @@ int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
 	return 0;
 }
 
+QString MgeoFalconEyeHead::whoAmI()
+{
+	if ( getProperty(3))
+		return "tv";
+	return "thermal";
+}
+
 int MgeoFalconEyeHead::syncNext()
 {
 	unsigned char *p = protoBytes[nextSync];
