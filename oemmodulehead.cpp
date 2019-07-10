@@ -408,14 +408,44 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	} else if(sendcmd == C_VISCA_GET_PROGRAM_AE_MODE){
 		mInfo("Program AE Mode synced");
 		setRegister(R_PROGRAM_AE_MODE,p[2]);
-	} else if(sendcmd == C_VISCA_GET_ZOOM){
-		mLogv("Zoom Position synced");
+	} else if(sendcmd == C_VISCA_GET_ZOOM) {
+		if (p[1] != 0x50 || p[6] != 0xFF) {
+			mInfo("Zoom response err: wrong mesg[%s]", QByteArray((char*)p, len).toHex().data());
+			return expected;
+		}
+
+		static uint oldValue = 0;
+		uint regValue = getRegister(R_ZOOM_POS);
 		uint value =
-				((p[2] & 0x0F) << 12) +
-				((p[3] & 0x0F) << 8) +
-				((p[4] & 0x0F) << 4) +
+				((p[2] & 0x0F) << 12) |
+				((p[3] & 0x0F) << 8) |
+				((p[4] & 0x0F) << 4) |
 				((p[5] & 0x0F) << 0);
+		if (value > 0x7AC0) {
+			mInfo("Zoom response err: big value [%d]", value);
+			return expected;
+		}
+
+		if (regValue * 1.1 < value || value < regValue * 0.9) {
+			if (oldValue * 1.1 < value || value < oldValue * 0.9) {
+				oldValue = value;
+				mInfo("Zoom response err: value peak [%d]", value);
+				return expected;
+			}
+		}
+		oldValue = value;
+
+		mLogv("Zoom Position synced");
 		setRegister(R_ZOOM_POS, value);
+		if(value >= 16384){
+			mLogv("Optic and digital zoom position synced");
+			setRegister(R_DIGI_ZOOM_POS,getRegister(R_ZOOM_POS)-16384);
+			setRegister(R_OPTIC_ZOOM_POS,16384);
+		} else if (value < 16384){
+			mLogv("Optic and digital zoom position synced");
+			setRegister(R_OPTIC_ZOOM_POS,getRegister(R_ZOOM_POS));
+			setRegister(R_DIGI_ZOOM_POS,0);
+		}
 	} else if(sendcmd == C_VISCA_GET_FLIP_MODE){
 		mInfo("Flip Status synced");
 		setRegister(R_FLIP,(p[2] == 0x02) ? true : false);
@@ -424,15 +454,6 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_MIRROR,(p[2] == 0x02) ? true : false);
 	}
 
-	if(getRegister(R_ZOOM_POS) >= 16384){
-		mLogv("Optic and digital zoom position synced");
-		setRegister(R_DIGI_ZOOM_POS,getRegister(R_ZOOM_POS)-16384);
-		setRegister(R_OPTIC_ZOOM_POS,16384);
-	} else if (getRegister(R_ZOOM_POS) < 16384){
-		mLogv("Optic and digital zoom position synced");
-		setRegister(R_OPTIC_ZOOM_POS,getRegister(R_ZOOM_POS));
-		setRegister(R_DIGI_ZOOM_POS,0);
-	}
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0){
 		setRegister(R_DISPLAY_ROT,0);
