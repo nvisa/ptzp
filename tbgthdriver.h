@@ -25,7 +25,7 @@ public:
 	int readFilter(QAbstractSocket *sock, QByteArray &ba);
 
 	void enableDriver(bool value) override;
-
+	virtual grpc::Status SetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response);
 protected slots:
 	void timeout();
 

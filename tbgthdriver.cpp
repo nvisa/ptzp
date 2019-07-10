@@ -342,6 +342,36 @@ void TbgthDriver::enableDriver(bool value)
 	}
 }
 
+grpc::Status TbgthDriver::SetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response)
+{
+	if (request->name_size() != request->state_size())
+		return grpc::Status::CANCELLED;
+	for (int i = 0; i < request->name_size(); i++) {
+		std::string name = request->name(i);
+		const ptzp::IOState &sin = request->state(i);
+		ptzp::IOState *sout = response->add_state();
+		sout->set_direction(ptzp::IOState_Direction_OUTPUT);
+		sout->set_value(sin.value());
+		if (name.compare(std::string("thermal"))) {
+			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
+				headEvpuPt->setOutput(7,1);
+			else
+				headEvpuPt->setOutput(7,0);
+		} else if (name.compare(std::string("wiper"))) {
+			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
+				headEvpuPt->setOutput(0,1);
+			else
+				headEvpuPt->setOutput(0,0);
+		} else if (name.compare(std::string("wiper"))) {
+			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
+				headEvpuPt->setOutput(0,1);
+			else
+				headEvpuPt->setOutput(0,0);
+		}
+	}
+	return PtzpDriver::SetIO(context,request,response);
+}
+
 void TbgthDriver::timeout()
 {
 	switch (state) {
