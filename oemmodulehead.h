@@ -165,6 +165,7 @@ protected:
 	QElapsedTimer syncTime;
 	QString deviceDefinition;
 	int zoomRatio;
+	int oldZoomValue;
 };
 
 #endif // OEMMODULEHEAD_H

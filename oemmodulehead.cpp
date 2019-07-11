@@ -170,6 +170,7 @@ protected:
 
 OemModuleHead::OemModuleHead()
 {
+	oldZoomValue = 0;
 	hist = new CommandHistory;
 	nextSync = C_COUNT;
 	syncEnabled = true;
@@ -414,7 +415,6 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 			return expected;
 		}
 
-		static uint oldValue = 0;
 		uint regValue = getRegister(R_ZOOM_POS);
 		uint value =
 				((p[2] & 0x0F) << 12) |
@@ -427,13 +427,13 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		}
 
 		if (regValue * 1.1 < value || value < regValue * 0.9) {
-			if (oldValue * 1.1 < value || value < oldValue * 0.9) {
-				oldValue = value;
+			if (oldZoomValue * 1.1 < value || value < oldZoomValue * 0.9) {
+				oldZoomValue = value;
 				mInfo("Zoom response err: value peak [%d]", value);
 				return expected;
 			}
 		}
-		oldValue = value;
+		oldZoomValue = value;
 
 		mLogv("Zoom Position synced");
 		setRegister(R_ZOOM_POS, value);
