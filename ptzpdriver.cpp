@@ -909,7 +909,7 @@ grpc::Status PtzpDriver::SetIO(grpc::ServerContext *context, const ptzp::IOCmdPa
 		if (sin.value() == ptzp::IOState_OutputValue_HIGH)
 			gpiocont->setGpio(gpio, 1);
 		else
-			gpiocont->setGpio(gpio, 2);
+			gpiocont->setGpio(gpio, 0);
 	}
 	return grpc::Status::OK;
 }
