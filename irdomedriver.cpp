@@ -76,6 +76,15 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 			defaultPTHead = headDome;
 			if (tp1->connectTo(fields[1]))
 				return -EPERM;
+
+			SpeedRegulation sreg = getSpeedRegulation();
+			sreg.enable = true;
+			sreg.ipol = SpeedRegulation::LINEAR;
+			sreg.minSpeed = 0.01;
+			sreg.minZoom = 0;
+			sreg.maxZoom = 16384;
+			sreg.zoomHead = headModule;
+			setSpeedRegulation(sreg);
 		}
 	}
 
