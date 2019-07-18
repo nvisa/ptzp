@@ -352,21 +352,29 @@ grpc::Status TbgthDriver::SetIO(grpc::ServerContext *context, const ptzp::IOCmdP
 		ptzp::IOState *sout = response->add_state();
 		sout->set_direction(ptzp::IOState_Direction_OUTPUT);
 		sout->set_value(sin.value());
-		if (name.compare(std::string("thermal"))) {
+
+		qDebug() << "relay name is " << QString::fromStdString(name);
+		if (name.compare(std::string("thermal")) == 0) {
+			qDebug() << "sin value is " << sin.value();
 			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
 				headEvpuPt->setOutput(7,1);
 			else
 				headEvpuPt->setOutput(7,0);
-		} else if (name.compare(std::string("wiper"))) {
+		} else if (name.compare(std::string("daytv")) == 0) {
 			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
-				headEvpuPt->setOutput(0,1);
+				headEvpuPt->setOutput(6,1);
 			else
-				headEvpuPt->setOutput(0,0);
-		} else if (name.compare(std::string("wiper"))) {
+				headEvpuPt->setOutput(6,0);
+		}else if (name.compare(std::string("heater")) == 0) {
 			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
-				headEvpuPt->setOutput(0,1);
+				headEvpuPt->setOutput(5,1);
 			else
-				headEvpuPt->setOutput(0,0);
+				headEvpuPt->setOutput(5,0);
+		} else if (name.compare(std::string("wiper")) == 0) {
+			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
+				headEvpuPt->setOutput(4,1);
+			else
+				headEvpuPt->setOutput(4,0);
 		}
 	}
 	return PtzpDriver::SetIO(context,request,response);
