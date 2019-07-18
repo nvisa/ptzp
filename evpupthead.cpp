@@ -170,6 +170,8 @@ int EvpuPTHead::dataReady(const unsigned char *bytes, int len)
 	 * When we first connect to EVPU, 1 byte of data may be eaten causing
 	 * us to receive 1-less character for the syn messages
 	 */
+	if (data.startsWith("syn ok"))
+		return 5;
 	if (data.startsWith(" syn ok"))
 		return 9;
 	if (data.startsWith("e end") || data.startsWith("a end"))
@@ -189,8 +191,13 @@ int EvpuPTHead::dataReady(const unsigned char *bytes, int len)
 		pingTimer.restart();
 		return flds[0].size() + flds[1].size() + flds[2].size() + 4;
 	} else /* this is not for us */ {
+		int i = 0;
+		for (i = 0; i < len; i++) {
+			if (bytes[i] > 32 && bytes[i] < 128 && bytes[i] != 'n')
+				break;
+		}
 		mLog("Incoming message from EVPU: %s", bytes);
-		return len;
+		return i;
 	}
 
 	return len;
