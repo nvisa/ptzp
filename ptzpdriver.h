@@ -82,6 +82,7 @@ public:
 	virtual int setZoomOverlay();
 	virtual int setOverlay(QString data);
 	bool getDriverUsability() { return usability;}
+	virtual QJsonObject doExtraDeviceTests();
 
 #ifdef HAVE_PTZP_GRPC_API
 public:

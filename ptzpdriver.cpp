@@ -338,6 +338,11 @@ int PtzpDriver::setOverlay(QString data)
 	return 0;
 }
 
+QJsonObject PtzpDriver::doExtraDeviceTests()
+{
+	return QJsonObject();
+}
+
 #ifdef HAVE_PTZP_GRPC_API
 grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::PtzHeadInfo *response)
 {
