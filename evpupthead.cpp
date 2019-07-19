@@ -91,6 +91,11 @@ void EvpuPTHead::syncDevice()
 	sendCommand("e syn\r\n");
 }
 
+QString EvpuPTHead::whoAmI()
+{
+	return "";
+}
+
 int EvpuPTHead::panLeft(float speed)
 {
 	speed = speed * -MaxSpeedA;
@@ -151,7 +156,6 @@ int EvpuPTHead::panTiltDegree(float pan, float tilt)
 {
 	float pans = pan / 120.0;
 	float tilts = tilt / 120.0;
-
 	return panTiltAbs(pans,tilts);
 }
 

@@ -62,7 +62,10 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	headThermal = new MgeoThermalHead;
 	state = INIT;
 	defaultPTHead = headEvpuPt;
-	defaultModuleHead = headLens;
+	if (useThermal)
+		defaultModuleHead = headThermal;
+	else
+		defaultModuleHead = headLens;
 	configLoad(QJsonObject());
 	yamanoActive = false;
 	evpuActive = false;
@@ -76,49 +79,61 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 	/* yamano fov mapping */
 	std::vector<float> hmap, vmap;
 	std::vector<int> zooms;
-	zoomEntry(88, 25.6, 15);
-	zoomEntry(122, 22.8, 13.3);
-	zoomEntry(157, 20.4, 12);
-	zoomEntry(191, 18.2, 10.7);
-	zoomEntry(225, 16.2, 9.6);
-	zoomEntry(259, 14.4, 8.5);
-	zoomEntry(294, 12.8, 7.6);
-	zoomEntry(328, 11.3, 6.7);
-	zoomEntry(362, 9.9, 6);
-	zoomEntry(397, 8.8, 5.3);
-	zoomEntry(431, 7.7, 4.7);
-	zoomEntry(465, 6.7, 4.1);
-	zoomEntry(499, 5.9, 3.6);
-	zoomEntry(534, 5.1, 3.2);
-	zoomEntry(568, 4.4, 2.8);
-	zoomEntry(602, 3.8, 2.5);
-	zoomEntry(637, 3.3, 2.2);
-	zoomEntry(671, 2.8, 1.9);
-	zoomEntry(705, 2.4, 1.6);
-	zoomEntry(740, 2.1, 1.4);
-	zoomEntry(774, 1.7, 1.2);
-	zoomEntry(808, 1.5, 1);
-	zoomEntry(843, 1.3, 0.9);
-	zoomEntry(877, 1.1, 0.7);
-	zoomEntry(911, 0.9, 0.6);
-	zoomEntry(945, 0.8, 0.46);
-	headLens->getRangeMapper()->setLookUpValues(zooms);
-	headLens->getRangeMapper()->addMap(hmap);
-	headLens->getRangeMapper()->addMap(vmap);
-	hmap.clear();
-	vmap.clear();
-	zooms.clear();
-	zoomEntry(6875, 9.38, 7.44);
-	zoomEntry(10625, 5.28, 3.98);
-	zoomEntry(13750, 3.19, 2.25);
-	zoomEntry(17500, 1.46, 1.28);
-	zoomEntry(20625, 1.42, 1.08);
-	zoomEntry(24375, 1.25, 0.93);
-	zoomEntry(27656, 0.92, 0.75);
-	zoomEntry(31249, 0.82, 0.66);
-	headThermal->getRangeMapper()->setLookUpValues(zooms);
-	headThermal->getRangeMapper()->addMap(hmap);
-	headThermal->getRangeMapper()->addMap(vmap);
+	if (!useThermal) {
+		zoomEntry(88, 25.6, 15);
+		zoomEntry(122, 22.8, 13.3);
+		zoomEntry(157, 20.4, 12);
+		zoomEntry(191, 18.2, 10.7);
+		zoomEntry(225, 16.2, 9.6);
+		zoomEntry(259, 14.4, 8.5);
+		zoomEntry(294, 12.8, 7.6);
+		zoomEntry(328, 11.3, 6.7);
+		zoomEntry(362, 9.9, 6);
+		zoomEntry(397, 8.8, 5.3);
+		zoomEntry(431, 7.7, 4.7);
+		zoomEntry(465, 6.7, 4.1);
+		zoomEntry(499, 5.9, 3.6);
+		zoomEntry(534, 5.1, 3.2);
+		zoomEntry(568, 4.4, 2.8);
+		zoomEntry(602, 3.8, 2.5);
+		zoomEntry(637, 3.3, 2.2);
+		zoomEntry(671, 2.8, 1.9);
+		zoomEntry(705, 2.4, 1.6);
+		zoomEntry(740, 2.1, 1.4);
+		zoomEntry(774, 1.7, 1.2);
+		zoomEntry(808, 1.5, 1);
+		zoomEntry(843, 1.3, 0.9);
+		zoomEntry(877, 1.1, 0.7);
+		zoomEntry(911, 0.9, 0.6);
+		zoomEntry(945, 0.8, 0.46);
+		headLens->getRangeMapper()->setLookUpValues(zooms);
+		headLens->getRangeMapper()->addMap(hmap);
+		headLens->getRangeMapper()->addMap(vmap);
+	}
+	//hmap.clear();
+	//vmap.clear();
+	//zooms.clear();
+	else if (useThermal){
+		zoomEntry(6875, 0.82, 0.66);
+		//zoomEntry(6875, 9.38, 7.44);
+		zoomEntry(10625, 0.92, 0.75);
+		//zoomEntry(10625, 5.28, 3.98);
+		zoomEntry(13750, 1.25, 0.93);
+		//zoomEntry(13750, 3.19, 2.25);
+		zoomEntry(17500, 1.42, 1.08);
+		//zoomEntry(17500, 1.46, 1.28);
+		zoomEntry(20625, 1.46, 1.28);
+		//zoomEntry(20625, 1.42, 1.08);
+		zoomEntry(24375, 3.19, 2.25);
+		//zoomEntry(24375, 1.25, 0.93);
+		zoomEntry(27656, 5.28, 3.98);
+		//zoomEntry(27656, 0.92, 0.75);
+		zoomEntry(31249, 9.38, 7.44);
+		//zoomEntry(31249, 0.82, 0.66);
+		headThermal->getRangeMapper()->setLookUpValues(zooms);
+		headThermal->getRangeMapper()->addMap(hmap);
+		headThermal->getRangeMapper()->addMap(vmap);
+	}
 }
 
 PtzpHead *TbgthDriver::getHead(int index)
