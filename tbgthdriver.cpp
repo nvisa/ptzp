@@ -400,14 +400,14 @@ QJsonObject TbgthDriver::doExtraDeviceTests()
 	QJsonObject jsonObject;
 
 	if (!controlThermal) {
-		jsonObject.insert("device_type", "day_camera");
+		jsonObject.insert("device_type", QString("day_camera"));
 		int wiperStatus = gpiocont->getGpioValue(89);
 		jsonObject.insert("wiper_status",wiperStatus);
 		int waterStatus= gpiocont->getGpioValue(202);
 		jsonObject.insert("water_status",waterStatus);
 		return jsonObject;
 	}
-	jsonObject.insert("device_type", "thermal_camera");
+	jsonObject.insert("device_type", QString("thermal_camera"));
 	return jsonObject;
 }
 
