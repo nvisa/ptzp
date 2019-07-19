@@ -380,6 +380,22 @@ grpc::Status TbgthDriver::SetIO(grpc::ServerContext *context, const ptzp::IOCmdP
 	return PtzpDriver::SetIO(context,request,response);
 }
 
+QJsonObject TbgthDriver::doExtraDeviceTests()
+{
+	QJsonObject jsonObject;
+
+	if (!controlThermal) {
+		jsonObject.insert("device_type", "day_camera");
+		int wiperStatus = gpiocont->getGpioValue(89);
+		jsonObject.insert("wiper_status",wiperStatus);
+		int waterStatus= gpiocont->getGpioValue(202);
+		jsonObject.insert("water_status",waterStatus);
+		return jsonObject;
+	}
+	jsonObject.insert("device_type", "thermal_camera");
+	return jsonObject;
+}
+
 void TbgthDriver::timeout()
 {
 	switch (state) {
