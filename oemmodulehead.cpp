@@ -771,8 +771,8 @@ QString OemModuleHead::getIrisLimit()
 int OemModuleHead::setGainLimit(uchar topLim, uchar botLim)
 {
 	const uchar cmd[] = { 0x81, 0x01, 0x04, 0x40, 0x05,
-						  topLim >> 4, topLim & 0xf,
-						  botLim >> 4, botLim & 0xf, 0xff };
+						  uchar(topLim >> 4), uchar(topLim & 0xf),
+						  uchar(botLim >> 4), uchar(botLim & 0xf), 0xff };
 	setRegister(R_TOP_GAIN, topLim);
 	setRegister(R_BOT_GAIN, botLim);
 	return transport->send((const char *)cmd, sizeof(cmd));
