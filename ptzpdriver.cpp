@@ -823,15 +823,13 @@ grpc::Status PtzpDriver::FocusIn(grpc::ServerContext *context, const ptzp::PtzCm
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
+	float speed = request->zoom_speed();
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
-	if (!head->settings.contains("focus_in"))
-		return grpc::Status::CANCELLED;
+	if (!head->settings.contains("focus"))
+		return grpc::Status(grpc::StatusCode::CANCELLED, "not support");
 // TODO fix focus speed 0x2p
-	QVariantMap map;
-	map["focus_in"] = 2;
-	head->setSettings(map);
-
+	head->focusIn(speed);
 	return grpc::Status::OK;
 }
 
@@ -840,14 +838,13 @@ grpc::Status PtzpDriver::FocusOut(grpc::ServerContext *context, const ptzp::PtzC
 	Q_UNUSED(context);
 
 	PtzpHead *head = getHead(request->head_id());
+	float speed = request->zoom_speed();
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
-	if (!head->settings.contains("focus_out"))
-		return grpc::Status::CANCELLED;
+	if (!head->settings.contains("focus"))
+		return grpc::Status(grpc::StatusCode::CANCELLED, "not support");
 
-	QVariantMap map;
-	map["focus_out"] = 3;
-	head->setSettings(map);
+	head->focusOut(speed);
 
 	return grpc::Status::OK;
 }
@@ -859,12 +856,10 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	PtzpHead *head = getHead(request->head_id());
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
-	if (!head->settings.contains("focus_stop"))
-		return grpc::Status::CANCELLED;
+	if (!head->settings.contains("focus"))
+		return grpc::Status(grpc::StatusCode::CANCELLED, "not support");
 
-	QVariantMap map;
-	map["focus_stop"] = 0;
-	head->setSettings(map);
+	head->focusStop();
 
 	return grpc::Status::OK;
 }
