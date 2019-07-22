@@ -23,7 +23,8 @@ HEADERS += \
     ptzp/flirdriver.h \
     ptzp/flirmodulehead.h \
     ptzp/mgeoswirhead.h \
-    ptzp/swirdriver.h
+    ptzp/swirdriver.h \
+	ptzp/virtualptzpdriver.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -49,7 +50,8 @@ SOURCES += \
     ptzp/flirdriver.cpp \
     ptzp/flirmodulehead.cpp \
     ptzp/mgeoswirhead.cpp \
-    ptzp/swirdriver.cpp
+    ptzp/swirdriver.cpp \
+	ptzp/virtualptzpdriver.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API
