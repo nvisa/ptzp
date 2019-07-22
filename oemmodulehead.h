@@ -52,44 +52,6 @@ public:
 		R_COUNT
 	};
 
-	enum MaskColor {
-		COLOR_BLACK,
-		COLOR_GRAY1,
-		COLOR_GRAY2,
-		COLOR_GRAY3,
-		COLOR_GRAY4,
-		COLOR_GRAY5,
-		COLOR_GRAY6,
-		COLOR_WHITE,
-		COLOR_RED,
-		COLOR_GREEN,
-		COLOR_BLUE,
-		COLOR_CYAN,
-		COLOR_YELLOW,
-		COLOR_MAGENTA,
-		COLOR_BLACK_TRANSP = 16,
-		COLOR_GRAY1_TRANSP,
-		COLOR_GRAY2_TRANSP,
-		COLOR_GRAY3_TRANSP,
-		COLOR_GRAY4_TRANSP,
-		COLOR_GRAY5_TRANSP,
-		COLOR_GRAY6_TRANSP,
-		COLOR_WHITE_TRANSP,
-		COLOR_RED_TRANSP,
-		COLOR_GREEN_TRANSP,
-		COLOR_BLUE_TRANSP,
-		COLOR_CYAN_TRANSP,
-		COLOR_YELLOW_TRANSP,
-		COLOR_MAGENTA_TRANSP,
-		COLOR_MOSAIC = 127,
-	};
-
-	enum MaskGrid {
-		GRID_ON = 2,
-		GRID_OFF,
-		GRID_CENTER_LINE
-	};
-
 	int getCapabilities();
 	int syncRegisters();
 	int getHeadStatus();
@@ -111,44 +73,12 @@ public:
 	int getZoomRatio();
 	void clockInvert(bool st);
 
-	/**
-	 * @brief maskeleme işlemleri
-	 */
-	int maskSet(uint maskID, int width, int height, bool nn = 1);
-	int maskSetNoninterlock(uint maskID, int x, int y, int width, int height);
-	int maskSetPTZ(uint maskID, int pan, int tilt, uint zoom);
-	int maskSetPanTiltAngle(int pan, int tilt);
-	int maskSetRanges(int panMax, int panMin, int xMax, int xMin, int tiltMax, int tiltMin, int yMax, int yMin, bool hConvert, bool vConvert);
-	int maskDisplay(uint maskID, bool onOff);
-	int getDisplayMask() { return maskBits; }
-	void updateMaskPosition();
-	int maskColor(uint maskID, MaskColor color_0, MaskColor color_1, bool colorChoose = 0);
-	int maskGrid(MaskGrid onOff);
-
 	int setShutterLimit(uint topLim, uint botLim);
 	QString getShutterLimit();
 	int setIrisLimit(uint topLim, uint botLim);
 	QString getIrisLimit();
 	int setGainLimit(uchar topLim, uchar botLim);
 	QString getGainLimit();
-private:
-	struct maskRange {
-		int pMin;
-		int pMax;
-		int tMin;
-		int tMax;
-		int xMin;
-		int xMax;
-		int yMin;
-		int yMax;
-	};
-	maskRange maskRanges;
-	uint maskBits;
-
-	bool hPole;
-	bool vPole;
-	float xPanRate;
-	float yTiltRate;
 
 protected:
 	int syncNext();
