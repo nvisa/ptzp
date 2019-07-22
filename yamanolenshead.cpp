@@ -161,6 +161,35 @@ int YamanoLensHead::setZoom(uint pos)
 	return transport->send((const char *)p, len);
 }
 
+int YamanoLensHead::focusIn(int speed)
+{
+	Q_UNUSED(speed);
+	unsigned char *p = protoBytes[C_FOCUS_IN];
+	int len = p[0];
+	p++;
+	p[6] = chksum(p, len - 1);
+	return transport->send((const char *)p, len);
+}
+
+int YamanoLensHead::focusOut(int speed)
+{
+	Q_UNUSED(speed);
+	unsigned char *p = protoBytes[C_FOCUS_OUT];
+	int len = p[0];
+	p++;
+	p[6] = chksum(p, len - 1);
+	return transport->send((const char *)p, len);
+}
+
+int YamanoLensHead::focusStop()
+{
+	unsigned char *p = protoBytes[C_FOCUS_STOP];
+	int len = p[0];
+	p++;
+	p[6] = chksum(p, len - 1);
+	return transport->send((const char *)p, len);
+}
+
 uint YamanoLensHead::getProperty(uint r)
 {
 	return getRegister(r);

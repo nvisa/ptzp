@@ -274,6 +274,30 @@ int OemModuleHead::setZoom(uint pos)
 	return transport->send((const char *)p + 2, p[0]);
 }
 
+int OemModuleHead::focusIn(int speed)
+{
+	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
+	hist->add(C_VISCA_SET_FOCUS);
+	p[4 + 2] = 0x20 + speed;
+	return transport->send((const char *)p + 2, p[0]);
+}
+
+int OemModuleHead::focusOut(int speed)
+{
+	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
+	hist->add(C_VISCA_SET_FOCUS);
+	p[4 + 2] = 0x30 + speed;
+	return transport->send((const char *)p + 2, p[0]);
+}
+
+int OemModuleHead::focusStop()
+{
+	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
+	hist->add(C_VISCA_SET_FOCUS);
+	p[4 + 2] = 0x00;
+	return transport->send((const char *)p + 2, p[0]);
+}
+
 void OemModuleHead::enableSyncing(bool en)
 {
 	syncEnabled = en;

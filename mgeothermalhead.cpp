@@ -180,6 +180,27 @@ int MgeoThermalHead::getZoom()
 	return getRegister(C_CONT_ZOOM);
 }
 
+int MgeoThermalHead::focusIn(int speed)
+{
+	Q_UNUSED(speed);
+	unsigned char *p = protoBytes[C_FOCUS];
+	p[3] = 0x01; //focus far
+	return sendCommand(C_FOCUS, p[3]);
+}
+
+int MgeoThermalHead::focusOut(int speed)
+{
+	Q_UNUSED(speed);
+	unsigned char *p = protoBytes[C_FOCUS];
+	p[3] = 0xFF; //focus near
+	return sendCommand(C_FOCUS, p[3]);
+}
+
+int MgeoThermalHead::focusStop()
+{
+	return sendCommand(C_FOCUS);
+}
+
 int MgeoThermalHead::getHeadStatus()
 {
 	if (nextSync != syncList.size())

@@ -20,6 +20,9 @@ public:
 	virtual int startZoomOut(int speed);
 	virtual int stopZoom();
 	virtual int getZoom();
+	virtual int focusIn(int speed);
+	virtual int focusOut(int speed);
+	virtual int focusStop();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
 
