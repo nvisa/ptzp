@@ -75,6 +75,9 @@ public:
 	virtual int startZoomIn(int speed);
 	virtual int startZoomOut(int speed);
 	virtual int stopZoom();
+	virtual int focusIn(int speed);
+	virtual int focusOut(int speed);
+	virtual int focusStop();
 	virtual float getPanAngle();
 	virtual float getTiltAngle();
 	virtual int getZoom();
