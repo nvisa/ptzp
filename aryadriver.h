@@ -41,7 +41,6 @@ public:
 	virtual PtzpHead * getHead(int index);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
-	void configLoad(const QJsonObject &obj);
 	int setZoomOverlay();
 
 	int setOverlay(const QString data);

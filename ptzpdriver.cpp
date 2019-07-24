@@ -65,20 +65,16 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	driverEnabled = true;
 	sreg.enable = false;
 	sreg.zoomHead = NULL;
-	sleep = false;
-	usability = false;
 	timer = new QTimer(this);
-	time = new QElapsedTimer();
-	timeSettingsLoad = new QElapsedTimer();
 	connect(timer, SIGNAL(timeout()), SLOT(timeout()));
 	timer->start(10);
-	time->start();
-	timeSettingsLoad->start();
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
 	ptrn = new PatternNg(this);
 	elaps = new QElapsedTimer();
 	elaps->start();
+	regsavet = new QElapsedTimer();
+	setRegisterSaving(false, 60000);
 }
 
 int PtzpDriver::getHeadCount()
@@ -86,24 +82,6 @@ int PtzpDriver::getHeadCount()
 	int count = 0;
 	while (getHead(count++)) {}
 	return count - 1;
-}
-
-void PtzpDriver::configLoad(const QJsonObject &obj)
-{
-	QString name = "config.json";
-	if (!QFile::exists(name)) {
-		// create default
-		QJsonDocument doc(obj);
-		QFile f(name);
-		f.open(QIODevice::WriteOnly);
-		f.write(doc.toJson());
-		f.close();
-	}
-	config.model = obj["model"].toString();
-	config.type = obj["type"].toString();
-	config.cam_module = obj["cam_module"].toString();
-	config.ptSupport = obj["pan_tilt_support"].toInt();
-	return;
 }
 
 /**
@@ -299,12 +277,6 @@ void PtzpDriver::sendCommand(int c, float par1, float par2)
 	}
 }
 
-void PtzpDriver::sleepMode(bool stat)
-{
-	sleep = stat;
-	mInfo("Sleep mode is %d", sleep);
-}
-
 void PtzpDriver::setSpeedRegulation(PtzpDriver::SpeedRegulation r)
 {
 	sreg = r;
@@ -318,6 +290,26 @@ PtzpDriver::SpeedRegulation PtzpDriver::getSpeedRegulation()
 void PtzpDriver::enableDriver(bool value)
 {
 	driverEnabled = value;
+}
+
+void PtzpDriver::manageRegisterSaving()
+{
+	if (!registerSavingEnabled)
+		return;
+	if (regsavet->elapsed() < registerSavingIntervalMsecs)
+		return;
+	for (int i = 0; i < getHeadCount(); i++)
+		getHead(i)->saveRegisters(QString("head%1.json").arg(i));
+	regsavet->restart();
+}
+
+void PtzpDriver::setRegisterSaving(bool enabled, int intervalMsecs)
+{
+	if (!intervalMsecs)
+		intervalMsecs = 60000;
+	regsavet->restart();
+	registerSavingEnabled = enabled;
+	registerSavingIntervalMsecs = intervalMsecs;
 }
 
 void PtzpDriver::setPatternHandler(PatternNg *p)
@@ -992,33 +984,31 @@ QByteArray PtzpDriver::mapToJson(const QVariantMap &map)
 
 void PtzpDriver::timeout()
 {
-	if(config.ptSupport == 1){
-		if (defaultPTHead && defaultModuleHead)
-			ptrn->positionUpdate(defaultPTHead->getPanAngle(),
-							 defaultPTHead->getTiltAngle(),
-							 defaultModuleHead->getZoom());
-		PatrolNg *ptrl = PatrolNg::getInstance();
-		if (ptrl->getCurrentPatrol()->state != PatrolNg::STOP) { // patrol
-			PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
-			if (patrol->list.isEmpty()) {
-				ptrl->setPatrolStateStop(patrol->patrolName);
-				return;
-			}
-			QPair<QString, int> pp = patrol->list[patrolListPos];
-			QString preset = pp.first;
-			int waittime = pp.second;
-			if (elaps->elapsed() >= waittime) {
-				patrolListPos++;
-				if (patrolListPos == patrol->list.size())
-					patrolListPos = 0;
-				pp = patrol->list[patrolListPos];
-				preset = pp.first;
-				elaps->restart();
-				PresetNg *prst = PresetNg::getInstance();
-				QStringList pos = prst->getPreset(preset);
-				if(!pos.isEmpty())
-					goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
-			}
+	if (defaultPTHead && defaultModuleHead)
+		ptrn->positionUpdate(defaultPTHead->getPanAngle(),
+						 defaultPTHead->getTiltAngle(),
+						 defaultModuleHead->getZoom());
+	PatrolNg *ptrl = PatrolNg::getInstance();
+	if (ptrl->getCurrentPatrol()->state != PatrolNg::STOP) { // patrol
+		PatrolNg::PatrolInfo *patrol = ptrl->getCurrentPatrol();
+		if (patrol->list.isEmpty()) {
+			ptrl->setPatrolStateStop(patrol->patrolName);
+			return;
+		}
+		QPair<QString, int> pp = patrol->list[patrolListPos];
+		QString preset = pp.first;
+		int waittime = pp.second;
+		if (elaps->elapsed() >= waittime) {
+			patrolListPos++;
+			if (patrolListPos == patrol->list.size())
+				patrolListPos = 0;
+			pp = patrol->list[patrolListPos];
+			preset = pp.first;
+			elaps->restart();
+			PresetNg *prst = PresetNg::getInstance();
+			QStringList pos = prst->getPreset(preset);
+			if(!pos.isEmpty())
+				goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(), pos.at(2).toInt());
 		}
 	}
 }

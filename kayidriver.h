@@ -16,7 +16,6 @@ public:
 	PtzpHead * getHead(int index);
 	int setTarget(const QString &targetUri);
 	int set(const QString &key, const QVariant &value);
-	void configLoad(const QJsonObject &obj);
 
 protected slots:
 	void timeout();

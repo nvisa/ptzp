@@ -20,7 +20,6 @@ AryaDriver::AryaDriver(QObject *parent)
 
 	defaultPTHead = aryapt;
 	defaultModuleHead = thermal;
-	configLoad(QJsonObject());
 
 	checker = new QElapsedTimer();
 	checker->start();
@@ -99,6 +98,7 @@ void AryaDriver::timeout()
 			gungor->loadRegisters("gungor.json");
 			state = SYNC_GUNGOR_MODULES;
 		}
+		checker->restart();
 		break;
 	case SYNC_THERMAL_MODULES:
 		if(thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
@@ -113,15 +113,11 @@ void AryaDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		usability = true;
-		if(time->elapsed() >= 10000) {
+		if(checker->elapsed() >= 10000) {
 			setZoomOverlay();
-			if (thermal->getSystemStatus() == 2)
-				thermal->saveRegisters("thermal.json");
-			if (gungor->getSystemStatus() == 2)
-				gungor->saveRegisters("gungor.json");
-			time->restart();
+			checker->restart();
 		}
+		manageRegisterSaving();
 		break;
 	}
 	PtzpDriver::timeout();
@@ -135,9 +131,6 @@ void AryaDriver::overlayFinished()
 
 QVariant AryaDriver::get(const QString &key)
 {
-	if (sleep)
-		return 0;
-
 	mInfo("Get func: %s", qPrintable(key));
 	if (key == "ptz.get_cooled_down")
 		return QString("%1")
@@ -221,21 +214,6 @@ QVariant AryaDriver::get(const QString &key)
 	else if (key == "ptz.head.2.digi_zoom_status")
 		return QString("%1")
 				.arg(gungor->getProperty(8));
-	else if (key == "camera.model")
-		return QString("%1")
-				.arg(config.model);
-	else if (key == "camera.type")
-		return QString("%1")
-				.arg(config.type);
-	else if (key == "camera.cam_module")
-		return QString("%1")
-				.arg(config.cam_module);
-	else if (key == "camera.pan_tilt_support")
-		return QString("%1")
-				.arg(config.ptSupport);
-	else if (key == "camera.ir_led_support")
-		return QString("%1")
-				.arg(config.irLedSupport);
 	else if (key == "video.overlay")
 		return QString("%1;%2;%3;%4")
 				.arg(olay.pos).arg(olay.posx).arg(olay.posy).arg(olay.textSize);
@@ -248,11 +226,6 @@ QVariant AryaDriver::get(const QString &key)
 
 int AryaDriver::set(const QString &key, const QVariant &value)
 {
-	if (key == "ptz.command.control")
-		sleepMode(value.toBool());
-	if (sleep)
-		return 0;
-
 	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
 	if (key == "ptz.cmd.brightness") {
 		thermal->setProperty(0, value.toUInt());
@@ -340,17 +313,6 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	return 0;
 }
 
-void AryaDriver::configLoad(const QJsonObject &obj)
-{
-	Q_UNUSED(obj);
-	QJsonObject o;
-	o.insert("model",QString("Arya"));
-	o.insert("type" , QString("moving"));
-	o.insert("pan_tilt_support", 1);
-	o.insert("cam_module", QString("Thermal"));
-	return PtzpDriver::configLoad(o);
-}
-
 int AryaDriver::setZoomOverlay()
 {
 	QString config = "ctoken=osdcfg01&action=setconfig";
@@ -387,6 +349,7 @@ int AryaDriver::setOverlay(const QString data)
 		return -1;
 	}
 	netman->post(vdParams.ip, vdParams.uname, vdParams.pass, "/moxa-cgi/imageoverlay.cgi", data);
+	return 0;
 }
 
 void AryaDriver::setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass)

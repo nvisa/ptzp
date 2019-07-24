@@ -50,21 +50,11 @@ public:
 		interOp interFunc;
 	};
 
-	struct Conf
-	{
-		QString model;
-		QString type;
-		QString cam_module;
-		bool ptSupport;
-		bool irLedSupport;
-	};
-
 	explicit PtzpDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri) = 0;
 	virtual PtzpHead * getHead(int index) = 0;
 	virtual int getHeadCount();
-	virtual void configLoad(const QJsonObject &obj);
 
 	void startSocketApi(quint16 port);
 	int startGrpcApi(quint16 port);
@@ -73,15 +63,15 @@ public:
 	float getPanAngle();
 	void goToPosition(float p, float t, int z);
 	void sendCommand(int c, float par1, float par2);
-	virtual void sleepMode(bool stat);
 	void setSpeedRegulation(SpeedRegulation r);
 	SpeedRegulation getSpeedRegulation();
 	virtual void enableDriver(bool value);
+	void manageRegisterSaving();
+	void setRegisterSaving(bool enabled, int intervalMsecs);
 
 	void setPatternHandler(PatternNg *p);
 	virtual int setZoomOverlay();
 	virtual int setOverlay(QString data);
-	bool getDriverUsability() { return usability;}
 	virtual QJsonObject doExtraDeviceTests();
 
 #ifdef HAVE_PTZP_GRPC_API
@@ -147,20 +137,18 @@ protected slots:
 	QVariant headInfo(const QString &key, PtzpHead *head);
 
 protected:
-	bool sleep;
-	bool usability;
 	QTimer *timer;
-	QElapsedTimer *time;
-	QElapsedTimer *timeSettingsLoad;
 	PtzpHead *defaultPTHead;
 	PtzpHead *defaultModuleHead;
 	PatternNg *ptrn;
-	QElapsedTimer *elaps;
+	QElapsedTimer *elaps;			//patrol timer
 	SpeedRegulation sreg;
 	int patrolListPos;
 	bool driverEnabled;
-	Conf config;
 	GpioController *gpiocont;
+	bool registerSavingEnabled;
+	int registerSavingIntervalMsecs;
+	QElapsedTimer *regsavet;
 
 	void commandUpdate(int c, float arg1 = 0, float arg2 = 0);
 };

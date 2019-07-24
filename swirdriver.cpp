@@ -16,7 +16,6 @@ SwirDriver::SwirDriver()
 	state = INIT;
 	defaultModuleHead = headModule;
 	defaultPTHead = headDome;
-	configLoad(QJsonObject());
 }
 
 PtzpHead *SwirDriver::getHead(int index)
@@ -62,23 +61,8 @@ void SwirDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		if(time->elapsed() >= 10000) {
-			//			headModule->saveRegisters("oemmodule.json");
-			time->restart();
-		}
 		break;
 	}
 
 	PtzpDriver::timeout();
-}
-
-void SwirDriver::configLoad(const QJsonObject &obj)
-{
-	Q_UNUSED(obj);
-	QJsonObject o;
-	o.insert("model",QString("Swir"));
-	o.insert("type" , QString("moving"));
-	o.insert("pan_tilt_support", 1);
-	o.insert("cam_module", QString("Thermal"));
-	return PtzpDriver::configLoad(o);
 }

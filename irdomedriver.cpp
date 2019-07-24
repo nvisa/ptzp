@@ -16,7 +16,6 @@ IRDomeDriver::IRDomeDriver(QObject *parent)
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
 	state = INIT;
-	configLoad("config.json");
 }
 
 PtzpHead *IRDomeDriver::getHead(int index)
@@ -42,6 +41,7 @@ PtzpHead *IRDomeDriver::getHead(int index)
  */
 int IRDomeDriver::setTarget(const QString &targetUri)
 {
+	ptSupport = false;
 	headModule = new OemModuleHead;
 	headDome = new IRDomePTHead;
 	QStringList fields = targetUri.split(";");
@@ -68,10 +68,10 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 			return -EPERM;
 
 		if (fields[1] != "null") {
+			ptSupport = true;
 			tp1 = new PtzpSerialTransport();
 			headDome->setTransport(tp1);
 			headDome->enableSyncing(true);
-			config.ptSupport = true;
 
 			defaultPTHead = headDome;
 			if (tp1->connectTo(fields[1]))
@@ -124,8 +124,6 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 QVariant IRDomeDriver::get(const QString &key)
 {
 	mInfo("Get func: %s", qPrintable(key));
-	if (sleep)
-		return 0;
 	if (key.startsWith("ptz.module.reg.")) {
 		uint reg = key.split(".").last().toUInt();
 		return QString("%1").arg(headModule->getProperty(reg));
@@ -219,21 +217,6 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "ptz.get_zoom_speed")
 		return QString("%1")
 				.arg(headModule->getProperty(26));
-	else if (key == "camera.model")
-		return QString("%1")
-				.arg(config.model);
-	else if (key == "camera.type")
-		return QString("%1")
-				.arg(config.type);
-	else if (key == "camera.cam_module")
-		return QString("%1")
-				.arg(config.cam_module);
-	else if (key == "camera.pan_tilt_support")
-		return QString("%1")
-				.arg(config.ptSupport);
-	else if (key == "camera.ir_led_support")
-		return QString("%1")
-				.arg(config.irLedSupport);
 	else if (key == "ptz.get_device_definiton")
 		return QString("%1")
 				.arg(headModule->getDeviceDefinition());
@@ -254,17 +237,12 @@ QVariant IRDomeDriver::get(const QString &key)
 				.arg(headModule->getIRLed());
 	else return PtzpDriver::get(key);
 
-	return "almost_there";
 	return QVariant();
 }
 
 int IRDomeDriver::set(const QString &key, const QVariant &value)
 {
 	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
-	if (key == "ptz.command.control")
-		sleepMode(value.toBool());
-	if (sleep)
-		return 0;
 	if (key == "ptz.cmd.exposure_val"){
 		headModule->setProperty(0,value.toUInt());
 	} else if (key == "ptz.cmd.exposure_target")
@@ -353,46 +331,6 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 
 	return 0;
 }
-void IRDomeDriver::configLoad(const QString filename)
-{
-	if (!QFile::exists(filename)) {
-		// create default
-		QJsonDocument doc;
-		QJsonObject o;
-		o.insert("model",QString("Ekinoks"));
-		if (getHeadCount() > 0) {
-			o.insert("type" , QString("moving"));
-			o.insert("pan_tilt_support", 1);
-			o.insert("ir_led_support", 1);
-		}
-		else {
-			o.insert("type" , QString("fixed"));
-			o.insert("pan_tilt_support", 0);
-			o.insert("ir_led_support", 0);
-		}
-		o.insert("cam_module", QString("PV8430_F2D"));
-		doc.setObject(o);
-		QFile f(filename);
-		f.open(QIODevice::WriteOnly);
-		f.write(doc.toJson());
-		f.close();
-	}
-
-	QFile f(filename);
-	if (!f.open(QIODevice::ReadOnly))
-		return ;
-
-	const QByteArray &json = f.readAll();
-	f.close();
-	const QJsonDocument &doc = QJsonDocument::fromJson(json);
-
-	QJsonObject root = doc.object();
-	config.model = root["model"].toString();
-	config.type = root["type"].toString();
-	config.cam_module = root["cam_module"].toString();
-	config.ptSupport = root["pan_tilt_support"].toInt();
-	config.irLedSupport = root["ir_led_support"].toInt();
-}
 
 void IRDomeDriver::timeout()
 {
@@ -405,29 +343,33 @@ void IRDomeDriver::timeout()
 	case SYNC_HEAD_MODULE:
 		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = SYNC_HEAD_DOME;
-			if(config.ptSupport == 0) {
-				state = NORMAL;
-				//headModule->loadRegisters("oemmodule.json");
-				time->start();
-			}
-			else headDome->syncRegisters();
+			if(ptSupport == 0) {
+				if (registerSavingEnabled)
+					state = LOAD_MODULE_REGISTERS;
+				else
+					state = NORMAL;
+			} else
+				headDome->syncRegisters();
 			tp->enableQueueFreeCallbacks(true);
 		}
 		break;
 	case SYNC_HEAD_DOME:
 		if (headDome->getHeadStatus() == PtzpHead::ST_NORMAL) {
-			state = NORMAL;
+			if (registerSavingEnabled)
+				state = LOAD_MODULE_REGISTERS;
+			else
+				state = NORMAL;
 			//headModule->loadRegisters("oemmodule.json");
 			timer->setInterval(1000);
 			tp1->enableQueueFreeCallbacks(true);
-			time->start();
 		}
 		break;
+	case LOAD_MODULE_REGISTERS:
+		headModule->loadRegisters("head0.json");
+		state = NORMAL;
+		break;
 	case NORMAL:
-		if(time->elapsed() >= 10000) {
-			//headModule->saveRegisters("oemmodule.json");
-			time->restart();
-		}
+		manageRegisterSaving();
 		break;
 	}
 

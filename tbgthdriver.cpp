@@ -66,7 +66,6 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 		defaultModuleHead = headThermal;
 	else
 		defaultModuleHead = headLens;
-	configLoad(QJsonObject());
 	yamanoActive = false;
 	evpuActive = false;
 	controlThermal = useThermal;
@@ -223,18 +222,6 @@ QVariant TbgthDriver::get(const QString &key)
 	else if (key == "ptz.get_iris_mod")
 		return QString("%1")
 				.arg(headLens->getProperty(1));
-	else if (key == "camera.model")
-		return QString("%1")
-				.arg(config.model);
-	else if (key == "camera.type")
-		return QString("%1")
-				.arg(config.type);
-	else if (key == "camera.cam_module")
-		return QString("%1")
-				.arg(config.cam_module);
-	else if (key == "camera.pan_tilt_support")
-		return QString("%1")
-				.arg(config.ptSupport);
 	else
 		return PtzpDriver::get(key);
 	return "almost_there";
@@ -274,17 +261,6 @@ int TbgthDriver::set(const QString &key, const QVariant &value)
 		headLens->setZoom(value.toUInt());
 
 	return PtzpDriver::set(key,value);
-}
-
-void TbgthDriver::configLoad(const QJsonObject &obj)
-{
-	Q_UNUSED(obj);
-	QJsonObject o;
-	o.insert("model",QString("Tbgth"));
-	o.insert("type" , QString("moving"));
-	o.insert("pan_tilt_support", 1);
-	o.insert("cam_module", QString("Yamano"));
-	return PtzpDriver::configLoad(o);
 }
 
 QByteArray TbgthDriver::sendFilter(const char *bytes, int len)
@@ -447,9 +423,6 @@ void TbgthDriver::timeout()
 				tp1->enableQueueFreeCallbacks(true);
 		}
 	case NORMAL:
-		if(time->elapsed() >= 10000) {
-			time->restart();
-		}
 		break;
 	case EVPU_GRAB:
 		tp1->connectTo(tp1ConnectionString);

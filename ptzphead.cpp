@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 
 #include <errno.h>
+#include <unistd.h>
 
 static const char ioErrorStr[][256] = {
 	"None",
@@ -344,7 +345,6 @@ int PtzpHead::getSystemStatus()
 	return systemChecker;
 }
 
-
 int PtzpHead::saveRegisters(const QString &filename)
 {
 	QFile f(filename);
@@ -355,9 +355,12 @@ int PtzpHead::saveRegisters(const QString &filename)
 	QJsonDocument doc;
 	QJsonObject obj;
 	obj.insert("registers", json);
+	obj.insert("key", "key_v0");
 	doc.setObject(obj);
 	f.write(doc.toJson());
+	fsync(f.handle());
 	f.close();
+	::sync();
 
 	return 0;
 }
@@ -376,6 +379,10 @@ int PtzpHead::loadRegisters(const QString &filename)
 	const QJsonDocument &doc = QJsonDocument::fromJson(json);
 	QJsonObject root = doc.object();
 	if (root.isEmpty())
+		return -EINVAL;
+	if (!root.contains("key"))
+		return -ENOENT;
+	if (root["key"].toString() != "key_v0")
 		return -EINVAL;
 	unmarshallloadAllRegisters(root["registers"]);
 

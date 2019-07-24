@@ -17,7 +17,6 @@ KayiDriver::KayiDriver(QList<int> relayConfig, QObject *parent) : PtzpDriver(par
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
-	configLoad(QJsonObject());
 }
 
 PtzpHead *KayiDriver::getHead(int index)
@@ -80,17 +79,6 @@ int KayiDriver::set(const QString &key, const QVariant &value)
 	return 0;
 }
 
-void KayiDriver::configLoad(const QJsonObject &obj)
-{
-	Q_UNUSED(obj);
-	QJsonObject o;
-	o.insert("model",QString("Kayi"));
-	o.insert("type" , QString("moving"));
-	o.insert("pan_tilt_support", 1);
-	o.insert("cam_module", QString("thermal"));
-	return PtzpDriver::configLoad(o);
-}
-
 void KayiDriver::timeout()
 {
 	mLog("Driver state: %d", state);
@@ -110,10 +98,6 @@ void KayiDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		if(time->elapsed() >= 10000) {
-			//			headModule->saveRegisters("oemmodule.json");
-			time->restart();
-		}
 		break;
 	}
 

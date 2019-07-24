@@ -17,7 +17,6 @@ public:
 	int setTarget(const QString &targetUri);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
-	void configLoad(const QString filename);
 
 protected slots:
 	void timeout();
@@ -27,6 +26,7 @@ protected:
 		INIT,
 		SYNC_HEAD_MODULE,
 		SYNC_HEAD_DOME,
+		LOAD_MODULE_REGISTERS,
 		NORMAL,
 	};
 
@@ -35,6 +35,7 @@ protected:
 	DriverState state;
 	PtzpTransport *tp;
 	PtzpTransport *tp1;
+	bool ptSupport;
 };
 
 #endif // IRDOMEDRIVER_H

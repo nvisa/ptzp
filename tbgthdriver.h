@@ -19,7 +19,6 @@ public:
 	int setTarget(const QString &targetUri);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
-	void configLoad(const QJsonObject &obj);
 
 	QByteArray sendFilter(const char *bytes, int len);
 	int readFilter(QAbstractSocket *sock, QByteArray &ba);
