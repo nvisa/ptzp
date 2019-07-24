@@ -3,6 +3,8 @@
 
 #include <ecl/ptzp/ptzpdriver.h>
 
+class LifeTimeHead;
+
 class VirtualPtzpDriver : public PtzpDriver
 {
 	Q_OBJECT
@@ -14,8 +16,12 @@ public:
 	int setTarget(const QString &targetUri);
 	PtzpHead *getHead(int index);
 
-	PtzpHead *head0;
-	PtzpHead *head1;
+protected slots:
+	virtual void timeout();
+
+protected:
+	LifeTimeHead *head0;
+	LifeTimeHead *head1;
 };
 
 #endif // VIRTUALPTZPDRIVER_H
