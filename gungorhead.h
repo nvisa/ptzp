@@ -30,6 +30,9 @@ public:
 	virtual int stopZoom();
 	virtual int getZoom();
 	virtual int setZoom(uint pos);
+	virtual int focusIn(int speed);
+	virtual int focusOut(int speed);
+	virtual int focusStop();
 	virtual int getHeadStatus();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);

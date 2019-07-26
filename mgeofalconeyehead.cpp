@@ -355,6 +355,40 @@ int MgeoFalconEyeHead::getZoom()
 	return getRegister(R_ZOOM);
 }
 
+int MgeoFalconEyeHead::focusIn(int speed)
+{
+	Q_UNUSED(speed);
+	unsigned char *p = protoBytes[C_SET_CONTINUOUS_FOCUS];
+	int len = p[0];
+	p++;
+	p[3] = 0x01;
+	p[4] = 0x01;
+	p[5] = chksum(p, len - 1);
+	return sendCommand(p, len);
+}
+
+int MgeoFalconEyeHead::focusOut(int speed)
+{
+	Q_UNUSED(speed);
+	unsigned char *p = protoBytes[C_SET_CONTINUOUS_FOCUS];
+	int len = p[0];
+	p++;
+	p[3] = 0x00;
+	p[4] = 0x01;
+	p[5] = chksum(p, len - 1);
+	return sendCommand(p, len);
+}
+
+int MgeoFalconEyeHead::focusStop()
+{
+	unsigned char *p = protoBytes[C_SET_CONTINUOUS_FOCUS];
+	int len = p[0];
+	p++;
+	p[4] = 0x00;
+	p[5] = chksum(p, len - 1);
+	return sendCommand(p, len);
+}
+
 int MgeoFalconEyeHead::getHeadStatus()
 {
 	if (nextSync == C_COUNT)

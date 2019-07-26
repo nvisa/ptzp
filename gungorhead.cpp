@@ -190,6 +190,23 @@ int MgeoGunGorHead::setZoom(uint pos)
 	return sendCommand(C_SET_ZOOM,(pos & 0xff00) >> 8, (pos & 0x00ff));
 }
 
+int MgeoGunGorHead::focusIn(int speed)
+{
+	Q_UNUSED(speed);
+	return sendCommand(C_SET_FOCUS_INC_START);
+}
+
+int MgeoGunGorHead::focusOut(int speed)
+{
+	Q_UNUSED(speed);
+	return sendCommand(C_SET_FOCUS_DEC_START);
+}
+
+int MgeoGunGorHead::focusStop()
+{
+	return sendCommand(C_SET_FOCUS_STOP);
+}
+
 int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)
 {
 	unsigned char *cmd = protoBytes[index];

@@ -66,6 +66,24 @@ int FlirModuleHead::getZoom()
 	return cgiMan->getZoom();
 }
 
+int FlirModuleHead::focusIn(int speed)
+{
+	cgiMan->increaseFocus(speed);
+	return 0;
+}
+
+int FlirModuleHead::focusOut(int speed)
+{
+	cgiMan->decreaseFocus(speed);
+	return 0;
+}
+
+int FlirModuleHead::focusStop()
+{
+	cgiMan->stopFocus();
+	return 0;
+}
+
 void FlirModuleHead::setProperty(uint r, uint x)
 {
 	if(r == CGI_SET_FOCUS_INC)

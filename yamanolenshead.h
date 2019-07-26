@@ -29,6 +29,9 @@ public:
 	int stopZoom();
 	int getZoom();
 	int setZoom(uint pos);
+	int focusIn(int speed);
+	int focusOut(int speed);
+	int focusStop();
 	uint getProperty(uint r);
 	void setProperty(uint r, uint x);
 

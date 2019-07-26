@@ -156,6 +156,23 @@ int PtzpHead::stopZoom()
 	return -ENOENT;
 }
 
+int PtzpHead::focusIn(int speed)
+{
+	Q_UNUSED(speed);
+	return -ENOENT;
+}
+
+int PtzpHead::focusOut(int speed)
+{
+	Q_UNUSED(speed);
+	return -ENOENT;
+}
+
+int PtzpHead::focusStop()
+{
+	return -ENOENT;
+}
+
 /**
  * @brief PtzpHead::getPanAngle
  * Pan açısının döndürüldüğü metod.

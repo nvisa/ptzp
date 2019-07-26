@@ -91,6 +91,23 @@ int MgeoSwirHead::getZoom()
 	return getRegister(R_ZOOM_POS);
 }
 
+int MgeoSwirHead::focusIn(int speed)
+{
+	Q_UNUSED(speed);
+	return sendCommand(commandList.at(C_SET_FOCUS).arg("FAR"));
+}
+
+int MgeoSwirHead::focusOut(int speed)
+{
+	Q_UNUSED(speed);
+	return sendCommand(commandList.at(C_SET_FOCUS).arg("NEAR"));
+}
+
+int MgeoSwirHead::focusStop()
+{
+	return sendCommand(commandList.at(C_SET_FOCUS).arg("STOP"));
+}
+
 int MgeoSwirHead::getHeadStatus()
 {
 	if (nextSync == C_COUNT)
