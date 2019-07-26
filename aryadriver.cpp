@@ -19,7 +19,7 @@ AryaDriver::AryaDriver(QObject *parent)
 	state = SYSTEM_CHECK;
 
 	defaultPTHead = aryapt;
-	defaultModuleHead = thermal;
+	defaultModuleHead = gungor;
 
 	checker = new QElapsedTimer();
 	checker->start();
