@@ -37,6 +37,7 @@ public:
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
 	int headSystemChecker();
+	void setFocusStepper();
 
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
