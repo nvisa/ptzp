@@ -221,10 +221,10 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 	if (opcode == 0x0a) {
 		if (systemChecker == 0)
 			systemChecker = 1;
-		setRegister(R_ZOOM, (p[1] << 8 | p[0]));
+		setRegister(R_ZOOM, (p[0] << 8 | p[1]));
 	}
 	else if (opcode == 0x0b)
-		setRegister(R_FOCUS, (p[1] << 8 | p[0]));
+		setRegister(R_FOCUS, (p[0] << 8 | p[1]));
 	else if (opcode == 0xa4)
 		setRegister(R_CHIP_VERSION, ((p[0] * 100) + p[1]));
 	else if (opcode == 0x82)
