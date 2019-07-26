@@ -109,6 +109,7 @@ void AryaDriver::timeout()
 		break;
 	case SYNC_GUNGOR_MODULES:
 		if(gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
+			gungor->setFocusStepper();
 			state = NORMAL;
 		}
 		break;
