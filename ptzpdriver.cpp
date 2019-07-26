@@ -481,7 +481,6 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context, const::ptzp::Ptz
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
 	head->stopZoom();
 	commandUpdate(PtzControlInterface::C_ZOOM_STOP, 0, 0);
 	return grpc::Status::OK;
@@ -624,6 +623,7 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	Q_UNUSED(response);
 	QStringList li = PresetNg::getInstance()->getPreset(QString::fromStdString(request->preset_name()));
 	if (li.isEmpty())
 		return  grpc::Status::CANCELLED;
@@ -634,6 +634,7 @@ grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::Pres
 grpc::Status PtzpDriver::PresetDelete(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	Q_UNUSED(response);
 	PresetNg::getInstance()->deletePreset(QString::fromStdString(request->preset_name()));
 	return grpc::Status::OK;
 }
@@ -641,6 +642,7 @@ grpc::Status PtzpDriver::PresetDelete(grpc::ServerContext *context, const ptzp::
 grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	Q_UNUSED(response);
 	if (defaultPTHead && defaultModuleHead)
 		PresetNg::getInstance()->addPreset(QString::fromStdString(request->preset_name()),
 									defaultPTHead->getPanAngle(),defaultPTHead->getTiltAngle(),defaultModuleHead->getZoom());
@@ -659,6 +661,7 @@ grpc::Status PtzpDriver::PresetGetList(grpc::ServerContext *context, const ptzp:
 grpc::Status PtzpDriver::PatrolSave(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	Q_UNUSED(response);
 	auto patrolNg = PatrolNg::getInstance();
 	patrolNg->addPatrol(QString::fromStdString(request->patrol_name()), commaToList(QString::fromStdString(request->preset_list())));
 	patrolNg->addInterval(QString::fromStdString(request->patrol_name()), commaToList(QString::fromStdString(request->interval_list())));
@@ -690,7 +693,7 @@ grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context, const ptzp::Pat
 grpc::Status PtzpDriver::PatrolDelete(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	Q_UNUSED(response);
+	response->set_err(0);
 	PatrolNg::getInstance()->deletePatrol(QString::fromStdString(request->patrol_name()));
 	return grpc::Status::OK;
 }
@@ -699,18 +702,21 @@ grpc::Status PtzpDriver::PatrolStop(grpc::ServerContext *context, const ptzp::Pa
 {
 	Q_UNUSED(context);
 	PatrolNg::getInstance()->setPatrolStateStop(QString::fromStdString(request->patrol_name()));
+	response->set_err(0);
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolGetList(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PresetList *response)
 {
-	qDebug() << PatrolNg::getInstance()->getList();
+	Q_UNUSED(context);
+	Q_UNUSED(request);
 	response->set_list(PatrolNg::getInstance()->getList().toStdString());
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolGetDetails(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PatrolDefinition *response)
 {
+	Q_UNUSED(context);
 	QString name = QString::fromStdString(request->patrol_name());
 	PatrolNg::patrolType patrol = PatrolNg::getInstance()->getPatrolDef(name);
 	for (int i = 0; i < patrol.size(); i++) {
@@ -750,47 +756,58 @@ grpc::Status PtzpDriver::PatternStop(grpc::ServerContext *context, const ptzp::P
 grpc::Status PtzpDriver::PatternStartRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
+	Q_UNUSED(request);
 	if (defaultPTHead && defaultModuleHead)
 		ptrn->start(defaultPTHead->getPanAngle(),
 					defaultPTHead->getTiltAngle(),
 					defaultModuleHead->getZoom());
-	else return grpc::Status::CANCELLED;
+	else {
+		response->set_err(-1);
+		return grpc::Status::CANCELLED;
+	}
+	response->set_err(0);
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternStopRecording(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	response->set_err(-1);
 	if (defaultPTHead && defaultModuleHead)
 		ptrn->stop(defaultPTHead->getPanAngle(),
 				defaultPTHead->getTiltAngle(),
 				defaultModuleHead->getZoom());
-	else return grpc::Status::CANCELLED;
-
-	if(ptrn->save(QString::fromStdString(request->pattern_name())) == 0)
+	else
+		return grpc::Status::CANCELLED;
+	if(ptrn->save(QString::fromStdString(request->pattern_name())) == 0) {
+		response->set_err(0);
 		return grpc::Status::OK;
+	}
 	return grpc::Status::CANCELLED;
 }
 
 grpc::Status PtzpDriver::PatternDelete(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
-	if(ptrn->deletePattern(QString::fromStdString(request->pattern_name())) == 0)
+	response->set_err(-1);
+	if(ptrn->deletePattern(QString::fromStdString(request->pattern_name())) == 0) {
+		response->set_err(0);
 		return grpc::Status::OK;
+	}
 	return grpc::Status::CANCELLED;
 }
 
 grpc::Status PtzpDriver::PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PresetList *response)
 {
+	Q_UNUSED(context);
+	Q_UNUSED(request);
 	response->set_list(ptrn->getList().toStdString());
 	return grpc::Status::OK;
 }
 
-grpc::Status PtzpDriver::GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response){	
+grpc::Status PtzpDriver::GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
+{
 	Q_UNUSED(context);
-
 	PtzpHead *head = getHead(request->head_id());
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
@@ -798,18 +815,17 @@ grpc::Status PtzpDriver::GetSettings(grpc::ServerContext *context, const ptzp::S
 	QByteArray settings = mapToJson(head->getSettings());
 	response->set_json(settings);
 	response->set_head_id(request->head_id());
-
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
 {
 	Q_UNUSED(context);
+	Q_UNUSED(response);
 
 	PtzpHead *head = getHead(request->head_id());
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
-
 	QVariantMap map = jsonToMap(request->json().c_str());
 	head->setSettings(map);
 	return grpc::Status::OK;
@@ -818,24 +834,24 @@ grpc::Status PtzpDriver::SetSettings(grpc::ServerContext *context, const ptzp::S
 grpc::Status PtzpDriver::FocusIn(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
+	response->set_err(-1);
 	PtzpHead *head = getHead(request->head_id());
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
 	if (!head->settings.contains("focus_in"))
 		return grpc::Status::CANCELLED;
-// TODO fix focus speed 0x2p
+
 	QVariantMap map;
 	map["focus_in"] = 2;
 	head->setSettings(map);
-
+	response->set_err(0);
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::FocusOut(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
+	response->set_err(-1);
 	PtzpHead *head = getHead(request->head_id());
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
@@ -845,14 +861,14 @@ grpc::Status PtzpDriver::FocusOut(grpc::ServerContext *context, const ptzp::PtzC
 	QVariantMap map;
 	map["focus_out"] = 3;
 	head->setSettings(map);
-
+	response->set_err(0);
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::PtzCmdPar *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-
+	response->set_err(-1);
 	PtzpHead *head = getHead(request->head_id());
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
@@ -862,7 +878,7 @@ grpc::Status PtzpDriver::FocusStop(grpc::ServerContext *context, const ptzp::Ptz
 	QVariantMap map;
 	map["focus_stop"] = 0;
 	head->setSettings(map);
-
+	response->set_err(0);
 	return grpc::Status::OK;
 }
 
