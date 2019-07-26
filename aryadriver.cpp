@@ -29,7 +29,7 @@ AryaDriver::AryaDriver(QObject *parent)
 	olay.posx = 0;
 	olay.posy = 0;
 	olay.textSize = 24;
-	olay.disabled = true;
+	olay.disabled = false;
 
 	connect(netman, SIGNAL(finished()), SLOT(overlayFinished()));
 }
@@ -313,7 +313,7 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	return 0;
 }
 
-int AryaDriver::setZoomOverlay()
+QString AryaDriver::setZoomOverlayString(overlayForHead head)
 {
 	QString config = "ctoken=osdcfg01&action=setconfig";
 	QString type = "type=0";
@@ -327,7 +327,9 @@ int AryaDriver::setZoomOverlay()
 	QString dateTimeFormat = "datetimeformat=0";
 	QString showDate = "showdate=0";
 	QString showTime = "showtime=0";
-	QString text = QString("text=%1").arg(QString("ZOOM %1x").arg(defaultModuleHead->getZoom()));
+	QString text = QString("text=%1").arg(QString("ZOOM %1x").arg(thermal->getZoom()));
+	if (head == DAY)
+		text = QString("text=%1").arg(QString("ZOOM %1x").arg(gungor->getZoom()));
 	QString overlayData = config + "&"+
 			type + "&" +
 			display + "&" +
@@ -338,7 +340,16 @@ int AryaDriver::setZoomOverlay()
 			showDate + "&" +
 			showTime + "&" +
 			text;
-	netman->post("50.23.169.211", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayData);
+	return overlayData;
+}
+
+int AryaDriver::setZoomOverlay()
+{
+	QString overlayDataThermal = setZoomOverlayString(THERMAL);
+	netman->post("50.23.169.211", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayDataThermal);
+
+	QString overlayDataDay = setZoomOverlayString(DAY);
+	netman->post("50.23.169.212", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayDataDay);
 	return 0;
 }
 

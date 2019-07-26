@@ -355,7 +355,7 @@ int PtzpHead::saveRegisters(const QString &filename)
 	QJsonDocument doc;
 	QJsonObject obj;
 	obj.insert("registers", json);
-	obj.insert("key", "key_v0");
+	obj.insert("key", QString("key_v0"));
 	doc.setObject(obj);
 	f.write(doc.toJson());
 	fsync(f.handle());

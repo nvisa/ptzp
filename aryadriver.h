@@ -35,6 +35,11 @@ public:
 		QString uname;
 	};
 
+	enum overlayForHead {
+		THERMAL,
+		DAY
+	};
+
 	explicit AryaDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri);
@@ -44,6 +49,7 @@ public:
 	int setZoomOverlay();
 
 	int setOverlay(const QString data);
+	QString setZoomOverlayString(overlayForHead head);
 	void setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass);
 protected slots:
 	void timeout();
