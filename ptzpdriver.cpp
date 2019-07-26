@@ -250,6 +250,11 @@ float PtzpDriver::getPanAngle()
 	return defaultPTHead->getPanAngle();
 }
 
+float PtzpDriver::getTiltAngle()
+{
+	return defaultPTHead->getTiltAngle();
+}
+
 void PtzpDriver::sendCommand(int c, float par1, float par2)
 {
 	Q_UNUSED(par2);

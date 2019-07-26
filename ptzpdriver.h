@@ -61,6 +61,7 @@ public:
 	virtual QVariant get(const QString &key);
 	virtual int set(const QString &key, const QVariant &value);
 	float getPanAngle();
+	float getTiltAngle();
 	void goToPosition(float p, float t, int z);
 	void sendCommand(int c, float par1, float par2);
 	void setSpeedRegulation(SpeedRegulation r);
