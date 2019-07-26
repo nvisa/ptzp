@@ -14,6 +14,12 @@ public:
 		RUN
 	};
 
+	enum PatrolState {
+		PS_GO_POS,
+		PS_WAIT_FOR_POS,
+		PS_WAIT,
+	};
+
 	typedef QList<QPair<QString, int> > patrolType;
 	struct PatrolInfo {
 		QString patrolName;
@@ -32,6 +38,7 @@ public:
 	PatrolInfo* getCurrentPatrol();
 	QString getList();
 	patrolType getPatrolDef(const QString &name);
+	PatrolState state;
 private:
 	PatrolNg();
 	QMutex mutex;
