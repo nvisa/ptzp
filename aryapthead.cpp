@@ -74,7 +74,7 @@ static QStringList createPTZCommandList()
 AryaPTHead::AryaPTHead()
 	: PtzpHead()
 {
-	MaxSpeed = 4000000;
+	MaxSpeed = 899999;
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
 }
