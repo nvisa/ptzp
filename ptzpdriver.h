@@ -74,6 +74,9 @@ public:
 	virtual int setZoomOverlay();
 	virtual int setOverlay(QString data);
 	virtual QJsonObject doExtraDeviceTests();
+	void getStartupProcess();
+	void addStartupProcess(const QString &type, const QString name);
+	void removeStartupProcess();
 
 #ifdef HAVE_PTZP_GRPC_API
 public:

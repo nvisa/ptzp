@@ -9,9 +9,11 @@
 #include "ptzp/ptzphead.h"
 #include "ptzp/ptzptransport.h"
 
+#include <QDir>
 #include <QTimer>
 #include <QThread>
-
+#include <QJsonObject>
+#include <QJsonDocument>
 #include <errno.h>
 
 #ifdef HAVE_PTZP_GRPC_API
@@ -75,6 +77,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	elaps->start();
 	regsavet = new QElapsedTimer();
 	setRegisterSaving(false, 60000);
+	getStartupProcess();
 }
 
 int PtzpDriver::getHeadCount()
@@ -338,6 +341,74 @@ int PtzpDriver::setOverlay(QString data)
 QJsonObject PtzpDriver::doExtraDeviceTests()
 {
 	return QJsonObject();
+}
+
+void PtzpDriver::getStartupProcess()
+{
+	QString filename = "startup_process.json";
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly)) {
+		mDebug("File opening error %s", qPrintable(f.fileName()));
+		return;
+	}
+	QByteArray ba = f.readAll();
+	f.close();
+	QJsonObject obj;
+	QJsonDocument doc = QJsonDocument::fromJson(ba);
+	obj = doc.object();
+	if (!obj.contains("startup"))
+		return;
+	QString type = obj.value("startup").toObject().value("type").toString();
+	QString name = obj.value("startup").toObject().value("name").toString();
+	mDebug("Startup process definated, %s, %s", qPrintable(type), qPrintable(name));
+	if (type == "pattern") {
+		mDebug("Pattern type founded starting...");
+		if (!ptrn->getList().contains(name)) {
+			mDebug("Pattern undefined");
+			return;
+		}
+		ptrn->load(name);
+		ptrn->replay();
+	} else if (type == "patrol") {
+		PatrolNg *ptrl = PatrolNg::getInstance();
+		if (!ptrl->getList().contains(name)) {
+			mDebug("Patrol undefined");
+			return;
+		}
+		runPatrol(name);
+	} else if (type == "preset") {
+
+	} else {
+		mDebug("Startup process type(%s) cannot found", qPrintable(type));
+	}
+	return;
+}
+
+void PtzpDriver::addStartupProcess(const QString &type, const QString name)
+{
+	removeStartupProcess();
+	QString filename = "startup_process.json";
+	QFile f(filename);
+	if (!f.open(QIODevice::WriteOnly)) {
+		mDebug("File opening error %s", qPrintable(f.fileName()));
+		return;
+	}
+	QJsonObject obj;
+	QJsonObject startObj;
+	startObj.insert("type", type);
+	startObj.insert("name", name);
+	obj.insert("startup", startObj);
+	QJsonDocument doc;
+	doc.setObject(obj);
+	f.write(doc.toJson());
+	f.close();
+	return;
+}
+
+void PtzpDriver::removeStartupProcess()
+{
+	QDir d;
+	d.remove("startup_process.json");
 }
 
 #ifdef HAVE_PTZP_GRPC_API
