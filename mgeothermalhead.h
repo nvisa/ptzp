@@ -23,6 +23,7 @@ public:
 	virtual int getHeadStatus();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
+	virtual int setZoom(uint pos);
 	int headSystemChecker();
 
 protected:

@@ -265,6 +265,13 @@ uint MgeoThermalHead::getProperty(uint r)
 	return getRegister(r);
 }
 
+int MgeoThermalHead::setZoom(uint pos)
+{
+	Q_UNUSED(pos);
+	mDebug("Set zoom process not available from ICD documents.");
+	return 0;
+}
+
 int MgeoThermalHead::headSystemChecker()
 {
 	if (systemChecker == -1) {
