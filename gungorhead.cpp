@@ -187,7 +187,7 @@ int MgeoGunGorHead::getZoom()
 
 int MgeoGunGorHead::setZoom(uint pos)
 {
-	return sendCommand(C_SET_ZOOM,(pos & 0xff00) >>8, (pos & 0x00ff));
+	return sendCommand(C_SET_ZOOM,(pos & 0xff00) >> 8, (pos & 0x00ff));
 }
 
 int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)
