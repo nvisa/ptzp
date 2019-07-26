@@ -37,7 +37,7 @@ QStringList PresetNg::getPreset(const QString &name)
 	QString pos = presets.value(name);
 	if (!pos.contains(";"))
 		return QStringList();
-	mDebug("This preset '%s' position values '%s'", qPrintable(name), qPrintable(pos));
+	mInfo("This preset '%s' position values '%s'", qPrintable(name), qPrintable(pos));
 	return pos.split(";");
 }
 
