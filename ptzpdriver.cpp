@@ -78,6 +78,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	regsavet = new QElapsedTimer();
 	setRegisterSaving(false, 60000);
 	getStartupProcess();
+	changeOverlay = true;
 }
 
 int PtzpDriver::getHeadCount()
@@ -554,6 +555,7 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context, const::ptzp::Ptz
 	}
 	head->stopZoom();
 	commandUpdate(PtzControlInterface::C_ZOOM_STOP, 0, 0);
+	setChangeOverlayState(true);
 	return grpc::Status::OK;
 }
 
@@ -1147,4 +1149,12 @@ int PtzpDriver::runPatrol(QString name)
 	} else
 		return -1;
 	return 0;
+}
+
+void PtzpDriver::setChangeOverlayState(bool state){
+	changeOverlay = state;
+}
+
+bool PtzpDriver::getChangeOverlayState() {
+	return changeOverlay;
 }

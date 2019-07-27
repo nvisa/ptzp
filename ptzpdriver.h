@@ -79,6 +79,8 @@ public:
 	void getStartupProcess();
 	void addStartupProcess(const QString &type, const QString name);
 	void removeStartupProcess();
+	void setChangeOverlayState(bool state);
+	bool getChangeOverlayState();
 
 #ifdef HAVE_PTZP_GRPC_API
 public:
@@ -158,6 +160,7 @@ protected:
 
 	void commandUpdate(int c, float arg1 = 0, float arg2 = 0);
 	int runPatrol(QString name);
+	bool changeOverlay;
 };
 
 #endif // PTZPDRIVER_H
