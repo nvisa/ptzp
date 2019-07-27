@@ -7,6 +7,34 @@
 
 #include <QFile>
 
+static float speedRegulateThermal(float speed, float zooms[]) {
+	float stepSize = 1575.0;
+	float zoomVal = zooms[0];
+	float stepAmount = zoomVal / stepSize;
+	float correction = pow((16.8 - stepAmount * 2) / 16.8,2);
+	float result = speed * correction;
+	if (result < 0.003)
+		result = 0.003;
+	return result;
+}
+
+static float speedRegulateDay(float speed, float zooms[]) {
+	float stepSize = 1085.0;
+	float zoomVal = zooms[1];
+	float stepAmount = zoomVal / stepSize;
+	float correction = pow((13.751 - stepAmount * 0.229) / 13.751,2);
+	float result = speed * correction;
+	if (result < 0.003)
+		result = 0.003;
+	return result;
+}
+
+static float speedRegulateArya(float speed, float zooms[]) {
+	float speedThermal = speedRegulateThermal(speed,zooms);
+	float speedDay = speedRegulateDay(speed,zooms);
+	return speedThermal < speedDay ? speedThermal : speedDay;
+}
+
 AryaDriver::AryaDriver(QObject *parent)
 	: PtzpDriver(parent)
 {
@@ -39,6 +67,15 @@ int AryaDriver::setTarget(const QString &targetUri)
 	aryapt->setTransport(tcp1);
 	thermal->setTransport(tcp2);
 	gungor->setTransport(tcp3);
+
+	SpeedRegulation sreg = getSpeedRegulation();
+	sreg.enable = true;
+	sreg.ipol = SpeedRegulation::ARYA;
+	sreg.interFunc = speedRegulateArya;
+	sreg.zoomHead = thermal;
+	sreg.secondZoomHead = gungor;
+	setSpeedRegulation(sreg);
+
 	int err = tcp1->connectTo(QString("%1:4001").arg(targetUri));
 	if (err)
 		return err;
