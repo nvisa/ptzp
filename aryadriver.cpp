@@ -151,9 +151,9 @@ void AryaDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		if(checker->elapsed() >= 10000) {
+		if (getChangeOverlayState()) {
 			setZoomOverlay();
-			checker->restart();
+			setChangeOverlayState(false);
 		}
 		manageRegisterSaving();
 		break;
