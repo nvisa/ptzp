@@ -37,7 +37,8 @@ public:
 	{
 		enum Interpolation {
 			LINEAR,
-			CUSTOM
+			CUSTOM,
+			ARYA
 		};
 
 		bool enable;
@@ -46,6 +47,7 @@ public:
 		float minSpeed;
 		Interpolation ipol;
 		PtzpHead *zoomHead;
+		PtzpHead *secondZoomHead;
 		typedef float (*interOp)(float, float[]);
 		interOp interFunc;
 	};
