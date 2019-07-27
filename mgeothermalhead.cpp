@@ -175,6 +175,10 @@ int MgeoThermalHead::stopZoom()
 	return 0;
 }
 
+int MgeoThermalHead::getAngle(){
+	return getRegister(R_ANGLE);
+}
+
 int MgeoThermalHead::getZoom()
 {
 	return getRegister(C_CONT_ZOOM);
