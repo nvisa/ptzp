@@ -231,7 +231,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 
 	nextSync = C_COUNT;
 	settings = {
-		{"focus_in", { C_SET_CONTINUOUS_FOCUS, R_FOCUS}},
+		{"focus", { C_SET_CONTINUOUS_FOCUS, R_FOCUS}},
 		{"focus_pos_set", { C_SET_FOCUS, R_FOCUS}},
 		{"fov_pos", { C_SET_FOV, R_FOV}},
 		{"choose_cam", { C_CHOOSE_CAM, R_CAM}},
@@ -634,21 +634,7 @@ QByteArray MgeoFalconEyeHead::transportReady()
 
 void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 {
-	if (r == C_SET_CONTINUOUS_FOCUS){
-		unsigned char *p = protoBytes[r];
-		int len = p[0];
-		p++;
-		p[4] = 0x01;
-		if ( x == 0)
-			p[4] = 0x00;
-		else if (x == 1)
-			p[3] = 0x01;
-		else if (x == 2)
-			p[3] = 0x00;
-		p[5] = chksum(p, len - 1);
-		sendCommand(p, len);
-	}
-	else if (r == C_SET_FOCUS){
+	if (r == C_SET_FOCUS){
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;

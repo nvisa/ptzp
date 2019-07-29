@@ -20,9 +20,7 @@ enum Commands{
 FlirModuleHead::FlirModuleHead()
 {
 	settings = {
-		{"focus_in", {CGI_SET_FOCUS_INC, CGI_GET_FOCUS_POS}},
-		{"focus_out", {CGI_SET_FOCUS_DEC, CGI_GET_FOCUS_POS}},
-		{"focus_stop", {CGI_SET_FOCUS_STOP, CGI_GET_FOCUS_POS}},
+		{"focus", {NULL, NULL}},
 		{"focus_pos", {CGI_SET_FOCUS_POS, CGI_GET_FOCUS_POS}},
 		{"focus_mode", {CGI_SET_FOCUS_MODE, CGI_GET_FOCUS_MODE}},
 	};
@@ -86,13 +84,7 @@ int FlirModuleHead::focusStop()
 
 void FlirModuleHead::setProperty(uint r, uint x)
 {
-	if(r == CGI_SET_FOCUS_INC)
-		cgiMan->increaseFocus(x);
-	else if (r == CGI_SET_FOCUS_DEC)
-		cgiMan->decreaseFocus(x);
-	else if (r == CGI_SET_FOCUS_STOP)
-		cgiMan->stopFocus();
-	else if (r == CGI_SET_FOCUS_POS)
+	if (r == CGI_SET_FOCUS_POS)
 		cgiMan->setFocus(x);
 	else if (r == CGI_SET_FOCUS_MODE)
 		cgiMan->setCamSettings("focusMode",(QString)x);

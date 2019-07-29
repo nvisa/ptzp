@@ -47,7 +47,7 @@ static QStringList commandList = {
 MgeoSwirHead::MgeoSwirHead()
 {
 	settings = {
-		{"focus", { C_SET_FOCUS, R_FOCUS_POS}},
+		{"focus", { NULL, NULL}},
 		{"gain", { C_SET_GAIN, R_GAIN}},
 		{"ibit", { C_START_IBIT, C_GET_IBIT_RESULT}},
 		{"symbology", { C_SET_SYMBOLOGY, R_SYMBOLOGY}},
@@ -120,14 +120,7 @@ int MgeoSwirHead::getHeadStatus()
 
 void MgeoSwirHead::setProperty(uint r, uint x)
 {
-	if (r == C_SET_FOCUS) {
-		if (x == 0) //stop
-			sendCommand(commandList.at(r).arg("STOP"));
-		else if (x == 1) // near
-			sendCommand(commandList.at(r).arg("NEAR"));
-		else if (x == 2 ) //far
-			sendCommand(commandList.at(r).arg("FAR"));
-	} else if (r == C_SET_GAIN) {
+	if (r == C_SET_GAIN) {
 		if (x == 0) //light
 			sendCommand(commandList.at(r).arg("LIGHT"));
 		else if (x == 1) // normal

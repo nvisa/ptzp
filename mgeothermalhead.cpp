@@ -103,9 +103,7 @@ MgeoThermalHead::MgeoThermalHead()
 		{"brightness", {C_BRIGHTNESS, C_BRIGHTNESS}},
 		{"contrast", {C_CONTRAST, C_CONTRAST}},
 		{"fov", {C_FOV, C_FOV}},
-		{"focus_in",{C_FOCUS, C_FOCUS}},
-		{"focus_out",{C_FOCUS, C_FOCUS}},
-		{"focus_stop",{C_FOCUS, C_FOCUS}},
+		{"focus",{C_FOCUS, C_FOCUS}},
 		{"angle", {NULL, R_ANGLE}},
 		{"nuc_table", {C_NUC_SELECT, C_NUC_SELECT}},
 		{"polarity", {C_POL_CHANGE, C_POL_CHANGE}},
@@ -240,13 +238,6 @@ void MgeoThermalHead::setProperty(uint r, uint x)
 			p[3] = 0x01; //zoom in
 		else if (x == 2)
 			p[3] = 0xFF; //zoom out
-	} else if(r == C_FOCUS) {
-		if(x == 0)
-			p[3] = 0x00; //focus stop
-		else if(x == 1)
-			p[3] = 0x01; //focus far
-		else if (x == 2)
-			p[3] = 0xFF; //focus near
 	} else if(r == C_NUC_SELECT) {
 		p[3] = x;
 	} else if(r == C_POL_CHANGE) {

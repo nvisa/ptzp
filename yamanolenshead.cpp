@@ -76,9 +76,7 @@ YamanoLensHead::YamanoLensHead()
 	syncTime.start();
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
-		{"focus_in", {C_FOCUS_IN, R_FOCUS_POS}},
-		{"focus_out", {C_FOCUS_OUT, R_FOCUS_POS}},
-		{"focus_stop", {C_FOCUS_STOP, R_FOCUS_POS}},
+		{"focus", {C_FOCUS_IN, R_FOCUS_POS}},
 		{"focus_set", {C_FOCUS_SET, R_FOCUS_POS}},
 		{"iris_open", {C_IRIS_OPEN, R_IRIS_POS}},
 		{"iris_close", {C_IRIS_CLOSE, R_IRIS_POS}},
@@ -197,25 +195,7 @@ uint YamanoLensHead::getProperty(uint r)
 
 void YamanoLensHead::setProperty(uint r, uint x)
 {
-	if (r == C_FOCUS_IN) {
-		unsigned char *p = protoBytes[r];
-		int len = p[0];
-		p++;
-		p[6] = chksum(p, len - 1);
-		transport->send((const char *)p, len);
-	} else if (r == C_FOCUS_OUT) {
-		unsigned char *p = protoBytes[r];
-		int len = p[0];
-		p++;
-		p[6] = chksum(p, len - 1);
-		transport->send((const char *)p, len);
-	} else if (r == C_FOCUS_STOP) {
-		unsigned char *p = protoBytes[r];
-		int len = p[0];
-		p++;
-		p[6] = chksum(p, len - 1);
-		transport->send((const char *)p, len);
-	} else if (r == C_FOCUS_SET) {
+	if (r == C_FOCUS_SET) {
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;

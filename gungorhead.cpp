@@ -81,9 +81,7 @@ MgeoGunGorHead::MgeoGunGorHead()
 	syncTimer.start();
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
-		{"focus_in", {C_SET_FOCUS_INC_START,R_FOCUS}},
-		{"focus_out", {C_SET_FOCUS_DEC_START,R_FOCUS}},
-		{"focus_stop", {C_SET_FOCUS_STOP,R_FOCUS}},
+		{"focus", {C_SET_FOCUS_INC_START,R_FOCUS}},
 		{"chip_version",{ NULL, R_CHIP_VERSION}},
 		{"digi_zoom", { NULL, R_DIGI_ZOOM}},
 		{"cam_status", {C_SET_OPEN, R_CAM_STATUS}},
@@ -106,12 +104,6 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 		else if (x == 0)
 			sendCommand(C_SET_CLOSE);
 		setRegister(R_CAM_STATUS, x);
-	} else if (r == C_SET_FOCUS_INC_START) {
-		sendCommand(r);
-	} else if (r == C_SET_FOCUS_STOP) {
-		sendCommand(r);
-	} else if (r == C_SET_FOCUS_DEC_START) {
-		sendCommand(r);
 	} else if (r == C_SET_FOCUS) {
 		sendCommand(r, (x & 0xff00) >> 8, (x & 0x00ff));
 	} else if (r == C_SET_AUTO_FOCUS_ON) {
