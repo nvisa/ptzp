@@ -26,6 +26,7 @@ enum Commands {
 	C_GET_FOCUS_POS,
 	C_GET_GAIN,
 	C_GET_IBIT_RESULT,
+	C_GET_SYMBOLOGY,
 
 	C_COUNT,
 };
@@ -40,6 +41,7 @@ static QStringList commandList = {
 	"<0006#GET,FCSENC:IR",
 	"<0007#GET,GAIN:IR",
 	"<0008#GET,BITRESULT:ALL",
+	"<0011#GET,SYMBOLOGY:",
 };
 
 MgeoSwirHead::MgeoSwirHead()
@@ -48,7 +50,7 @@ MgeoSwirHead::MgeoSwirHead()
 		{"focus", { C_SET_FOCUS, R_FOCUS_POS}},
 		{"gain", { C_SET_GAIN, R_GAIN}},
 		{"ibit", { C_START_IBIT, C_GET_IBIT_RESULT}},
-		{"symbology", { C_SET_SYMBOLOGY, 0}},
+		{"symbology", { C_SET_SYMBOLOGY, R_SYMBOLOGY}},
 	};
 }
 
@@ -105,7 +107,8 @@ int MgeoSwirHead::focusOut(int speed)
 
 int MgeoSwirHead::focusStop()
 {
-	return sendCommand(commandList.at(C_SET_FOCUS).arg("STOP"));
+	sendCommand(commandList.at(C_SET_FOCUS).arg("STOP"));
+	return sendCommand(commandList.at(C_GET_FOCUS_POS));
 }
 
 int MgeoSwirHead::getHeadStatus()
@@ -187,6 +190,13 @@ int MgeoSwirHead::dataReady(const unsigned char *bytes, int len)
 	if (data.contains("RET,BITRESULT")){
 		QString res = data.split(":").at(1);
 		setRegister(R_IBIT_RESULT, res.split("~").first().toInt());
+	}
+	if (data.contains("RET,SYMBOLOGY")){
+		QString res = data.split(":").at(1);
+		if (res.split("~").first() == "OFF")
+			setRegister(R_SYMBOLOGY, 0);
+		if (res.split("~").first() == "ON")
+			setRegister(R_SYMBOLOGY, 1);
 	}
 
 	return data.length();

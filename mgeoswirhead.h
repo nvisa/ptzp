@@ -16,6 +16,7 @@ public:
 		R_FOCUS_POS,
 		R_GAIN,
 		R_IBIT_RESULT,
+		R_SYMBOLOGY,
 	};
 
 	int getCapabilities();
