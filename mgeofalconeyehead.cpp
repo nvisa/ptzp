@@ -606,10 +606,10 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 			r.latminute = bytes[off + 3];
 			r.latsecond = bytes[off + 4];
 			r.latsecond += bytes[off + 5] / 100.0;
-			r.latdegree = bytes[off + 6];
-			r.latminute = bytes[off + 7];
-			r.latsecond = bytes[off + 8];
-			r.latsecond += bytes[off + 9] / 100.0;
+			r.londegree = bytes[off + 6];
+			r.lonminute = bytes[off + 7];
+			r.lonsecond = bytes[off + 8];
+			r.lonsecond += bytes[off + 9] / 100.0;
 			r.height = bytes[off + 10] + bytes[off + 11] * 256;
 			reflections << r;
 		}
