@@ -237,7 +237,6 @@ int OemModuleHead::startZoomIn(int speed)
 {
 	zoomRatio = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_IN];
-	hist->add(C_VISCA_ZOOM_IN);
 	p[4 + 2] = 0x20 + speed;
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -246,7 +245,6 @@ int OemModuleHead::startZoomOut(int speed)
 {
 	zoomRatio = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_OUT];
-	hist->add(C_VISCA_ZOOM_OUT);
 	p[4 + 2] = 0x30 + speed;
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -254,7 +252,6 @@ int OemModuleHead::startZoomOut(int speed)
 int OemModuleHead::stopZoom()
 {
 	const unsigned char *p = protoBytes[C_VISCA_ZOOM_STOP];
-	hist->add(C_VISCA_ZOOM_IN);
 	return transport->send((const char *)p + 2, p[0]);
 }
 
@@ -266,7 +263,6 @@ int OemModuleHead::getZoom()
 int OemModuleHead::setZoom(uint pos)
 {
 	unsigned char *p = protoBytes[C_VISCA_SET_ZOOM_POS];
-	hist->add(C_VISCA_SET_ZOOM_POS);
 	p[4 + 2] = (pos & 0XF000) >> 12;
 	p[4 + 3] = (pos & 0XF00) >> 8;
 	p[4 + 4] = (pos & 0XF0) >> 4;
@@ -277,7 +273,6 @@ int OemModuleHead::setZoom(uint pos)
 int OemModuleHead::focusIn(int speed)
 {
 	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
-	hist->add(C_VISCA_SET_FOCUS);
 	p[4 + 2] = 0x20 + speed;
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -285,7 +280,6 @@ int OemModuleHead::focusIn(int speed)
 int OemModuleHead::focusOut(int speed)
 {
 	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
-	hist->add(C_VISCA_SET_FOCUS);
 	p[4 + 2] = 0x30 + speed;
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -293,7 +287,6 @@ int OemModuleHead::focusOut(int speed)
 int OemModuleHead::focusStop()
 {
 	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
-	hist->add(C_VISCA_SET_FOCUS);
 	p[4 + 2] = 0x00;
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -359,12 +352,12 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	if (nextSync != C_COUNT) {
 		/* we are in sync mode, let's sync next */
 		mInfo("Next sync property: %d",nextSync);
-		hist->takeFirst();
 		if (++nextSync == C_COUNT) {
 			fDebug("Visca register syncing completed, activating auto-sync");
 		} else
 			syncNext();
 	}
+	hist->takeFirst();
 
 	if (sendcmd == C_VISCA_GET_EXPOSURE) {
 		uint exVal = ((p[4] << 4) | p[5]);
@@ -417,10 +410,9 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_FOCUS_MODE,p[2]);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TRIGGER){
 		mInfo("Zoom Trigger synced");
-		if (p[2] == 0x01)
-			setRegister(R_ZOOM_TRIGGER,0);
-		else if (p[2] == 0x02)
+		if (p[2] == 0x02)
 			setRegister(R_ZOOM_TRIGGER,1);
+		else	setRegister(R_ZOOM_TRIGGER,0);
 	} else if(sendcmd == C_VISCA_GET_BLC_STATUS){
 		mInfo("BLC status synced");
 		setRegister(R_BLC_STATUS,(p[2] == 0x02) ? true : false);
@@ -525,13 +517,13 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	 * in this case ordinary sleep should work here
 	 */
 	int sleepDur = 1000 * 100;
+	setProperty(C_VISCA_SET_PROGRAM_AE_MODE, root.value(key.arg(R_PROGRAM_AE_MODE)).toInt());
+	usleep(sleepDur);
 	setProperty(C_VISCA_SET_EXPOSURE, root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_EXPOSURE_TARGET, root.value(key.arg(R_EXPOSURE_TARGET)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_GAIN, root.value(key.arg(R_GAIN_VALUE)).toInt());
-	usleep(sleepDur);
-	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_EXP_COMPMODE, root.value(key.arg(R_EXP_COMPMODE)).toInt());
 	usleep(sleepDur);
@@ -565,11 +557,11 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_AUTO_ICR, root.value(key.arg(R_AUTO_ICR)).toInt());
 	usleep(sleepDur);
-	setProperty(C_VISCA_SET_PROGRAM_AE_MODE, root.value(key.arg(R_PROGRAM_AE_MODE)).toInt());
-	usleep(sleepDur);
 	setProperty(C_VISCA_SET_FLIP_MODE, root.value(key.arg(R_FLIP)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_MIRROR_MODE, root.value(key.arg(R_MIRROR)).toInt());
+	usleep(sleepDur);
+	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
 	usleep(sleepDur);
 	deviceDefinition = root.value("deviceDefiniton").toString();
 	zoomRatio = root.value("zoomRatio").toInt();
@@ -581,7 +573,6 @@ void OemModuleHead::setProperty(uint r, uint x)
 	mInfo("Set Property %d , value: %d", r, x);
 	if (r == C_VISCA_SET_EXPOSURE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE];
-		hist->add(C_VISCA_SET_EXPOSURE );
 		uint val;
 		/***
 		 * FCB-EV7500 dökümanında(Visca datasheet) sayfa 9'da bulunan Iris priority bölümünde bulunan tabloya göre
@@ -598,58 +589,49 @@ void OemModuleHead::setProperty(uint r, uint x)
 		setRegister(R_EXPOSURE_VALUE, (int)x);
 	} else if (r == C_VISCA_SET_NOISE_REDUCT) {
 		unsigned char *p = protoBytes[C_VISCA_SET_NOISE_REDUCT];
-		hist->add(C_VISCA_SET_NOISE_REDUCT );
 		p[4 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_NOISE_REDUCT, (int)x);
 	} else if (r == C_VISCA_SET_GAIN) {
 		unsigned char *p = protoBytes[C_VISCA_SET_GAIN];
-		hist->add(C_VISCA_SET_GAIN );
 		p[6 + 2] = (x & 0xf0) >> 4;
 		p[7 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_GAIN_VALUE, (int)x);
 	} else if (r == C_VISCA_SET_EXP_COMPMODE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_EXP_COMPMODE];
-		hist->add(C_VISCA_SET_EXP_COMPMODE );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXP_COMPMODE, (int)x);
 	} else if (r == C_VISCA_SET_EXP_COMPVAL) {
 		unsigned char *p = protoBytes[C_VISCA_SET_EXP_COMPVAL];
-		hist->add(C_VISCA_SET_EXP_COMPVAL );
 		p[6 + 2] = (x & 0xf0) >> 4;
 		p[7 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXP_COMPVAL, (int)x);
 	} else if (r == C_VISCA_SET_GAIN_LIM) {
 		unsigned char *p = protoBytes[C_VISCA_SET_GAIN_LIM];
-		hist->add(C_VISCA_SET_GAIN_LIM );
 		p[4 + 2] = (x + 4) & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_GAIN_LIM, (int)x);
 	} else if (r == C_VISCA_SET_SHUTTER) {
 		unsigned char *p = protoBytes[C_VISCA_SET_SHUTTER];
-		hist->add(C_VISCA_SET_SHUTTER );
 		p[6 + 2] = x >> 4;
 		p[7 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_SHUTTER, (int)x);
 	} else if (r == C_VISCA_SET_WDRSTAT) {
 		unsigned char *p = protoBytes[C_VISCA_SET_WDRSTAT];
-		hist->add(C_VISCA_SET_WDRSTAT );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_WDRSTAT, (int)x);
 	} else if (r == C_VISCA_SET_GAMMA) {
 		unsigned char *p = protoBytes[C_VISCA_SET_GAMMA];
-		hist->add(C_VISCA_SET_GAMMA );
 		p[4 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_GAMMA, (int)x);
 	} else if (r == C_VISCA_SET_AWB_MODE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_AWB_MODE];
-		hist->add(C_VISCA_SET_AWB_MODE );
 		if (x <0x04)
 			p[4 + 2] = x;
 		else p[4 + 2] = x + 0x01;
@@ -657,78 +639,65 @@ void OemModuleHead::setProperty(uint r, uint x)
 		setRegister(R_AWB_MODE, (int)x);
 	} else if (r == C_VISCA_SET_DEFOG_MODE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_DEFOG_MODE];
-		hist->add(C_VISCA_SET_DEFOG_MODE );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_DEFOG_MODE, (int)x);
 	} else if (r == C_VISCA_SET_FOCUS_MODE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_FOCUS_MODE];
-		hist->add(C_VISCA_SET_FOCUS_MODE );
 		p[4 + 2] = x ? 0x03 :0x02;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_FOCUS_MODE, (int)x);
 	} else if (r == C_VISCA_SET_ZOOM_TRIGGER) {
 		unsigned char *p = protoBytes[C_VISCA_SET_ZOOM_TRIGGER];
-		hist->add(C_VISCA_SET_ZOOM_TRIGGER );
 		p[4 + 2] = x ? 0x02 :0x01;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_ZOOM_TRIGGER, (int)x);
 	} else if (r == C_VISCA_SET_BLC_STATUS) {
 		unsigned char *p = protoBytes[C_VISCA_SET_BLC_STATUS];
-		hist->add(C_VISCA_SET_BLC_STATUS );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_BLC_STATUS, (int)x);
 	} else if (r == C_VISCA_SET_IRCF_STATUS) {
 		unsigned char *p = protoBytes[C_VISCA_SET_IRCF_STATUS];
-		hist->add(C_VISCA_SET_IRCF_STATUS );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_IRCF_STATUS, (int)x);
 	} else if (r == C_VISCA_SET_AUTO_ICR) {
 		unsigned char *p = protoBytes[C_VISCA_SET_AUTO_ICR];
-		hist->add(C_VISCA_SET_AUTO_ICR );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_AUTO_ICR, (int)x);
 	} else if (r == C_VISCA_SET_PROGRAM_AE_MODE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_PROGRAM_AE_MODE];
-		hist->add(C_VISCA_SET_PROGRAM_AE_MODE );
 		p[4 + 2] = x;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_PROGRAM_AE_MODE, (int)x);
 	} else if (r == C_VISCA_SET_FLIP_MODE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_FLIP_MODE];
-		hist->add(C_VISCA_SET_FLIP_MODE );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_FLIP, (int)x);
 	} else if (r == C_VISCA_SET_MIRROR_MODE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_MIRROR_MODE];
-		hist->add(C_VISCA_SET_MIRROR_MODE );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_MIRROR, (int)x);
 	} else if (r == C_VISCA_SET_DIGI_ZOOM_STAT) {
 		unsigned char *p = protoBytes[C_VISCA_SET_DIGI_ZOOM_STAT];
-		hist->add(C_VISCA_SET_DIGI_ZOOM_STAT );
 		p[4 + 2] = x ? 0x02 :0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_DIGI_ZOOM_STAT, (int)x);
 	} else if (r == C_VISCA_SET_ZOOM_TYPE) {
 		unsigned char *p = protoBytes[C_VISCA_SET_ZOOM_TYPE];
-		hist->add(C_VISCA_SET_ZOOM_TYPE );
 		p[4 + 2] = x ? 0x00 :0x01;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_ZOOM_TYPE, (int)x);
 	} else if (r == C_VISCA_SET_ONE_PUSH) {
 		unsigned char *p = protoBytes[C_VISCA_SET_ONE_PUSH];
-		hist->add(C_VISCA_SET_ONE_PUSH );
 		p[4 + 2] = 0x01;
 		transport->send((const char *)p + 2, p[0]);
 	} else if (r == C_VISCA_SET_EXPOSURE_TARGET){
 		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE_TARGET];
-		hist->add(C_VISCA_SET_EXPOSURE_TARGET);
 		p[5 + 2] = (x & 0xf0) >> 4 ;
 		p[6 + 2] = x & 0x0f ;
 		transport->send((const char *)p + 2, p[0]);
