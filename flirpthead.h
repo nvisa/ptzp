@@ -1,21 +1,15 @@
 #ifndef FLIRPTHEAD_H
 #define FLIRPTHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <QStringList>
 
-#include <QTimer>
-#include "QStringList"
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QQueue>
+#include "ecl/ptzp/ptzphead.h"
 
-class FlirPTHead :public PtzpHead
+class FlirPTHead : public PtzpHead
 {
-	Q_OBJECT
 public:
 	FlirPTHead();
 
-	int connectHTTP(const QString &targetUri);
 	int getCapabilities();
 	int getHeadStatus();
 	int panLeft(float speed);
@@ -35,25 +29,15 @@ public:
 	float getPanAngle();
 	float getTiltAngle();
 
-private:
-	QQueue<QString> queue;
-	QTimer *timerWrtData;
-	QTimer *timerGetData;
-	QNetworkAccessManager *netman;
-	QNetworkRequest request;
-
-private slots:
-	void sendCommand();
-	void getPositions();
-	void dataReady(QNetworkReply* reply);
-
 protected:
 	QStringList ptzCommandList;
 	int panPos;
 	int tiltPos;
 	int nextSync;
 	QList<uint> syncList;
+	int dataReady(const unsigned char *bytes, int len);
 	int saveCommand(const QString &key);
+	QByteArray transportReady();
 
 };
 
