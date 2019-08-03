@@ -156,6 +156,10 @@ void AryaDriver::timeout()
 			setChangeOverlayState(false);
 		}
 		manageRegisterSaving();
+		if (doStartupProcess) {
+			doStartupProcess = false;
+			getStartupProcess();
+		}
 		break;
 	}
 	PtzpDriver::timeout();

@@ -162,6 +162,7 @@ protected:
 	bool registerSavingEnabled;
 	int registerSavingIntervalMsecs;
 	QElapsedTimer *regsavet;
+	bool doStartupProcess;
 
 	void commandUpdate(int c, float arg1 = 0, float arg2 = 0);
 	int runPatrol(QString name);

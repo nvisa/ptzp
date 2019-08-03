@@ -64,6 +64,7 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent),
 	  gpiocont(new GpioController)
 {
+	doStartupProcess = true;
 	driverEnabled = true;
 	sreg.enable = false;
 	sreg.zoomHead = NULL;
@@ -77,7 +78,6 @@ PtzpDriver::PtzpDriver(QObject *parent)
 	elaps->start();
 	regsavet = new QElapsedTimer();
 	setRegisterSaving(false, 60000);
-	getStartupProcess();
 	changeOverlay = true;
 }
 

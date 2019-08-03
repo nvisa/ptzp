@@ -362,9 +362,14 @@ void IRDomeDriver::timeout()
 		headModule->loadRegisters("head0.json");
 		state = NORMAL;
 		break;
-	case NORMAL:
+	case NORMAL: {
 		manageRegisterSaving();
+		if (doStartupProcess) {
+			doStartupProcess = false;
+			getStartupProcess();
+		}
 		break;
+	}
 	}
 
 	PtzpDriver::timeout();
