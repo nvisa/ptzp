@@ -33,9 +33,10 @@ int PtzpHttpTransport::connectTo(const QString &targetUri)
 		priv->uri = flds.at(0);
 		if (!priv->uri.contains("http://"))
 			priv->uri = "http://" + priv->uri;
-		priv->port = flds.at(1).toInt();
-		priv->username = flds.at(2);
-		priv->password = flds.at(3);
+		priv->username = flds.at(1);
+		priv->password = flds.at(2);
+		if (flds.size() > 3)
+			priv->port = flds.at(3).toInt();
 	} else
 		priv->uri = targetUri;
 	mInfo("Url '%s', port '%d', Username '%s', Password '%s'", qPrintable(priv->uri), priv->port, qPrintable(priv->username), qPrintable(priv->password));
