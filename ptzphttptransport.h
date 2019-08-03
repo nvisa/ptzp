@@ -7,29 +7,36 @@
 #include <QNetworkAccessManager>
 #include <QTimer>
 
+class PtzpHttpTransportPriv;
 class PtzpHttpTransport : public QObject, public PtzpTransport
 {
 	Q_OBJECT
 public:
+	enum KnownContentTypes {
+		AppJson,
+		AppXFormUrlencoded,
+		Unknown
+	};
 	explicit PtzpHttpTransport(LineProtocol proto, QObject *parent = nullptr);
 	int connectTo(const QString &targetUri);
 	int send(const char *bytes, int len);
-	void setCGIFlag(bool v);
+	void setContentType(KnownContentTypes type);
 signals:
-	void sendGetMessage2Main(const QByteArray &ba);
 	void sendPostMessage2Main(const QByteArray &ba);
+	void sendGetMessage2Main(const QByteArray &ba);
 
-public slots:
 protected slots:
 	void dataReady(QNetworkReply *reply);
 	void callback();
 	void sendPostMessage(const QByteArray &ba);
 	void sendGetMessage(const QByteArray &ba);
 protected:
-	bool cgiFlag;
+	PtzpHttpTransportPriv *priv;
 	QNetworkRequest request;
 	QNetworkAccessManager *netman;
 	QTimer *timer;
+	KnownContentTypes contentType;
+	QByteArray prepareAppJsonTypeMessage(const QByteArray &ba);
 };
 
 #endif // PTZPHTTPTRANSPORT_H

@@ -2,13 +2,23 @@
 #include <ecl/debug.h>
 
 #include <QNetworkReply>
+class PtzpHttpTransportPriv
+{
+public:
+	int port;
+	QString uri;
+	QString username;
+	QString password;
+};
 
 PtzpHttpTransport::PtzpHttpTransport(LineProtocol proto, QObject *parent)
 	: QObject(parent),
 	  PtzpTransport(proto)
 {
+	priv = new PtzpHttpTransportPriv();
+	priv->port = 80;
+	contentType = Unknown;
 	netman = NULL;
-	cgiFlag = false;
 	timer = new QTimer();
 	timer->start(periodTimer);
 	connect(timer, SIGNAL(timeout()), SLOT(callback()));
@@ -16,53 +26,63 @@ PtzpHttpTransport::PtzpHttpTransport(LineProtocol proto, QObject *parent)
 
 int PtzpHttpTransport::connectTo(const QString &targetUri)
 {
-	QUrl url;
+	if (targetUri.isEmpty())
+		return -1;
 	if (targetUri.contains("?")) {
-		qDebug() << "headmodule" << targetUri;
-		QStringList tgts = targetUri.split("?");
-		QString ip = tgts.first();
-		if (!ip.contains("http://"))
-			ip = "http://" + ip;
-		url.setUrl(ip);
-		int port = 80;
-		if (tgts.size() == 4)
-			port = tgts.last().toInt();
-		url.setPort(port);
-		request.setUrl(url);
-		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-		request.setRawHeader("Authorization", "Basic "
-							 + QString("%1:%2").arg(tgts.at(1)).arg(tgts.at(2)).toLatin1().toBase64());
-	} else {
-		request.setUrl(QUrl(targetUri));
+		QStringList flds = targetUri.split("?");
+		priv->uri = flds.at(0);
+		if (!priv->uri.contains("http://"))
+			priv->uri = "http://" + priv->uri;
+		priv->port = flds.at(1).toInt();
+		priv->username = flds.at(2);
+		priv->password = flds.at(3);
+	} else
+		priv->uri = targetUri;
+	mInfo("Url '%s', port '%d', Username '%s', Password '%s'", qPrintable(priv->uri), priv->port, qPrintable(priv->username), qPrintable(priv->password));
+
+	if (contentType == AppXFormUrlencoded)
 		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+	else if (contentType == AppJson)
+		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	else {
+		mDebug("unknown content type");
+		return -EPROTO;
 	}
+	if (!priv->username.isEmpty())
+		request.setRawHeader("Authorization", "Basic "
+							 + QString("%1:%2").arg(priv->username).arg(priv->password).toLatin1().toBase64());
+	QUrl url;
+	url.setUrl(priv->uri);
+	url.setPort(priv->port);
+	request.setUrl(url);
+
 	netman = new QNetworkAccessManager(this);
 	connect(this, SIGNAL(sendPostMessage2Main(QByteArray)), SLOT(sendPostMessage(QByteArray)));
 	connect(this, SIGNAL(sendGetMessage2Main(QByteArray)), SLOT(sendGetMessage(QByteArray)));
 	connect(netman, SIGNAL(finished(QNetworkReply*)), SLOT(dataReady(QNetworkReply *)));
-	mDebug("Connection definated %s", qPrintable(targetUri));
 	return 0;
 }
 
 int PtzpHttpTransport::send(const char *bytes, int len)
 {
-	if (cgiFlag) {
-		QString data = QString::fromUtf8(bytes, len);
-		if (data.contains("?")) {
-			QString path = data.split("?").first();
-			QUrl url = request.url();
-			url.setPath(path, QUrl::ParsingMode::StrictMode);
-			request.setUrl(url);
-			emit sendPostMessage2Main(data.split("?").last().toLatin1());
-		}
-	} else
+	switch (contentType) {
+	case AppJson: {
+		QByteArray params = prepareAppJsonTypeMessage(QByteArray(bytes, len));
+		emit sendPostMessage2Main(params);
+		break;
+	}
+	case AppXFormUrlencoded:
 		emit sendPostMessage2Main(QByteArray(bytes, len));
+		break;
+	default:
+		break;
+	}
 	return len;
 }
 
-void PtzpHttpTransport::setCGIFlag(bool v)
+void PtzpHttpTransport::setContentType(PtzpHttpTransport::KnownContentTypes type)
 {
-	cgiFlag = v;
+	contentType = type;
 }
 
 void PtzpHttpTransport::dataReady(QNetworkReply *reply)
@@ -72,8 +92,6 @@ void PtzpHttpTransport::dataReady(QNetworkReply *reply)
 		return;
 	}
 	QByteArray ba = reply->readAll();
-	if (ba.contains("root.ERR.no=4"))
-		return;
 	protocol->dataReady(ba);
 }
 
@@ -86,24 +104,39 @@ void PtzpHttpTransport::sendGetMessage(const QByteArray &ba)
 {
 	QString data = QString::fromUtf8(ba);
 	if (data.contains("?")) {
-		QString path = data.split("?").first();
+		QStringList flds = data.split("?");
+		QString path = flds.first();
+		QString query = flds.last();
 		QUrl url = request.url();
 		url.setPath(path, QUrl::ParsingMode::StrictMode);
-		url.setQuery(data.split("?").last());
+		url.setQuery(query);
 		request.setUrl(url);
+
 		netman->get(request);
 		url.setQuery("");
 		request.setUrl(url);
 	}
-
 }
 
 void PtzpHttpTransport::callback()
 {
 	QByteArray m = PtzpTransport::queueFreeCallback();
-	if (cgiFlag) {
+	if (contentType == AppJson) {
 		emit sendGetMessage2Main(m);
 		return;
 	}
 	send(m.data(), m.size());
+}
+
+QByteArray PtzpHttpTransport::prepareAppJsonTypeMessage(const QByteArray &ba)
+{
+	QString data = QString::fromUtf8(ba);
+	if (data.contains("?")) {
+		QString path = data.split("?").first();
+		QString params = data.split("?").last();
+		QUrl url = request.url();
+		url.setPath(path, QUrl::ParsingMode::StrictMode);
+		request.setUrl(url);
+		return params.toLatin1();
+	}
 }
