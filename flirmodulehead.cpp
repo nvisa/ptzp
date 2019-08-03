@@ -162,6 +162,10 @@ QByteArray FlirModuleHead::transportReady()
 int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 {
 	 QString data = QString::fromUtf8((const char *)bytes, len);
+
+	 if (data.contains("root.ERR.no=4")) // unnecessary message
+		 return len;
+
 	if (lastGetCommand == C_GET_CAMPOS) {
 		QStringList lines = data.split("\n");
 		foreach (QString line, lines) {
@@ -187,6 +191,5 @@ int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 			camModes.insert(key, value);
 		}
 	}
-	qDebug() << camModes << zoomPos << focusPos;
 	return 0;
 }
