@@ -3,14 +3,15 @@
 #include "flirmodulehead.h"
 #include "flirpthead.h"
 
-#include <QFile>
-
+#include <ecl/ptzp/ptzptransport.h>
 FlirDriver::FlirDriver()
 {
 	headModule = new FlirModuleHead;
 	headDome = new FlirPTHead;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
+	httpTransport = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
+	httpTransportModule = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
 }
 
 FlirDriver::~FlirDriver()
@@ -30,8 +31,16 @@ PtzpHead *FlirDriver::getHead(int index)
 int FlirDriver::setTarget(const QString &targetUri)
 {
 	QStringList fields = targetUri.split(";");
-	headModule->connect(fields[0]);
-	headDome->connectHTTP(fields[1]);
+
+	headDome->setTransport(httpTransport);
+	headModule->setTransport(httpTransportModule);
+
+	httpTransport->connectTo(fields[1]);
+	httpTransport->enableQueueFreeCallbacks(true);
+
+	httpTransportModule->connectTo(fields[0]);
+	httpTransportModule->setCGIFlag(true);
+	httpTransportModule->enableQueueFreeCallbacks(true);
 	return 0;
 }
 

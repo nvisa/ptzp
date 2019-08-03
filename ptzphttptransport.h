@@ -14,15 +14,19 @@ public:
 	explicit PtzpHttpTransport(LineProtocol proto, QObject *parent = nullptr);
 	int connectTo(const QString &targetUri);
 	int send(const char *bytes, int len);
+	void setCGIFlag(bool v);
 signals:
-	void sendSocketMessage2Main(const QByteArray &ba);
+	void sendGetMessage2Main(const QByteArray &ba);
+	void sendPostMessage2Main(const QByteArray &ba);
 
 public slots:
 protected slots:
 	void dataReady(QNetworkReply *reply);
-	void sendSocketMessage(const QByteArray &ba);
 	void callback();
+	void sendPostMessage(const QByteArray &ba);
+	void sendGetMessage(const QByteArray &ba);
 protected:
+	bool cgiFlag;
 	QNetworkRequest request;
 	QNetworkAccessManager *netman;
 	QTimer *timer;
