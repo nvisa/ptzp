@@ -6,11 +6,11 @@
 #include <ecl/ptzp/ptzptransport.h>
 FlirDriver::FlirDriver()
 {
-	headModule = new FlirModuleHead;
 	headDome = new FlirPTHead;
+	headModule = new FlirModuleHead;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
-	httpTransport = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
+	httpTransportDome = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
 	httpTransportModule = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
 }
 
@@ -30,16 +30,21 @@ PtzpHead *FlirDriver::getHead(int index)
 
 int FlirDriver::setTarget(const QString &targetUri)
 {
+	int ret = 0;
 	QStringList fields = targetUri.split(";");
-
-	headDome->setTransport(httpTransport);
+	headDome->setTransport(httpTransportDome);
 	headModule->setTransport(httpTransportModule);
 
-	httpTransport->connectTo(fields[1]);
-	httpTransport->enableQueueFreeCallbacks(true);
+	httpTransportDome->setContentType(PtzpHttpTransport::AppXFormUrlencoded);
+	ret = httpTransportDome->connectTo(fields[1]);
+	if (ret)
+		return ret;
+	httpTransportDome->enableQueueFreeCallbacks(true);
 
-	httpTransportModule->connectTo(fields[0]);
-	httpTransportModule->setCGIFlag(true);
+	httpTransportModule->setContentType(PtzpHttpTransport::AppJson);
+	ret = httpTransportModule->connectTo(fields[0]);
+	if (ret)
+		return ret;
 	httpTransportModule->enableQueueFreeCallbacks(true);
 	return 0;
 }
