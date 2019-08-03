@@ -37,6 +37,8 @@ protected:
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
 	int panTilt(uint cmd, int pspeed, int tspeed);
+	QJsonValue marshallAllRegisters();
+	void unmarshallloadAllRegisters(const QJsonValue &node);
 
 	int irLedLevel;
 	bool syncEnabled;

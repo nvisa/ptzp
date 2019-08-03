@@ -3,6 +3,10 @@
 #include "ioerrors.h"
 #include "ptzptransport.h"
 
+#include <QJsonObject>
+
+#include <unistd.h>
+
 enum Commands {
 	C_CUSTOM_PAN_TILT_POS,		//0
 	C_CUSTOM_GO_TO_POS,
@@ -186,6 +190,23 @@ int IRDomePTHead::panTilt(uint cmd, int pspeed, int tspeed)
 		p[6 + 2] = checksum(p + 2, 6);
 	}
 	return transport->send(QByteArray((const char *)p + 2, p[0]));
+}
+
+QJsonValue IRDomePTHead::marshallAllRegisters()
+{
+	QJsonObject json;
+	for(int i = 0; i < R_COUNT; i++)
+		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
+	return json;
+}
+
+void IRDomePTHead::unmarshallloadAllRegisters(const QJsonValue &node)
+{
+
+	QJsonObject root = node.toObject();
+	QString key = "reg%1";
+	panTilt(C_CUSTOM_GO_TO_POS, root.value(key.arg(R_PAN_ANGLE)).toInt(), root.value(key.arg(R_TILT_ANGLE)).toInt());
+	sleep(2);
 }
 
 float IRDomePTHead::getPanAngle()
