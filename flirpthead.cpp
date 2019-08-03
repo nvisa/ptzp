@@ -112,7 +112,7 @@ int FlirPTHead::panTiltAbs(float pan, float tilt)
 		// left
 		if (tilt < 0) {
 			// up
-			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(-pspeed).arg(tspeed));			//	C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
+			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(-pspeed).arg(tspeed)); // C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
 		} else if (tilt > 0) {
 			// down
 			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_DOWN).arg(-pspeed).arg(-tspeed));
