@@ -331,8 +331,10 @@ void IRDomeDriver::timeout()
 //	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
-		headModule->syncRegisters();
-		state = SYNC_HEAD_MODULE;
+		if (headModule->getModulID() != 0)
+			state = SYNC_HEAD_MODULE;
+		else if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL)
+			headModule->syncRegisters();
 		break;
 	case SYNC_HEAD_MODULE:
 		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {

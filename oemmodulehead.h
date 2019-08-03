@@ -22,7 +22,6 @@ public:
 		R_SHUTTER,		//19 //td:nd // getshutterspeed
 		R_NOISE_REDUCT,	//22 //td:nd
 		R_WDRSTAT,		//23 //td:nd
-	//	R_WDRPARAM,		//24 //td:nd
 		R_GAMMA,			//25 //td.nd
 		R_AWB_MODE,		//26 //td:nd
 		R_DEFOG_MODE,		//27 //td:nd
@@ -48,6 +47,8 @@ public:
 		R_TOP_IRIS,
 		R_TOP_GAIN,
 		R_BOT_GAIN,
+
+		R_VISCA_MODUL_ID,
 
 		R_COUNT
 	};
@@ -82,6 +83,8 @@ public:
 	QString getIrisLimit();
 	int setGainLimit(uchar topLim, uchar botLim);
 	QString getGainLimit();
+
+	uint getModulID();
 
 protected:
 	int syncNext();

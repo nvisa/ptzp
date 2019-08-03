@@ -20,6 +20,11 @@
 	for (int i = 0; i < len; i++) \
 		qDebug("%s: %d: 0x%x", __func__, i, p[i]);
 
+enum Modules {
+	SONY_FCB_CV7500 = 0x0641,
+	OEM = 0x045F,
+};
+
 enum Commands {
 	/* visca commands */
 	C_VISCA_SET_EXPOSURE,		//14 //td:nd // exposure_value
@@ -32,7 +37,6 @@ enum Commands {
 	C_VISCA_SET_SHUTTER,		//19 //td:nd // getshutterspeed
 	C_VISCA_SET_NOISE_REDUCT,	//22 //td:nd
 	C_VISCA_SET_WDRSTAT,		//23 //td:nd
-	//	C_VISCA_SET_WDRPARAM,		//24 //td:nd
 	C_VISCA_SET_GAMMA,			//25 //td.nd
 	C_VISCA_SET_AWB_MODE,		//26 //td:nd
 	C_VISCA_SET_DEFOG_MODE,		//27 //td:nd
@@ -48,10 +52,14 @@ enum Commands {
 	C_VISCA_SET_FLIP_MODE,		//36
 	C_VISCA_SET_MIRROR_MODE,	//37
 	C_VISCA_SET_ONE_PUSH,
-	C_VISCA_GET_ZOOM,			//10
 	C_VISCA_ZOOM_IN,			//11
 	C_VISCA_ZOOM_OUT,			//12
 	C_VISCA_ZOOM_STOP,			//13
+	C_VISCA_SET_GAIN_LIMIT_OEM,
+	C_VISCA_SET_SHUTTER_LIMIT_OEM,
+	C_VISCA_SET_IRIS_LIMIT_OEM,
+	C_VISCA_GET_ZOOM,			//10
+
 	C_VISCA_GET_EXPOSURE,		//14 //td:nd // exposure_value
 	C_VISCA_GET_GAIN,			//15 //td:nd // gainvalue
 	C_VISCA_GET_EXP_COMPMODE,	//16 //td:nd
@@ -60,10 +68,10 @@ enum Commands {
 	C_VISCA_GET_SHUTTER,		//19 //td:nd // getshutterspeed
 	C_VISCA_GET_NOISE_REDUCT,	//22 //td:nd
 	C_VISCA_GET_WDRSTAT,		//23 //td:nd
-	//	C_VISCA_GET_WDRPARAM,		//24 //td:nd
 	C_VISCA_GET_GAMMA,			//25 //td.nd
 	C_VISCA_GET_AWB_MODE,		//26 //td:nd
-//	C_VISCA_GET_DEFOG_MODE,		//27 //td:nd
+	C_VISCA_GET_DEFOG_MODE,		//27 //td:nd
+	C_VISCA_GET_DEFOG_MODE_OEM,
 	C_VISCA_GET_DIGI_ZOOM_STAT,	//28 //td:nd
 	C_VISCA_GET_ZOOM_TYPE,		//29 //td:nd
 	C_VISCA_GET_FOCUS_MODE,		//30 //td:nd
@@ -74,6 +82,11 @@ enum Commands {
 	C_VISCA_GET_PROGRAM_AE_MODE,//35 //td:nd
 	C_VISCA_GET_FLIP_MODE,		//36
 	C_VISCA_GET_MIRROR_MODE,	//37
+
+	C_VISCA_GET_VERSION,
+	C_VISCA_GET_GAIN_LIMIT_OEM,
+	C_VISCA_GET_SHUTTER_LIMIT_OEM,
+	C_VISCA_GET_IRIS_LIMIT_OEM,
 
 	C_COUNT,
 };
@@ -100,43 +113,50 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x08, 0x00, 0xff },//set focus far-near
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x38, 0x00, 0xff },	//set focus mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x57, 0x00, 0xFF },	//set zoom trigger
-	{0x06, 0x00, 0x81, 0x01, 0x04, 0x33, 0x00, 0xff },//se BLC stat
+	{0x06, 0x00, 0x81, 0x01, 0x04, 0x33, 0x00, 0xff },//set BLC stat
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x01, 0x00, 0xff },//set IRCF stst
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x51, 0x00, 0xff },//set Auto ICR
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x39, 0x00, 0xff },//set program AE mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x66, 0x00, 0xff }, //set flip mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x61, 0x00, 0xff },//set Mirror mode
 	{0x06, 0x00, 0x81, 0x01, 0x04, 0x18, 0x01, 0xff },//set One Push
-	{0x05, 0x07, 0x81, 0x09, 0x04, 0x47, 0xff},
-	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x20, 0xff},
-	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x30, 0xff},
-	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x00, 0xff},
-	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4b, 0xff}, //get_exposure_value
-	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4c, 0xff}, //get_gain_value
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x3e, 0xff}, //getExpCompMode
-	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4e, 0xff}, //getExpCompval
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x2c, 0xff}, //getGainLimit
-	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4a, 0xff}, //getsutterSpeed 19
-	//	{0x05, 0x04, 0x81, 0x09, 0x04, 0x12, 0xff}, //getMinShutter
-	//	{0x05, 0x07, 0x81, 0x09, 0x04, 0x13, 0xff}, //getMinShutterLimit
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x53, 0xff}, //getNoiseReduct
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x3d, 0xff}, //getWDRstat
-	//	{0x05, 0x08, 0x81, 0x09, 0x04, 0x2D, 0xff}, //getWDRparameter
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x5b, 0xff}, //getGamma
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x35, 0xff}, //getAWBmode
-//	{0x05, 0x04, 0x81, 0x09, 0x04, 0x37, 0xff}, //getDefogMode
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x06, 0xff}, //getDigiZoomStat
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x36, 0xff}, //getZoomType
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x38, 0xff}, //getFocusMode
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x57, 0xff}, //getZoomTrigger
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x33, 0xff}, //getBLCstatus
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x01, 0xff}, //getIRCFstat
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x51, 0xff}, //getAutoICR
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x39, 0xff}, //getProgramAEmode
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x66, 0xff}, //getFlipMode
-	{0x05, 0x04, 0x81, 0x09, 0x04, 0x61, 0xff}, //getMirrorMode
+	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x20, 0xff}, // C_VISCA_ZOOM_IN
+	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x30, 0xff}, // C_VISCA_ZOOM_OUT
+	{0x06, 0x00, 0x81, 0x01, 0x04, 0x07, 0x00, 0xff}, // C_VISCA_ZOOM_STOP
+	{0x10, 0x00, 0x81, 0x01, 0x04, 0x40, 0x05, 0x00, 0x00, 0x00, 0x00, 0xff},	// C_VISCA_SET_GAIN_LIMIT_OEM
+	{0x12, 0x00, 0x81, 0x01, 0x04, 0x40, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},	// C_VISCA_SET_SHUTTER_LIMIT_OEM
+	{0x12, 0x00, 0x81, 0x01, 0x04, 0x40, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},	// C_VISCA_SET_IRIS_LIMIT_OEM
 
-	//	{0x08, 0x07, 0x81, 0x01, 0x04, 0x40, 0x04, 0x, 0x, 0xff }, //set_exposure_target
+	{0x05, 0x07, 0x81, 0x09, 0x04, 0x47, 0xff, 0x00 }, // C_VISCA_GET_ZOOM
+
+	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4b, 0xff, 0x00 }, //get_exposure_value
+	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4c, 0xff, 0x00 }, //get_gain_value
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x3e, 0xff, 0x01 }, //getExpCompMode
+	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4e, 0xff, 0x01 }, //getExpCompval
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x2c, 0xff, 0x01 }, //getGainLimit
+	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4a, 0xff, 0x00 }, //getsutterSpeed 19
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x53, 0xff, 0x00 }, //getNoiseReduct
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x3d, 0xff, 0x00 }, //getWDRstat
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x5b, 0xff, 0x00 }, //getGamma
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x35, 0xff, 0x00 }, //getAWBmode
+	{0x05, 0x05, 0x81, 0x09, 0x04, 0x37, 0xff, 0x01 }, //getDefogMode
+	{0x04, 0x05, 0x81, 0x09, 0x04, 0x37, 0xff, 0x02 }, //C_VISCA_GET_DEFOG_MODE_OEM
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x06, 0xff, 0x00 }, //getDigiZoomStat
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x36, 0xff, 0x00 }, //getZoomType
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x38, 0xff, 0x00 }, //getFocusMode
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x57, 0xff, 0x00 }, //getZoomTrigger
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x33, 0xff, 0x00 }, //getBLCstatus
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x01, 0xff, 0x00 }, //getIRCFstat
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x51, 0xff, 0x00 }, //getAutoICR
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x39, 0xff, 0x00 }, //getProgramAEmode
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x66, 0xff, 0x00 }, //getFlipMode
+	{0x05, 0x04, 0x81, 0x09, 0x04, 0x61, 0xff, 0x00 }, //getMirrorMode
+
+	{0x05, 0x0A, 0x81, 0x09, 0x00, 0x02, 0xff, 0x00 }, // C_VISCA_GET_VERSION
+	{0x06, 0x07, 0x81, 0x09, 0x04, 0x40, 0x05, 0xff, 0x02 }, // C_VISCA_GET_GAIN_LIMIT_OEM
+	{0x06, 0x09, 0x81, 0x09, 0x04, 0x40, 0x06, 0xff, 0x02 }, // C_VISCA_GET_SHUTTER_LIMIT_OEM
+	{0x06, 0x09, 0x81, 0x09, 0x04, 0x40, 0x07, 0xff, 0x02 }, // C_VISCA_GET_IRIS_LIMIT_OEM
+
 };
 
 class CommandHistory
@@ -208,9 +228,10 @@ OemModuleHead::OemModuleHead()
 		{"digi_zoom_pos", {NULL, R_DIGI_ZOOM_POS}},
 		{"optic_zoom_pos", {NULL, R_OPTIC_ZOOM_POS}},
 		{"focus", {C_VISCA_SET_FOCUS, NULL}},
-
+		{"cam_model", {NULL, R_VISCA_MODUL_ID}},
 	};
 #endif
+	setRegister(R_VISCA_MODUL_ID, 0);
 }
 
 int OemModuleHead::getCapabilities()
@@ -305,7 +326,22 @@ void OemModuleHead::setSyncInterval(int interval)
 
 int OemModuleHead::syncNext()
 {
-	const unsigned char *p = protoBytes[nextSync];
+	unsigned char const *p = protoBytes[nextSync];
+	char modulFlag = p[2 + p[0]];
+	while (modulFlag > 0) {
+		if (getRegister(R_VISCA_MODUL_ID) == SONY_FCB_CV7500 && modulFlag == 1)
+			break;
+		else if (getRegister(R_VISCA_MODUL_ID) == OEM && modulFlag == 2)
+			break;
+		else {
+			if (++nextSync == C_COUNT) {
+				fDebug("Visca register syncing completed, activating auto-sync %d %d", nextSync, C_COUNT);
+				return 0;
+			}
+			p = protoBytes[nextSync];
+			modulFlag = p[2 + p[0]];
+		}
+	}
 	hist->add((Commands)nextSync);
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -325,9 +361,18 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	}
 	const unsigned char *sptr = protoBytes[sendcmd];
 	int expected = sptr[1];
+
+	// fDebug("%s %d %d", qPrintable(QByteArray((char*)bytes, len).toHex()), len, expected);
+
 	if (p[1] == 0x41 || p[1] == 0x51) {
 		mLogv("acknowledge");
 		return 3;
+	} else if (p[1] == 0x61 && len == 4 && p[3] == 0xff) {
+		mLogv("error message: &d", p[2]);
+		pingTimer.restart();
+		hist->takeFirst();
+		syncNext();
+		return 4;
 	} else if (expected == 0x00) {
 		for (int i = 0; i < len; i++) {
 			mInfo("%s: %d: 0x%x", __func__, i, bytes[i]);
@@ -396,10 +441,10 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		if (val > 0x03)
 			val -= 1;
 		setRegister(R_AWB_MODE , val);
-	}/* else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
+	} else if(sendcmd == C_VISCA_GET_DEFOG_MODE){
 		mInfo("Defog Mode synced");
 		setRegister(R_DEFOG_MODE , (p[2] == 0x02));
-	}*/ else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
+	} else if(sendcmd == C_VISCA_GET_DIGI_ZOOM_STAT){
 		mInfo("Digi Zoom Status synced");
 		setRegister(R_DIGI_ZOOM_STAT,(p[2] == 0x02) ? true : false);
 	} else if(sendcmd == C_VISCA_GET_ZOOM_TYPE){
@@ -468,6 +513,29 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	} else if(sendcmd == C_VISCA_GET_MIRROR_MODE){
 		mInfo("Mirror status synced");
 		setRegister(R_MIRROR,(p[2] == 0x02) ? true : false);
+	} else if(sendcmd == C_VISCA_GET_VERSION) {
+		mInfo("Version synced");
+		if (p[1] == 0x50 && p[2] == 0x00 && p[3] == 0x20) {
+			setRegister(R_VISCA_MODUL_ID, (uint(p[4]) << 8) + p[5]);
+		}
+	} else if(sendcmd == C_VISCA_GET_GAIN_LIMIT_OEM) {
+		mInfo("Oem Gain Limit synced");
+		if (p[1] != 50) {
+			setRegister(R_TOP_GAIN, (p[2] << 4) + p[3]);
+			setRegister(R_BOT_GAIN, (p[4] << 4) + p[5]);
+		}
+	} else if(sendcmd == C_VISCA_GET_SHUTTER_LIMIT_OEM) {
+		mInfo("Oem Shutter Limit synced");
+		if (p[1] != 50) {
+			setRegister(R_TOP_SHUTTER, (uint(p[2]) << 8) + (p[3] << 4) + p[4]);
+			setRegister(R_BOT_SHUTTER, (uint(p[5]) << 8) + (p[6] << 4) + p[7]);
+		}
+	} else if(sendcmd == C_VISCA_GET_IRIS_LIMIT_OEM) {
+		mInfo("Oem Iris Limit synced");
+		if (p[1] != 50) {
+			setRegister(R_TOP_IRIS, (uint(p[2]) << 8) + (p[3] << 4) + p[4]);
+			setRegister(R_BOT_IRIS, (uint(p[5]) << 8) + (p[6] << 4) + p[7]);
+		}
 	}
 
 
@@ -517,55 +585,97 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	 * in this case ordinary sleep should work here
 	 */
 	int sleepDur = 1000 * 100;
-	setProperty(C_VISCA_SET_PROGRAM_AE_MODE, root.value(key.arg(R_PROGRAM_AE_MODE)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_EXPOSURE, root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_EXPOSURE_TARGET, root.value(key.arg(R_EXPOSURE_TARGET)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_GAIN, root.value(key.arg(R_GAIN_VALUE)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_EXP_COMPMODE, root.value(key.arg(R_EXP_COMPMODE)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_EXP_COMPVAL, root.value(key.arg(R_EXP_COMPVAL)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_GAIN_LIM, root.value(key.arg(R_GAIN_LIM)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_SHUTTER, root.value(key.arg(R_SHUTTER)).toInt());
+	setProperty(C_VISCA_SET_IRCF_STATUS, root.value(key.arg(R_IRCF_STATUS)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_NOISE_REDUCT, root.value(key.arg(R_NOISE_REDUCT)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_WDRSTAT, root.value(key.arg(R_WDRSTAT)).toInt());
 	usleep(sleepDur);
+	setProperty(C_VISCA_SET_AWB_MODE, root.value(key.arg(R_AWB_MODE)).toInt());
+	usleep(sleepDur);
 	setProperty(C_VISCA_SET_GAMMA, root.value(key.arg(R_GAMMA)).toInt());
 	usleep(sleepDur);
-	setProperty(C_VISCA_SET_AWB_MODE, root.value(key.arg(R_AWB_MODE)).toInt());
+	setProperty(C_VISCA_SET_BLC_STATUS, root.value(key.arg(R_BLC_STATUS)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_DEFOG_MODE, root.value(key.arg(R_DEFOG_MODE)).toInt());
 	usleep(sleepDur);
+
+	setProperty(C_VISCA_SET_ZOOM_TYPE, root.value(key.arg(R_ZOOM_TYPE)).toInt());
+	usleep(sleepDur);
 	setProperty(C_VISCA_SET_DIGI_ZOOM_STAT, root.value(key.arg(R_DIGI_ZOOM_STAT)).toInt());
 	usleep(sleepDur);
-	setProperty(C_VISCA_SET_ZOOM_TYPE, root.value(key.arg(R_ZOOM_TYPE)).toInt());
+
+	if (getRegister(R_VISCA_MODUL_ID) == SONY_FCB_CV7500) {
+		// SONY Limits
+		setProperty(C_VISCA_SET_GAIN_LIM, root.value(key.arg(R_GAIN_LIM)).toInt());
+		usleep(sleepDur);
+		setProperty(C_VISCA_SET_EXP_COMPMODE, root.value(key.arg(R_EXP_COMPMODE)).toInt());
+		usleep(sleepDur);
+		setProperty(C_VISCA_SET_EXP_COMPVAL, root.value(key.arg(R_EXP_COMPVAL)).toInt());
+		usleep(sleepDur);
+	} else if(getRegister(R_VISCA_MODUL_ID) != OEM) {
+		// OEM Limits
+		setProperty(C_VISCA_SET_EXPOSURE_TARGET, root.value(key.arg(R_EXPOSURE_TARGET)).toInt());
+		usleep(sleepDur);
+		uint gainLimit = (root.value(key.arg(R_TOP_GAIN)).toInt() << 8) + root.value(key.arg(R_BOT_GAIN)).toInt();
+		if (gainLimit == 0) {
+			gainLimit = 0x7000; //112,0
+		}
+		setProperty(C_VISCA_GET_GAIN_LIMIT_OEM, gainLimit);
+		uint shutterLimit = (root.value(key.arg(R_TOP_SHUTTER)).toInt() << 12) + root.value(key.arg(R_BOT_SHUTTER)).toInt();
+		if (shutterLimit == 0) {
+			shutterLimit = 0x45f000; //1119,0
+		}
+		setProperty(C_VISCA_GET_SHUTTER_LIMIT_OEM, shutterLimit);
+		uint irisLimit = (root.value(key.arg(R_TOP_IRIS)).toInt() << 12) + root.value(key.arg(R_BOT_IRIS)).toInt();
+		if (shutterLimit == 0) {
+			shutterLimit = 0x2BC000; //700,0
+		}
+		setProperty(C_VISCA_GET_IRIS_LIMIT_OEM, irisLimit);
+	}
+
+	uint ae_mode = root.value(key.arg(R_PROGRAM_AE_MODE)).toInt();
+	setProperty(C_VISCA_SET_PROGRAM_AE_MODE, ae_mode);
+	sleep(1);
+
+	if (ae_mode == 0x0a) {
+		// Shutter priority
+		setProperty(C_VISCA_SET_SHUTTER, root.value(key.arg(R_SHUTTER)).toInt());
+		usleep(sleepDur);
+	} else if (ae_mode == 0x0b) {
+		// Iris priority
+		setProperty(C_VISCA_SET_EXPOSURE, root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
+		usleep(sleepDur);
+	} else if (ae_mode == 0x03) {
+		// Manuel
+		setProperty(C_VISCA_SET_SHUTTER, root.value(key.arg(R_SHUTTER)).toInt());
+		usleep(sleepDur);
+		setProperty(C_VISCA_SET_EXPOSURE, root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
+		usleep(sleepDur);
+		setProperty(C_VISCA_SET_GAIN, root.value(key.arg(R_GAIN_VALUE)).toInt());
+		usleep(sleepDur);
+	}
+
+
+	setProperty(C_VISCA_SET_AUTO_ICR, root.value(key.arg(R_AUTO_ICR)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_FOCUS_MODE, root.value(key.arg(R_FOCUS_MODE)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_ZOOM_TRIGGER, root.value(key.arg(R_ZOOM_TRIGGER)).toInt());
 	usleep(sleepDur);
-	setProperty(C_VISCA_SET_BLC_STATUS, root.value(key.arg(R_BLC_STATUS)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_IRCF_STATUS, root.value(key.arg(R_IRCF_STATUS)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_AUTO_ICR, root.value(key.arg(R_AUTO_ICR)).toInt());
+
+
+	setProperty(C_VISCA_SET_ZOOM_TRIGGER, root.value(key.arg(R_ZOOM_TRIGGER)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_FLIP_MODE, root.value(key.arg(R_FLIP)).toInt());
 	usleep(sleepDur);
 	setProperty(C_VISCA_SET_MIRROR_MODE, root.value(key.arg(R_MIRROR)).toInt());
 	usleep(sleepDur);
+
 	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
 	usleep(sleepDur);
 	deviceDefinition = root.value("deviceDefiniton").toString();
 	zoomRatio = root.value("zoomRatio").toInt();
-	setIRLed(root.value("irLedLevel").toInt());
 }
 
 void OemModuleHead::setProperty(uint r, uint x)
@@ -702,7 +812,39 @@ void OemModuleHead::setProperty(uint r, uint x)
 		p[6 + 2] = x & 0x0f ;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXPOSURE_TARGET, (int)x);
+	} else if (r == C_VISCA_GET_GAIN_LIMIT_OEM) {
+		unsigned char *p = protoBytes[r];
+		p[5 + 2] = (x & 0xf000) >> 12;
+		p[6 + 2] = (x & 0x0f00) >> 8;
+		p[7 + 2] = (x & 0x00f0) >> 4;
+		p[8 + 2] = (x & 0x000f);
+		transport->send((const char *)p + 2, p[0]);
+		setRegister(R_TOP_SHUTTER, (int)((x & 0xff00) >> 8));
+		setRegister(R_BOT_SHUTTER, (int)(x & 0x00ff));
+	} else if (r == C_VISCA_GET_SHUTTER_LIMIT_OEM) {
+		unsigned char *p = protoBytes[r];
+		p[5 + 2] = (x & 0xf00000) >> 20;
+		p[6 + 2] = (x & 0x0f0000) >> 16;
+		p[7 + 2] = (x & 0x00f000) >> 12;
+		p[8 + 2] = (x & 0x000f00) >> 8;
+		p[9 + 2] = (x & 0x0000f0) >> 4;
+		p[10 + 2] = (x & 0x00000f);
+		transport->send((const char *)p + 2, p[0]);
+		setRegister(R_TOP_GAIN, (int)((x & 0xfff000) >> 12));
+		setRegister(R_BOT_GAIN, (int)(x & 0x000fff));
+	} else if (r == C_VISCA_GET_IRIS_LIMIT_OEM) {
+		unsigned char *p = protoBytes[r];
+		p[5 + 2] = (x & 0xf00000) >> 20;
+		p[6 + 2] = (x & 0x0f0000) >> 16;
+		p[7 + 2] = (x & 0x00f000) >> 12;
+		p[8 + 2] = (x & 0x000f00) >> 8;
+		p[9 + 2] = (x & 0x0000f0) >> 4;
+		p[10 + 2] = (x & 0x00000f);
+		transport->send((const char *)p + 2, p[0]);
+		setRegister(R_TOP_IRIS, (int)((x & 0xfff000) >> 12));
+		setRegister(R_BOT_IRIS, (int)(x & 0x000fff));
 	}
+
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0){
 		setRegister(R_DISPLAY_ROT,0);
@@ -793,6 +935,11 @@ QString OemModuleHead::getGainLimit()
 {
 	QString mes = QString("%1,%2").arg(getProperty(R_TOP_GAIN)).arg(getProperty(R_BOT_GAIN));
 	return mes;
+}
+
+uint OemModuleHead::getModulID()
+{
+	return getRegister(R_VISCA_MODUL_ID);
 }
 
 static uint checksum(const uchar *cmd, uint lenght)
