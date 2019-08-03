@@ -15,7 +15,7 @@ IRDomeDriver::IRDomeDriver(QObject *parent)
 {
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
-	state = INIT;
+	state = UNINIT;
 }
 
 PtzpHead *IRDomeDriver::getHead(int index)
@@ -118,6 +118,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		headModule->getRangeMapper()->addMap(vmap);
 	}
 
+	state = INIT;
 	return 0;
 }
 
@@ -337,32 +338,29 @@ void IRDomeDriver::timeout()
 			headModule->syncRegisters();
 		break;
 	case SYNC_HEAD_MODULE:
-		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
+		if (headModule->getHeadStatus() != PtzpHead::ST_NORMAL)
+			break;
+
+		if (registerSavingEnabled)
+			headModule->loadRegisters("head0.json");
+
+		if(ptSupport == true) {
 			state = SYNC_HEAD_DOME;
-			if(ptSupport == 0) {
-				if (registerSavingEnabled)
-					state = LOAD_MODULE_REGISTERS;
-				else
-					state = NORMAL;
-			} else
-				headDome->syncRegisters();
-			tp->enableQueueFreeCallbacks(true);
+			headDome->syncRegisters();
+		} else {
+			state = NORMAL;
 		}
+		tp->enableQueueFreeCallbacks(true);
 		break;
 	case SYNC_HEAD_DOME:
-		if (headDome->getHeadStatus() == PtzpHead::ST_NORMAL) {
-			if (registerSavingEnabled)
-				state = LOAD_MODULE_REGISTERS;
-			else
-				state = NORMAL;
-			//headModule->loadRegisters("oemmodule.json");
-			timer->setInterval(1000);
-			tp1->enableQueueFreeCallbacks(true);
-		}
-		break;
-	case LOAD_MODULE_REGISTERS:
-		headModule->loadRegisters("head0.json");
+		if (headDome->getHeadStatus() != PtzpHead::ST_NORMAL)
+			break;
+
+		if (registerSavingEnabled)
+			headDome->loadRegisters("head1.json");
 		state = NORMAL;
+		timer->setInterval(1000);
+		tp1->enableQueueFreeCallbacks(true);
 		break;
 	case NORMAL: {
 		manageRegisterSaving();
@@ -370,10 +368,13 @@ void IRDomeDriver::timeout()
 			doStartupProcess = false;
 			getStartupProcess();
 		}
+
+		PtzpDriver::timeout();
 		break;
 	}
+	case UNINIT:
+		break;
 	}
 
-	PtzpDriver::timeout();
 }
 

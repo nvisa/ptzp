@@ -23,10 +23,10 @@ protected slots:
 
 protected:
 	enum DriverState {
+		UNINIT,
 		INIT,
 		SYNC_HEAD_MODULE,
 		SYNC_HEAD_DOME,
-		LOAD_MODULE_REGISTERS,
 		NORMAL,
 	};
 
