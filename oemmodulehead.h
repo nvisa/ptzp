@@ -68,8 +68,6 @@ public:
 	uint getProperty(uint r);
 	void setProperty(uint r, uint x);
 
-	int setIRLed(int led);
-	int getIRLed();
 	void enableSyncing(bool en);
 	void setSyncInterval(int interval);
 	void setDeviceDefinition(QString definition);
@@ -95,7 +93,6 @@ protected:
 
 	bool syncEnabled;
 	int syncInterval;
-	int irLedLevel;
 	CommandHistory *hist;
 	uint nextSync;
 	QElapsedTimer syncTime;

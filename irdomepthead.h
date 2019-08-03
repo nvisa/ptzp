@@ -31,11 +31,14 @@ public:
 	void enableSyncing(bool en);
 	void setSyncInterval(int interval);
 
+	int setIRLed(int led);
+	int getIRLed();
 protected:
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
 	int panTilt(uint cmd, int pspeed, int tspeed);
 
+	int irLedLevel;
 	bool syncEnabled;
 	int syncInterval;
 	QElapsedTimer syncTime;

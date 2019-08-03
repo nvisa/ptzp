@@ -234,7 +234,7 @@ QVariant IRDomeDriver::get(const QString &key)
 				.arg(headModule->getIrisLimit());
 	else if (key == "ptz.get_ir_led_level")
 		return QString("%1")
-				.arg(headModule->getIRLed());
+				.arg(headDome->getIRLed());
 	else return PtzpDriver::get(key);
 
 	return QVariant();
@@ -307,7 +307,7 @@ int IRDomeDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "ptz.cmd.zoom_point") {
 		headModule->setZoom(value.toUInt());
 	} else if (key == "ptz.cmd.ir_led"){
-		headModule->setIRLed(value.toInt());
+		headDome->setIRLed(value.toInt());
 	} else if (key == "ptz.cmd.device_defintion" )
 		headModule->setDeviceDefinition(value.toString());
 	else if (key == "ptz.cmd.focus")

@@ -253,3 +253,26 @@ void IRDomePTHead::setSyncInterval(int interval)
 	syncInterval = interval;
 	mInfo("Sync interval: %d", syncInterval);
 }
+
+int IRDomePTHead::setIRLed(int led)
+{
+	uchar cmd[] = {0xff, 0xff, 0x00, 0x9b, 0x00, 0x00, 0x00};
+	if (led == 8) {
+		cmd[4] = 0x00;
+		cmd[5] = 0x00;
+	} else if (led == 0) {
+		cmd[4] = 0x00;
+		cmd[5] = 0x01;
+	} else {
+		cmd[4] = 0x01;
+		cmd[5] = (uint)led - 1;
+	}
+	cmd[6] = checksum(cmd, 6);
+	irLedLevel = led;
+	return transport->send((const char *)cmd, sizeof(cmd));
+}
+
+int IRDomePTHead::getIRLed()
+{
+	return irLedLevel;
+}

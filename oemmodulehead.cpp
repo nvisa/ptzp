@@ -197,7 +197,6 @@ OemModuleHead::OemModuleHead()
 	syncEnabled = true;
 	syncInterval = 40;
 	syncTime.start();
-	irLedLevel = 0;
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -572,7 +571,6 @@ QJsonValue OemModuleHead::marshallAllRegisters()
 
 	json.insert(QString("deviceDefiniton"), (QString)deviceDefinition);
 	json.insert(QString("zoomRatio"),(int)zoomRatio);
-	json.insert(QString("irLedLevel"), (int)irLedLevel);
 	return json;
 }
 
@@ -940,35 +938,4 @@ QString OemModuleHead::getGainLimit()
 uint OemModuleHead::getModulID()
 {
 	return getRegister(R_VISCA_MODUL_ID);
-}
-
-static uint checksum(const uchar *cmd, uint lenght)
-{
-	unsigned int sum = 0;
-	for (uint i = 1; i < lenght; i++)
-		sum += cmd[i];
-	return sum & 0xff;
-}
-
-int OemModuleHead::setIRLed(int led)
-{
-	uchar cmd[] = {0xff, 0xff, 0x00, 0x9b, 0x00, 0x00, 0x00};
-	if (led == 8) {
-		cmd[4] = 0x00;
-		cmd[5] = 0x00;
-	} else if (led == 0) {
-		cmd[4] = 0x00;
-		cmd[5] = 0x01;
-	} else {
-		cmd[4] = 0x01;
-		cmd[5] = (uint)led - 1;
-	}
-	cmd[6] = checksum(cmd, 6);
-	irLedLevel = led;
-	return transport->send((const char *)cmd, sizeof(cmd));
-}
-
-int OemModuleHead::getIRLed()
-{
-	return irLedLevel;
 }
