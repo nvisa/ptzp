@@ -365,7 +365,7 @@ int PtzpHead::getSystemStatus()
 int PtzpHead::saveRegisters(const QString &filename)
 {
 	QFile f(filename);
-	if (!f.open(QIODevice::ReadWrite | QIODevice::Text))
+	if (!f.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate))
 		return -EPERM;
 	QJsonValue json = marshallAllRegisters();
 
