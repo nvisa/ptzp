@@ -19,9 +19,9 @@
 class QTimer;
 class QElapsedTimer;
 class PtzpHead;
+class PatrolNg;
 class PatternNg;
 class PtzpTransport;
-
 #ifdef HAVE_PTZP_GRPC_API
 class PtzpDriver : public QObject, public KeyValueInterface, public PtzControlInterface, public ptzp::PTZService::Service
 #else
@@ -53,6 +53,11 @@ public:
 	};
 
 	explicit PtzpDriver(QObject *parent = 0);
+	enum StopProcess {
+		PATTERN,
+		PATROL,
+		ANY
+	};
 
 	virtual int setTarget(const QString &targetUri) = 0;
 	virtual PtzpHead * getHead(int index) = 0;
@@ -161,6 +166,7 @@ protected:
 	void commandUpdate(int c, float arg1 = 0, float arg2 = 0);
 	int runPatrol(QString name);
 	bool changeOverlay;
+	void stopAnyProcess(StopProcess stop = ANY);
 };
 
 #endif // PTZPDRIVER_H

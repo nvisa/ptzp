@@ -459,8 +459,8 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context, const::ptzp::PtzC
 	}
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
-	head->panLeft(speed);
 	commandUpdate(PtzControlInterface::C_PAN_LEFT, speed, 0);
+	head->panLeft(speed);
 	return grpc::Status::OK;
 }
 
@@ -479,8 +479,8 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context, const::ptzp::Ptz
 	}
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
-	head->panRight(speed);
 	commandUpdate(PtzControlInterface::C_PAN_RIGHT, speed, 0);
+	head->panRight(speed);
 	return grpc::Status::OK;
 
 }
@@ -497,8 +497,8 @@ grpc::Status PtzpDriver::PanStop(grpc::ServerContext *context, const::ptzp::PtzC
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-	head->panTiltStop();
 	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
+	head->panTiltStop();
 
 	return grpc::Status::OK;
 }
@@ -517,8 +517,8 @@ grpc::Status PtzpDriver::ZoomIn(grpc::ServerContext *context, const::ptzp::PtzCm
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-	head->startZoomIn(speed);
 	commandUpdate(PtzControlInterface::C_ZOOM_IN, speed, 0);
+	head->startZoomIn(speed);
 	return grpc::Status::OK;
 }
 
@@ -536,8 +536,8 @@ grpc::Status PtzpDriver::ZoomOut(grpc::ServerContext *context, const::ptzp::PtzC
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-	head->startZoomOut(speed);
 	commandUpdate(PtzControlInterface::C_ZOOM_OUT, speed, 0);
+	head->startZoomOut(speed);
 	return grpc::Status::OK;
 }
 
@@ -553,8 +553,8 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context, const::ptzp::Ptz
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-	head->stopZoom();
 	commandUpdate(PtzControlInterface::C_ZOOM_STOP, 0, 0);
+	head->stopZoom();
 	setChangeOverlayState(true);
 	return grpc::Status::OK;
 }
@@ -575,8 +575,8 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context, const ptzp::PtzCmd
 
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
-	head->tiltUp(speed);
 	commandUpdate(PtzControlInterface::C_TILT_UP, speed, 0);
+	head->tiltUp(speed);
 	return grpc::Status::OK;
 }
 
@@ -596,8 +596,8 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context, const ptzp::PtzC
 
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
-	head->tiltDown(speed);
 	commandUpdate(PtzControlInterface::C_TILT_DOWN, speed, 0);
+	head->tiltDown(speed);
 	return grpc::Status::OK;
 }
 
@@ -612,9 +612,8 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context, const ptzp::PtzC
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
-	head->panTiltStop();
 	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
+	head->panTiltStop();
 	return grpc::Status::OK;
 }
 
@@ -635,9 +634,8 @@ grpc::Status PtzpDriver::PanTilt2Pos(grpc::ServerContext *context, const ptzp::P
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
-	head->panTiltGoPos(pan, tilt);
 	commandUpdate(PtzControlInterface::C_PAN_TILT_GOTO_POS, 0, 0);
+	head->panTiltGoPos(pan, tilt);
 	return grpc::Status::OK;
 }
 
@@ -656,9 +654,8 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context, const ptzp::Pt
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
-
-	head->panTiltAbs(pan,tilt);
 	commandUpdate(PtzControlInterface::C_PAN_TILT_ABS_MOVE, pan, tilt);
+	head->panTiltAbs(pan,tilt);
 	return grpc::Status::OK;
 }
 
@@ -697,6 +694,7 @@ grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::Pres
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
+	stopAnyProcess();
 	QStringList li = PresetNg::getInstance()->getPreset(QString::fromStdString(request->preset_name()));
 	if (li.isEmpty())
 		return  grpc::Status::CANCELLED;
@@ -707,8 +705,10 @@ grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context, const ptzp::Pres
 grpc::Status PtzpDriver::PresetDelete(grpc::ServerContext *context, const ptzp::PresetCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	Q_UNUSED(response);
-	PresetNg::getInstance()->deletePreset(QString::fromStdString(request->preset_name()));
+	int err = PresetNg::getInstance()->deletePreset(QString::fromStdString(request->preset_name()));
+	response->set_err(err);
+	if (err < 0)
+		return grpc::Status::CANCELLED;
 	return grpc::Status::OK;
 }
 
@@ -716,6 +716,7 @@ grpc::Status PtzpDriver::PresetSave(grpc::ServerContext *context, const ptzp::Pr
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
+	stopAnyProcess();
 	if (defaultPTHead && defaultModuleHead)
 		PresetNg::getInstance()->addPreset(QString::fromStdString(request->preset_name()),
 									defaultPTHead->getPanAngle(),defaultPTHead->getTiltAngle(),defaultModuleHead->getZoom());
@@ -735,8 +736,11 @@ grpc::Status PtzpDriver::PatrolSave(grpc::ServerContext *context, const ptzp::Pa
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
+	stopAnyProcess();
 	auto patrolNg = PatrolNg::getInstance();
-	patrolNg->addPatrol(QString::fromStdString(request->patrol_name()), commaToList(QString::fromStdString(request->preset_list())));
+	int err = patrolNg->addPatrol(QString::fromStdString(request->patrol_name()), commaToList(QString::fromStdString(request->preset_list())));
+	if (err < 0)
+		return grpc::Status::CANCELLED;
 	patrolNg->addInterval(QString::fromStdString(request->patrol_name()), commaToList(QString::fromStdString(request->interval_list())));
 
 	return grpc::Status::OK;
@@ -745,17 +749,22 @@ grpc::Status PtzpDriver::PatrolSave(grpc::ServerContext *context, const ptzp::Pa
 grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	stopAnyProcess();
 	addStartupProcess("patrol", QString::fromStdString(request->patrol_name()));
 	int ret = runPatrol(QString::fromStdString(request->patrol_name()));
 	response->set_err(ret);
+	if (ret < 0)
+		return grpc::Status::CANCELLED;
 	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatrolDelete(grpc::ServerContext *context, const ptzp::PatrolCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	response->set_err(0);
-	PatrolNg::getInstance()->deletePatrol(QString::fromStdString(request->patrol_name()));
+	int err = PatrolNg::getInstance()->deletePatrol(QString::fromStdString(request->patrol_name()));
+	response->set_err(err);
+	if (err < 0)
+		return grpc::Status::CANCELLED;
 	return grpc::Status::OK;
 }
 
@@ -793,6 +802,7 @@ grpc::Status PtzpDriver::PatrolGetDetails(grpc::ServerContext *context, const pt
 grpc::Status PtzpDriver::PatternRun(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
+	stopAnyProcess();
 	if(ptrn->load(QString::fromStdString(request->pattern_name())) == 0)
 	{
 		addStartupProcess("pattern", QString::fromStdString(request->pattern_name()));
@@ -825,6 +835,7 @@ grpc::Status PtzpDriver::PatternStartRecording(grpc::ServerContext *context, con
 {
 	Q_UNUSED(context);
 	Q_UNUSED(request);
+	stopAnyProcess();
 	if (defaultPTHead && defaultModuleHead)
 		ptrn->start(defaultPTHead->getPanAngle(),
 					defaultPTHead->getTiltAngle(),
@@ -857,12 +868,11 @@ grpc::Status PtzpDriver::PatternStopRecording(grpc::ServerContext *context, cons
 grpc::Status PtzpDriver::PatternDelete(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	response->set_err(-1);
-	if(ptrn->deletePattern(QString::fromStdString(request->pattern_name())) == 0) {
-		response->set_err(0);
-		return grpc::Status::OK;
-	}
-	return grpc::Status::CANCELLED;
+	int err = ptrn->deletePattern(QString::fromStdString(request->pattern_name()));
+	response->set_err(err);
+	if (err < 0)
+		return grpc::Status::CANCELLED;
+	return grpc::Status::OK;
 }
 
 grpc::Status PtzpDriver::PatternGetList(grpc::ServerContext *context, const ptzp::PatternCmd *request, ptzp::PresetList *response)
@@ -1133,6 +1143,7 @@ QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
 
 void PtzpDriver::commandUpdate(int c, float arg1, float arg2)
 {
+	stopAnyProcess();
 	if (defaultPTHead && defaultModuleHead)
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 						defaultModuleHead->getZoom(), c, arg1, arg2);
@@ -1141,7 +1152,9 @@ void PtzpDriver::commandUpdate(int c, float arg1, float arg2)
 int PtzpDriver::runPatrol(QString name)
 {
 	mDebug("Running patrol %s", qPrintable(name));
-	PatrolNg::getInstance()->setPatrolStateRun(name);
+	int err = PatrolNg::getInstance()->setPatrolStateRun(name);
+	if (err < 0)
+		return err;
 	PatrolNg::PatrolInfo *patrol = PatrolNg::getInstance()->getCurrentPatrol();
 	if (!patrol->list.isEmpty()) {
 		patrolListPos = 0;
@@ -1151,10 +1164,33 @@ int PtzpDriver::runPatrol(QString name)
 	return 0;
 }
 
-void PtzpDriver::setChangeOverlayState(bool state){
+void PtzpDriver::setChangeOverlayState(bool state)
+{
 	changeOverlay = state;
 }
 
-bool PtzpDriver::getChangeOverlayState() {
+bool PtzpDriver::getChangeOverlayState()
+{
 	return changeOverlay;
 }
+
+void PtzpDriver::stopAnyProcess(StopProcess stop)
+{
+	if (stop == PATROL) {
+		PatrolNg *ptrl = PatrolNg::getInstance();
+		if (ptrl->getCurrentPatrol()->state != PatrolNg::STOP) {
+			QString ptrlName = ptrl->getCurrentPatrol()->patrolName;
+			ptrl->setPatrolStateStop(ptrlName);
+			removeStartupProcess();
+		}
+	} else if (stop == PATTERN) {
+		if (ptrn->isReplaying()) {
+			removeStartupProcess();
+			ptrn->stop(0, 0, 0);
+		}
+	} else if (stop == ANY) {
+		stopAnyProcess(PATROL);
+		stopAnyProcess(PATTERN);
+	}
+}
+
