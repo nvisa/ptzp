@@ -35,6 +35,7 @@ public:
 	int setPatrolName(const QString &name);
 	int setPatrolStateRun(const QString &name);
 	int setPatrolStateStop(const QString &name);
+	QStringList getPresetList(const QString &name);
 	PatrolInfo* getCurrentPatrol();
 	QString getList();
 	patrolType getPatrolDef(const QString &name);

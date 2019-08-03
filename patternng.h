@@ -65,6 +65,7 @@ protected:
 	int current;
 	ReplayState rs;
 	PtzControlInterface *ptzctrl;
+	QString currentPattern;
 };
 
 #endif // PATTERNNG_H

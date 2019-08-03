@@ -62,6 +62,7 @@ PatternNg::PatternNg(PtzControlInterface *ctrl)
 	current = 0;
 	ptzctrl = ctrl;
 	rs = RS_FINALIZE;
+	currentPattern = "";
 	mInfo("Registered patterns, '%s'", qPrintable(getList()));
 }
 
@@ -116,6 +117,7 @@ void PatternNg::stop(int pan, int tilt, int zoom)
 	replaying = false;
 	positionUpdate(pan, tilt, zoom);
 	ptzctrl->sendCommand(ptzctrl->C_PAN_TILT_STOP, 0, 0);
+	currentPattern = "";
 }
 
 int PatternNg::replay()
@@ -193,11 +195,14 @@ int PatternNg::load(const QString &filename)
 	}
 	geometry.clear();
 	in >> geometry;
+	currentPattern = filename;
 	return 0;
 }
 
 int PatternNg::deletePattern(const QString &name)
 {
+	if (currentPattern == name)
+		return -EBUSY;
 	QDir a;
 	QString path = a.absolutePath();
 	return QProcess::execute(QString("rm %1/%2.pattern").arg(path).arg(name));
@@ -215,7 +220,6 @@ QString PatternNg::getList()
 	foreach (QString st, plist.split("\n")) {
 		if (st.isEmpty())
 			continue;
-		QString tmp;
 		if (st.contains(".pattern")) {
 			pattern = pattern + st.remove(".pattern") + ",";
 		}

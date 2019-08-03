@@ -1,7 +1,9 @@
 #include "presetng.h"
 
 #include "ecl/debug.h"
+#include "ecl/drivers/patrolng.h"
 
+#include <QPair>
 #include <QFile>
 #include <QFileInfo>
 #include <QDataStream>
@@ -43,6 +45,10 @@ QStringList PresetNg::getPreset(const QString &name)
 
 int PresetNg::deletePreset(const QString &name)
 {
+	PatrolNg::PatrolInfo* p = PatrolNg::getInstance()->getCurrentPatrol();
+	if (p->state != PatrolNg::STOP && !p->list.isEmpty())
+		if (PatrolNg::getInstance()->getPresetList(p->patrolName).contains(name))
+			return -EBUSY;
 	presets.remove(name);
 	return save();
 }

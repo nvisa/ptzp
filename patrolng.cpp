@@ -8,6 +8,7 @@
 #include <QMutexLocker>
 
 #include <errno.h>
+#include <ecl/drivers/presetng.h>
 
 PatrolNg::PatrolNg()
 {
@@ -31,6 +32,8 @@ int PatrolNg::addPatrol(const QString &name, const QStringList presets)
 		return -EINVAL;
 	patrolType patrol;
 	foreach (QString preset, presets) {
+		if (PresetNg::getInstance()->getPreset(preset).isEmpty())
+			return -ENODATA;
 		patrol  << QPair<QString, int>(preset, 0);
 	}
 	patrols.insert(name, patrol);
@@ -52,6 +55,8 @@ int PatrolNg::addInterval(const QString &name, const QStringList intervals)
 
 int PatrolNg::deletePatrol(const QString &name)
 {
+	if (getCurrentPatrol()->state != STOP && getCurrentPatrol()->patrolName == name)
+		return -EBUSY;
 	if(name.isEmpty())
 		return -EINVAL;
 	patrols.remove(name);
@@ -113,6 +118,12 @@ int PatrolNg::setPatrolStateRun(const QString &name)
 {
 	if (name.isEmpty())
 		return -EINVAL;
+	PresetNg *preset = PresetNg::getInstance();
+	QStringList ls = getPresetList(name);
+	foreach (QString p, ls) {
+		if (preset->getPreset(p).isEmpty())
+			return -ENODATA;
+	}
 	currentPatrol->patrolName = name;
 	currentPatrol->state = RUN;
 	currentPatrol->list = patrols.value(name);
@@ -128,6 +139,16 @@ int PatrolNg::setPatrolStateStop(const QString &name)
 	currentPatrol->state = STOP;
 	mInfo("This patrol '%s' is stopping", qPrintable(name));
 	return 0;
+}
+
+QStringList PatrolNg::getPresetList(const QString &name)
+{
+	QPair<QString, int> p;
+	QStringList presets;
+	foreach (p, patrols[name]) {
+		presets << p.first;
+	}
+	return presets;
 }
 
 PatrolNg::PatrolInfo* PatrolNg::getCurrentPatrol()
