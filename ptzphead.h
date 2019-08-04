@@ -94,6 +94,9 @@ public:
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();
 	RangeMapper * getRangeMapper() { return &rmapper; }
+
+	void setZoomRatios(std::vector<int> v) { zoomRatios = v; }
+	int getZoomRatio();
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
@@ -124,6 +127,8 @@ protected:
 	QElapsedTimer pingTimer;
 	int systemChecker;
 	RangeMapper rmapper;
+
+	std::vector<int> zoomRatios;
 };
 
 #endif // PTZPHEAD_H

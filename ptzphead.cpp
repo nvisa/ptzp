@@ -411,6 +411,15 @@ int PtzpHead::communicationElapsed()
 	return pingTimer.elapsed();
 }
 
+int PtzpHead::getZoomRatio()
+{
+	if (zoomRatios.size() == 0)
+		return 0;
+	auto lowerp = std::lower_bound(zoomRatios.begin(), zoomRatios.end(), getZoom()) - zoomRatios.begin();
+
+	return lowerp + 1;
+}
+
 std::vector<float> PtzpHead::RangeMapper::map(int value)
 {
 	std::vector<float> m;
