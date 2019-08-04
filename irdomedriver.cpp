@@ -88,6 +88,19 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		}
 	}
 
+	QStringList zoomRatios;
+	QFile fz("/etc/smartstreamer/ZoomRatios_value.txt");
+	if (fz.open(QIODevice::ReadOnly)) {
+		zoomRatios = QString::fromUtf8(fz.readAll()).split("\n");
+		fz.close();
+	}
+
+	std::vector<int> cZRatios;
+	foreach (const QString& var, zoomRatios) {
+		cZRatios.push_back(var.toInt(0, 16));
+	}
+	headModule->setZoomRatios(cZRatios);
+
 	QStringList zoomLines, hLines, vLines;
 	QFile f("/etc/smartstreamer/Zoom_value.txt");
 	if (f.open(QIODevice::ReadOnly)) {
@@ -221,7 +234,7 @@ QVariant IRDomeDriver::get(const QString &key)
 	else if (key == "ptz.get_device_definiton")
 		return QString("%1")
 				.arg(headModule->getDeviceDefinition());
-	else if (key == "ptz.get _zoom_ratio")
+	else if (key == "ptz.get_zoom_ratio")
 		return QString("%1")
 				.arg(headModule->getZoomRatio());
 	else if (key == "ptz.get_exposure_target")

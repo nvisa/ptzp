@@ -255,7 +255,7 @@ int OemModuleHead::getHeadStatus()
 
 int OemModuleHead::startZoomIn(int speed)
 {
-	zoomRatio = speed;
+	zoomSpeed = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_IN];
 	p[4 + 2] = 0x20 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -263,7 +263,7 @@ int OemModuleHead::startZoomIn(int speed)
 
 int OemModuleHead::startZoomOut(int speed)
 {
-	zoomRatio = speed;
+	zoomSpeed = speed;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_OUT];
 	p[4 + 2] = 0x30 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -570,7 +570,6 @@ QJsonValue OemModuleHead::marshallAllRegisters()
 		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
 
 	json.insert(QString("deviceDefiniton"), (QString)deviceDefinition);
-	json.insert(QString("zoomRatio"),(int)zoomRatio);
 	return json;
 }
 
@@ -673,7 +672,6 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
 	usleep(sleepDur);
 	deviceDefinition = root.value("deviceDefiniton").toString();
-	zoomRatio = root.value("zoomRatio").toInt();
 }
 
 void OemModuleHead::setProperty(uint r, uint x)
@@ -871,9 +869,9 @@ QString OemModuleHead::getDeviceDefinition()
 	return deviceDefinition;
 }
 
-int OemModuleHead::getZoomRatio()
+int OemModuleHead::getZoomSpeed()
 {
-	return zoomRatio;
+	return zoomSpeed;
 }
 
 void OemModuleHead::clockInvert(bool st)

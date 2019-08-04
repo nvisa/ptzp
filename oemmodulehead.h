@@ -72,7 +72,7 @@ public:
 	void setSyncInterval(int interval);
 	void setDeviceDefinition(QString definition);
 	QString getDeviceDefinition();
-	int getZoomRatio();
+	int getZoomSpeed();
 	void clockInvert(bool st);
 
 	int setShutterLimit(uint topLim, uint botLim);
@@ -97,7 +97,7 @@ protected:
 	uint nextSync;
 	QElapsedTimer syncTime;
 	QString deviceDefinition;
-	int zoomRatio;
+	int zoomSpeed;
 	int oldZoomValue;
 };
 
