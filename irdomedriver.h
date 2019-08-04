@@ -36,6 +36,8 @@ protected:
 	PtzpTransport *tp;
 	PtzpTransport *tp1;
 	bool ptSupport;
+
+	void autoIRcontrol();
 };
 
 #endif // IRDOMEDRIVER_H

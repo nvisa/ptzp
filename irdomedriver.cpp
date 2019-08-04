@@ -376,6 +376,9 @@ void IRDomeDriver::timeout()
 		tp1->enableQueueFreeCallbacks(true);
 		break;
 	case NORMAL: {
+		if (ptSupport) {
+			autoIRcontrol();
+		}
 		manageRegisterSaving();
 		if (doStartupProcess) {
 			doStartupProcess = false;
@@ -389,5 +392,17 @@ void IRDomeDriver::timeout()
 		break;
 	}
 
+}
+
+void IRDomeDriver::autoIRcontrol()
+{
+	int ledLevel = 1;
+	if (headModule->getProperty(OemModuleHead::R_IRCF_STATUS)) {
+		ledLevel = headModule->getZoomRatio() / 5 + 2;
+		if (ledLevel > 7)
+			ledLevel = 7;
+	}
+	if (ledLevel != headDome->getIRLed())
+		headDome->setIRLed(ledLevel);
 }
 

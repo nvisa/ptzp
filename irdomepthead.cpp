@@ -197,6 +197,7 @@ QJsonValue IRDomePTHead::marshallAllRegisters()
 	QJsonObject json;
 	for(int i = 0; i < R_COUNT; i++)
 		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
+	json.insert("irLedLevel", irLedLevel);
 	return json;
 }
 
@@ -207,6 +208,9 @@ void IRDomePTHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	QString key = "reg%1";
 	panTilt(C_CUSTOM_GO_TO_POS, root.value(key.arg(R_PAN_ANGLE)).toInt(), root.value(key.arg(R_TILT_ANGLE)).toInt());
 	sleep(2);
+	irLedLevel = root.value("irLedLevel").toInt();
+	if (irLedLevel != 8)
+		setIRLed(0);
 }
 
 float IRDomePTHead::getPanAngle()
