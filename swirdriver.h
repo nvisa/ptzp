@@ -21,6 +21,7 @@ protected:
 	enum DriverState {
 		INIT,
 		SYNC_HEAD_MODULE,
+		LOAD_MODULE_REGISTERS,
 		NORMAL,
 	};
 

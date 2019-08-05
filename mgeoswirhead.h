@@ -17,6 +17,8 @@ public:
 		R_GAIN,
 		R_IBIT_RESULT,
 		R_SYMBOLOGY,
+
+		R_COUNT
 	};
 
 	int getCapabilities();
@@ -38,6 +40,8 @@ protected:
 	int syncNext();
 	int sendCommand(const QString &key);
 	QByteArray transportReady();
+	QJsonValue marshallAllRegisters();
+	void unmarshallloadAllRegisters(const QJsonValue &node);
 	virtual int dataReady(const unsigned char *bytes, int len);
 
 };
