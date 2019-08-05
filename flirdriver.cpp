@@ -31,6 +31,8 @@ PtzpHead *FlirDriver::getHead(int index)
 int FlirDriver::setTarget(const QString &targetUri)
 {
 	int ret = 0;
+	if (!targetUri.contains(";"))
+		return -ENODATA;
 	QStringList fields = targetUri.split(";");
 	headDome->setTransport(httpTransportDome);
 	headModule->setTransport(httpTransportModule);
@@ -40,12 +42,14 @@ int FlirDriver::setTarget(const QString &targetUri)
 	if (ret)
 		return ret;
 	httpTransportDome->enableQueueFreeCallbacks(true);
+	httpTransportDome->setTimerInterval(200);
 
 	httpTransportModule->setContentType(PtzpHttpTransport::AppJson);
 	ret = httpTransportModule->connectTo(fields[0]);
 	if (ret)
 		return ret;
 	httpTransportModule->enableQueueFreeCallbacks(true);
+	httpTransportModule->setTimerInterval(200);
 	return 0;
 }
 
