@@ -98,7 +98,11 @@ void PtzpHttpTransport::dataReady(QNetworkReply *reply)
 
 void PtzpHttpTransport::sendPostMessage(const QByteArray &ba)
 {
+	if (ba.isEmpty())
+		return;
+	l.lock();
 	netman->post(request, ba);
+	l.unlock();
 }
 
 void PtzpHttpTransport::sendGetMessage(const QByteArray &ba)
@@ -108,6 +112,7 @@ void PtzpHttpTransport::sendGetMessage(const QByteArray &ba)
 		QStringList flds = data.split("?");
 		QString path = flds.first();
 		QString query = flds.last();
+		l.lock();
 		QUrl url = request.url();
 		url.setPath(path, QUrl::ParsingMode::StrictMode);
 		url.setQuery(query);
@@ -116,6 +121,7 @@ void PtzpHttpTransport::sendGetMessage(const QByteArray &ba)
 		netman->get(request);
 		url.setQuery("");
 		request.setUrl(url);
+		l.unlock();
 	}
 }
 
@@ -137,9 +143,11 @@ QByteArray PtzpHttpTransport::prepareAppJsonTypeMessage(const QByteArray &ba)
 	if (data.contains("?")) {
 		QString path = data.split("?").first();
 		QString params = data.split("?").last();
+		l.lock();
 		QUrl url = request.url();
 		url.setPath(path, QUrl::ParsingMode::StrictMode);
 		request.setUrl(url);
+		l.unlock();
 		return params.toLatin1();
 	}
 	return QByteArray();

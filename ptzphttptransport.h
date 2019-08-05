@@ -6,6 +6,7 @@
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
 #include <QTimer>
+#include <QMutex>
 
 class PtzpHttpTransportPriv;
 class PtzpHttpTransport : public QObject, public PtzpTransport
@@ -37,6 +38,7 @@ protected:
 	QTimer *timer;
 	KnownContentTypes contentType;
 	QByteArray prepareAppJsonTypeMessage(const QByteArray &ba);
+	QMutex l;
 };
 
 #endif // PTZPHTTPTRANSPORT_H
