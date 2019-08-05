@@ -2,19 +2,12 @@
 #define FLIRMODULEHEAD_H
 
 #include <ecl/ptzp/ptzphead.h>
-#include "ecl/net/cgi/cgidevicedata.h"
-
-#include <QStringList>
-#include <QElapsedTimer>
-
-class CgiManager;
 
 class FlirModuleHead : public PtzpHead
 {
 public:
 	FlirModuleHead();
 
-	int connect(QString &targetUri);
 	int getCapabilities();
 	virtual int startZoomIn(int speed);
 	virtual int startZoomOut(int speed);
@@ -26,9 +19,21 @@ public:
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
 
+	int setFocusMode(uint x);
+	int setFocusValue(uint x);
+	int getFocusMode();
+	int getFocus();
 protected:
-	CgiManager* cgiMan;
-	CgiDeviceData cgiConnData;
+	QStringList commandList;
+	int sendCommand(const QString &key);
+	QByteArray transportReady();
+	int dataReady(const unsigned char *bytes, int len);
+	int focusPos;
+	int zoomPos;
+	int lastGetCommand;
+	QHash<QString, QString> camModes;
+
+
 };
 
 #endif // FLIRMODULEHEAD_H

@@ -2,6 +2,7 @@
 #define FLIRDRIVER_H
 
 #include <ecl/ptzp/ptzpdriver.h>
+#include <ecl/ptzp/ptzphttptransport.h>
 
 class FlirModuleHead;
 class FlirPTHead;
@@ -21,6 +22,8 @@ protected slots:
 protected:
 	FlirModuleHead *headModule;
 	FlirPTHead *headDome;
+	PtzpHttpTransport *httpTransportDome;
+	PtzpHttpTransport *httpTransportModule;
 };
 
 #endif // FLIRDRIVER_H

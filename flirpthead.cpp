@@ -1,20 +1,15 @@
 #include "flirpthead.h"
 #include "debug.h"
 
-#include <QTimer>
-#include <QThread>
 #include <assert.h>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QNetworkAccessManager>
-#include <QNetworkConfigurationManager>
+
+#include <ecl/ptzp/ptzphttptransport.h>
 
 #define MaxSpeed	0x7D0		//		2.000
 #define MaxPanPos	28000.0		//L-R	+180deg
 #define MinPanPos	-27999.0	//R-L	-180deg
 #define MaxTiltPos	9330.0		//U		+30deg
 #define MinTiltPos	27999.0		//D		-90deg
-
 
 enum CommandList {
 	C_STOP,
@@ -65,33 +60,8 @@ static QStringList createPTZCommandList()
 FlirPTHead::FlirPTHead()
 	: PtzpHead()
 {
-	netman = NULL;
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
-
-	//Cihaz bufferı çok hızlı doluyor, (yaklaşık 3-4 mesajda), cevap dönme süresi 7ms, bu sebeple;
-	//+Gönderilecek komutlar bir queue objesinde tutularak timer yardımıyla 15ms'de 1 komut olacak şekilde gönderiliyor.
-	timerWrtData = new QTimer(this);
-	connect(timerWrtData, &QTimer::timeout, this, &FlirPTHead::sendCommand);
-	timerWrtData->start(15);
-
-	//200ms'de bir pan-tilt pozisyon güncellemesi
-	timerGetData = new QTimer(this);
-	connect(timerGetData, &QTimer::timeout, this, &FlirPTHead::getPositions);
-	timerGetData->start(200);
-
-	netman = new QNetworkAccessManager(this);
-	connect(netman, SIGNAL(finished(QNetworkReply*)), this, SLOT(dataReady(QNetworkReply*)));
-}
-
-int FlirPTHead::connectHTTP(const QString &targetUri)
-{
-	QString url;
-	if (!targetUri.startsWith("http://"))
-		url = QString("http://%1").arg(targetUri);
-	request.setUrl(QUrl(targetUri));
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-	return 0;
 }
 
 int FlirPTHead::getCapabilities()
@@ -142,7 +112,7 @@ int FlirPTHead::panTiltAbs(float pan, float tilt)
 		// left
 		if (tilt < 0) {
 			// up
-			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(-pspeed).arg(tspeed));			//	C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
+			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(-pspeed).arg(tspeed)); // C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
 		} else if (tilt > 0) {
 			// down
 			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_DOWN).arg(-pspeed).arg(-tspeed));
@@ -250,37 +220,35 @@ float FlirPTHead::getTiltAngle()
 	return tiltPos * 90.0 / MaxTiltPos / 3;
 }
 
-void FlirPTHead::sendCommand()
+int FlirPTHead::dataReady(const unsigned char *bytes, int len)
 {
-	if(queue.isEmpty())
-		return;
-	else
-		netman->post( request, queue.dequeue().toUtf8() );
+	const QString mes = QString::fromUtf8((const char *)bytes, len);
+	mLog("coming message %s, %d", qPrintable(mes), mes.size());
+	if (mes.size() > 100)
+		return mes.size();
+	if(!mes.contains("PD")) return -ENOBUFS;
+	if(!mes.startsWith("{")) return -ENOBUFS;
+	if(!mes.endsWith("}")) return -ENOBUFS;
+
+	QStringList flds = mes.split(",");
+	foreach (QString fld, flds) {
+		int value = fld.split(":").last().remove(" ").remove("\"").toInt();
+		if (fld.contains("PP"))
+			panPos = value;
+		if (fld.contains("TP"))
+			tiltPos = value;
+	}
+	mInfo("Real position values pan: %d tilt: %d", panPos, tiltPos);
+	return len;
 }
 
 int FlirPTHead::saveCommand(const QString &key)
 {
-	queue.enqueue(key);
-	return 0;
+	mInfo("Sending Command %s", qPrintable(key));
+	return transport->send(key.toUtf8());
 }
 
-void FlirPTHead::dataReady(QNetworkReply *reply)
+QByteArray FlirPTHead::transportReady()
 {
-	QByteArray mes = reply->readAll();
-	if(!mes.contains("PD")) return;
-	if(!mes.startsWith("{")) return;
-	if(!mes.endsWith("}")) return;
-
-	int indexPP = mes.indexOf("PP");
-	int indexEPP = mes.indexOf(",",indexPP);
-	panPos = mes.mid(indexPP+7,indexEPP-indexPP-8).toInt();
-
-	int indexTP = mes.indexOf("TP");
-	int indexETP = mes.indexOf(",",indexTP);
-	tiltPos = mes.mid(indexTP+7,indexETP-indexTP-8).toInt();
-}
-
-void FlirPTHead::getPositions()
-{
-	saveCommand(ptzCommandList.at(C_GET_PT));
+	return ptzCommandList.at(C_GET_PT).toUtf8();
 }
