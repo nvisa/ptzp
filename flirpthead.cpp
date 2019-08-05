@@ -223,19 +223,21 @@ float FlirPTHead::getTiltAngle()
 int FlirPTHead::dataReady(const unsigned char *bytes, int len)
 {
 	const QString mes = QString::fromUtf8((const char *)bytes, len);
-	mInfo("coming message %s", qPrintable(mes));
-
+	mLog("coming message %s, %d", qPrintable(mes), mes.size());
+	if (mes.size() > 100)
+		return mes.size();
 	if(!mes.contains("PD")) return -ENOBUFS;
 	if(!mes.startsWith("{")) return -ENOBUFS;
 	if(!mes.endsWith("}")) return -ENOBUFS;
 
-	int indexPP = mes.indexOf("PP");
-	int indexEPP = mes.indexOf(",",indexPP);
-	panPos = mes.mid(indexPP+7,indexEPP-indexPP-8).toInt();
-
-	int indexTP = mes.indexOf("TP");
-	int indexETP = mes.indexOf(",",indexTP);
-	tiltPos = mes.mid(indexTP+7,indexETP-indexTP-8).toInt();
+	QStringList flds = mes.split(",");
+	foreach (QString fld, flds) {
+		int value = fld.split(":").last().remove(" ").remove("\"").toInt();
+		if (fld.contains("PP"))
+			panPos = value;
+		if (fld.contains("TP"))
+			tiltPos = value;
+	}
 	mInfo("Real position values pan: %d tilt: %d", panPos, tiltPos);
 	return len;
 }

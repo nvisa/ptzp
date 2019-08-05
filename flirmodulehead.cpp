@@ -163,7 +163,7 @@ int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 {
 	 QString data = QString::fromUtf8((const char *)bytes, len);
 
-	 if (data.contains("root.ERR.no=4")) // unnecessary message
+	 if (data.contains("root.ERR.no=4") || data.size() > 1000) // unnecessary message
 		 return len;
 
 	if (lastGetCommand == C_GET_CAMPOS) {
@@ -191,5 +191,6 @@ int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 			camModes.insert(key, value);
 		}
 	}
-	return 0;
+	mInfo("Zoom position %d, Focus position %d", zoomPos, focusPos);
+	return len;
 }
