@@ -122,11 +122,13 @@ void PtzpHttpTransport::sendGetMessage(const QByteArray &ba)
 void PtzpHttpTransport::callback()
 {
 	QByteArray m = PtzpTransport::queueFreeCallback();
-	if (contentType == AppJson) {
-		emit sendGetMessage2Main(m);
+	if (m.isEmpty())
 		return;
-	}
-	send(m.data(), m.size());
+	if (contentType == AppJson)
+		emit sendGetMessage2Main(m);
+	else if (contentType == AppXFormUrlencoded)
+		emit sendPostMessage2Main(m);
+	return;
 }
 
 QByteArray PtzpHttpTransport::prepareAppJsonTypeMessage(const QByteArray &ba)
@@ -140,4 +142,5 @@ QByteArray PtzpHttpTransport::prepareAppJsonTypeMessage(const QByteArray &ba)
 		request.setUrl(url);
 		return params.toLatin1();
 	}
+	return QByteArray();
 }
