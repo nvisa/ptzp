@@ -2,7 +2,11 @@
 
 #include "errno.h"
 #include "debug.h"
+#include <unistd.h>
 #include "ptzptransport.h"
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 static QString createSwirCommand(const QString &data)
 {
@@ -154,6 +158,29 @@ int MgeoSwirHead::syncNext()
 QByteArray MgeoSwirHead::transportReady()
 {
 	return createSwirCommand(commandList.at(C_GET_ZOOM_POS)).toLatin1();
+}
+
+QJsonValue MgeoSwirHead::marshallAllRegisters()
+{
+	QJsonObject json;
+	for(int i = 0; i < R_COUNT; i++)
+		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
+	return json;
+}
+
+void MgeoSwirHead::unmarshallloadAllRegisters(const QJsonValue &node)
+{
+	QJsonObject root = node.toObject();
+	QString key = "reg%1";
+	/*
+	 * according to our command table visca set commands doesn't get any response from module,
+	 * in this case ordinary sleep should work here
+	 */
+	int sleepDur = 1000 * 100;
+	setProperty(C_SET_SYMBOLOGY, root.value(key.arg(R_SYMBOLOGY)).toInt());
+	usleep(sleepDur);
+	setProperty(C_SET_GAIN, root.value(key.arg(R_GAIN)).toInt());
+	usleep(sleepDur);
 }
 
 int MgeoSwirHead::dataReady(const unsigned char *bytes, int len)
