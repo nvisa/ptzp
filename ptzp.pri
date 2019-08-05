@@ -25,7 +25,7 @@ HEADERS += \
     ptzp/mgeoswirhead.h \
     ptzp/swirdriver.h \
     ptzp/virtualptzpdriver.h \
-    $$PWD/ptzphttptransport.h
+    ptzp/ptzphttptransport.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -53,7 +53,7 @@ SOURCES += \
     ptzp/mgeoswirhead.cpp \
     ptzp/swirdriver.cpp \
     ptzp/virtualptzpdriver.cpp \
-    $$PWD/ptzphttptransport.cpp
+    ptzp/ptzphttptransport.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API
