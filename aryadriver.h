@@ -3,7 +3,7 @@
 
 #include <ecl/ptzp/ptzpdriver.h>
 #include <ecl/net/networkaccessmanager.h>
-
+#include <QElapsedTimer>
 class AryaPTHead;
 class MgeoThermalHead;
 class MgeoGunGorHead;
@@ -74,6 +74,7 @@ protected:
 	NetworkAccessManager *netman;
 	Overlay olay;
 	QElapsedTimer *checker;
+	QElapsedTimer overlayLaps;
 	VideoDeviceParams vdParams;
 
 };

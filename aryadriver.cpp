@@ -60,6 +60,7 @@ AryaDriver::AryaDriver(QObject *parent)
 	olay.disabled = false;
 
 	connect(netman, SIGNAL(finished()), SLOT(overlayFinished()));
+	overlayLaps.start();
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
@@ -151,9 +152,10 @@ void AryaDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		if (getChangeOverlayState()) {
+		if (overlayLaps.elapsed() > 5000 || getChangeOverlayState()) {
 			setZoomOverlay();
 			setChangeOverlayState(false);
+			overlayLaps.restart();
 		}
 		manageRegisterSaving();
 		if (doStartupProcess) {
