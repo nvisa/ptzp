@@ -11,7 +11,7 @@
 
 #define dump(p, len) \
 	for (int i = 0; i < len; i++) \
-		mDebug("%s: %d: 0x%x", __func__, i, p[i]);
+		mInfo("%s: %d: 0x%x", __func__, i, p[i]);
 
 #define MAX_CMD_LEN	10
 
