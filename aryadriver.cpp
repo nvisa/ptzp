@@ -129,11 +129,11 @@ void AryaDriver::timeout()
 	case INIT:
 		if (thermal->getSystemStatus() == 2) {
 			thermal->syncRegisters();
-			thermal->loadRegisters("thermal.json");
+			thermal->loadRegisters("head1.json");
 			state = SYNC_THERMAL_MODULES;
 		} else if (gungor->getSystemStatus() == 2) {
 			gungor->syncRegisters();
-			gungor->loadRegisters("gungor.json");
+			gungor->loadRegisters("head2.json");
 			state = SYNC_GUNGOR_MODULES;
 		}
 		checker->restart();
@@ -142,7 +142,7 @@ void AryaDriver::timeout()
 		if(thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = SYNC_GUNGOR_MODULES;
 			gungor->syncRegisters();
-			gungor->loadRegisters("gungor.json");
+			gungor->loadRegisters("head2.json");
 		}
 		break;
 	case SYNC_GUNGOR_MODULES:
