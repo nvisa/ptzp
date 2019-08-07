@@ -2,58 +2,30 @@
 #define ARYADRIVER_H
 
 #include <ecl/ptzp/ptzpdriver.h>
-#include <ecl/net/networkaccessmanager.h>
 #include <QElapsedTimer>
+
 class AryaPTHead;
 class MgeoThermalHead;
 class MgeoGunGorHead;
 class PtzpTcpTransport;
-
+class PtzpHttpTransport;
+class MoxaControlHead;
 class AryaDriver : public PtzpDriver
 {
 	Q_OBJECT
 public:
-	enum OverlayPos {
-		LEFT_UP,
-		RIGHT_UP,
-		LEFT_DOWN,
-		RIGHT_DOWN,
-		CUSTOM
-	};
-
-	struct Overlay {
-		OverlayPos pos;
-		int posx;
-		int posy;
-		int textSize;
-		bool disabled;
-	};
-
-	struct VideoDeviceParams {
-		QString ip;
-		QString pass;
-		QString uname;
-	};
-
-	enum overlayForHead {
-		THERMAL,
-		DAY
-	};
-
 	explicit AryaDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri);
 	virtual PtzpHead * getHead(int index);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
-	int setZoomOverlay();
 
-	int setOverlay(const QString data);
-	QString setZoomOverlayString(overlayForHead head);
-	void setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass);
+	int setMoxaControl(const QString &targetThermal, const QString &targetDay);
+	void updateZoomOverlay(int thermal, int day);
+	void setOverlayInterval(int ms);
 protected slots:
 	void timeout();
-	void overlayFinished();
 
 protected:
 	enum DriverState {
@@ -71,12 +43,13 @@ protected:
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
-	NetworkAccessManager *netman;
-	Overlay olay;
 	QElapsedTimer *checker;
 	QElapsedTimer overlayLaps;
-	VideoDeviceParams vdParams;
-
+	PtzpHttpTransport *httpThermal;
+	PtzpHttpTransport *httpDay;
+	MoxaControlHead *moxaThermal;
+	MoxaControlHead *moxaDay;
+	int overlayInterval;
 };
 
 #endif // ARYADRIVER_H

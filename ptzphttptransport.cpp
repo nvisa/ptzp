@@ -1,5 +1,5 @@
 #include "ptzphttptransport.h"
-#include <ecl/debug.h>
+#include "debug.h"
 
 #include <QNetworkReply>
 class PtzpHttpTransportPriv
@@ -18,6 +18,7 @@ PtzpHttpTransport::PtzpHttpTransport(LineProtocol proto, QObject *parent)
 	priv = new PtzpHttpTransportPriv();
 	priv->port = 80;
 	contentType = Unknown;
+	authType = Basic;
 	netman = NULL;
 	timer = new QTimer();
 	timer->start(periodTimer);
@@ -45,16 +46,26 @@ int PtzpHttpTransport::connectTo(const QString &targetUri)
 		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 	else if (contentType == AppJson)
 		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	else if (contentType == TextPlain)
+		request.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain");
 	else {
 		mDebug("unknown content type");
 		return -EPROTO;
 	}
-	if (!priv->username.isEmpty())
-		request.setRawHeader("Authorization", "Basic "
-							 + QString("%1:%2").arg(priv->username).arg(priv->password).toLatin1().toBase64());
+
 	QUrl url;
 	url.setUrl(priv->uri);
 	url.setPort(priv->port);
+
+	if (!priv->username.isEmpty()) {
+		if (authType == Basic)
+			request.setRawHeader("Authorization", "Basic "
+								+ QString("%1:%2").arg(priv->username).arg(priv->password).toLatin1().toBase64());
+		else if (authType = Digest) {
+			url.setUserName(priv->username);
+			url.setPassword(priv->password);
+		}
+	}
 	request.setUrl(url);
 
 	netman = new QNetworkAccessManager(this);
@@ -68,13 +79,18 @@ int PtzpHttpTransport::send(const char *bytes, int len)
 {
 	switch (contentType) {
 	case AppJson: {
-		QByteArray params = prepareAppJsonTypeMessage(QByteArray(bytes, len));
+		QByteArray params = prepareMessage(QByteArray(bytes, len));
 		emit sendPostMessage2Main(params);
 		break;
 	}
 	case AppXFormUrlencoded:
 		emit sendPostMessage2Main(QByteArray(bytes, len));
 		break;
+	case TextPlain: {
+		QByteArray params = prepareMessage(QByteArray(bytes, len));
+		emit sendPostMessage2Main(params);
+		break;
+	}
 	default:
 		break;
 	}
@@ -84,6 +100,11 @@ int PtzpHttpTransport::send(const char *bytes, int len)
 void PtzpHttpTransport::setContentType(PtzpHttpTransport::KnownContentTypes type)
 {
 	contentType = type;
+}
+
+void PtzpHttpTransport::setAuthorizationType(PtzpHttpTransport::AuthorizationTypes type)
+{
+	authType = type;
 }
 
 void PtzpHttpTransport::dataReady(QNetworkReply *reply)
@@ -137,7 +158,7 @@ void PtzpHttpTransport::callback()
 	return;
 }
 
-QByteArray PtzpHttpTransport::prepareAppJsonTypeMessage(const QByteArray &ba)
+QByteArray PtzpHttpTransport::prepareMessage(const QByteArray &ba)
 {
 	QString data = QString::fromUtf8(ba);
 	if (data.contains("?")) {
@@ -152,3 +173,4 @@ QByteArray PtzpHttpTransport::prepareAppJsonTypeMessage(const QByteArray &ba)
 	}
 	return QByteArray();
 }
+

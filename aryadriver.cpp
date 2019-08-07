@@ -1,11 +1,11 @@
 #include "aryadriver.h"
 #include "gungorhead.h"
 #include "aryapthead.h"
+#include "moxacontrolhead.h"
 #include "mgeothermalhead.h"
 #include "ptzptcptransport.h"
+#include "ptzphttptransport.h"
 #include "debug.h"
-
-#include <QFile>
 
 static float speedRegulateThermal(float speed, float zooms[]) {
 	float stepSize = 1575.0;
@@ -52,15 +52,9 @@ AryaDriver::AryaDriver(QObject *parent)
 	checker = new QElapsedTimer();
 	checker->start();
 
-	netman = new NetworkAccessManager();
-	olay.pos = LEFT_UP;
-	olay.posx = 0;
-	olay.posy = 0;
-	olay.textSize = 24;
-	olay.disabled = false;
-
-	connect(netman, SIGNAL(finished()), SLOT(overlayFinished()));
 	overlayLaps.start();
+	overlayInterval = 1000;
+
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
@@ -87,6 +81,50 @@ int AryaDriver::setTarget(const QString &targetUri)
 	if (err)
 		return err;
 	return 0;
+}
+
+int AryaDriver::setMoxaControl(const QString &targetThermal, const QString &targetDay)
+{
+	httpThermal = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
+	httpThermal->setContentType(PtzpHttpTransport::TextPlain);
+	httpThermal->setAuthorizationType(PtzpHttpTransport::Digest);
+	int ret = httpThermal->connectTo(targetThermal);
+	if (ret)
+		return ret;
+
+	httpDay = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
+	httpDay->setContentType(PtzpHttpTransport::TextPlain);
+	httpDay->setAuthorizationType(PtzpHttpTransport::Digest);
+	ret = httpDay->connectTo(targetDay);
+	if (ret)
+		return ret;
+
+	moxaDay = new MoxaControlHead();
+	moxaDay->setTransport(httpDay);
+
+	moxaThermal = new MoxaControlHead();
+	moxaThermal->setTransport(httpThermal);
+	return 0;
+}
+
+void AryaDriver::updateZoomOverlay(int thermal, int day)
+{
+	if (!moxaThermal || !moxaDay) {
+		mDebug("Moxa Thermal and Day device don't ready!!!");
+		return;
+	}
+	if (overlayLaps.elapsed() > overlayInterval) {
+		moxaDay->setZoomShow(day);
+		moxaThermal->setZoomShow(thermal);
+		overlayLaps.restart();
+	}
+	return;
+}
+
+void AryaDriver::setOverlayInterval(int ms)
+{
+	if (ms != 0)
+		overlayInterval = ms;
 }
 
 PtzpHead *AryaDriver::getHead(int index)
@@ -152,11 +190,7 @@ void AryaDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		if (overlayLaps.elapsed() > 5000 || getChangeOverlayState()) {
-			setZoomOverlay();
-			setChangeOverlayState(false);
-			overlayLaps.restart();
-		}
+		updateZoomOverlay(thermal->getZoom(), gungor->getZoom());
 		manageRegisterSaving();
 		if (doStartupProcess) {
 			doStartupProcess = false;
@@ -165,12 +199,6 @@ void AryaDriver::timeout()
 		break;
 	}
 	PtzpDriver::timeout();
-}
-
-void AryaDriver::overlayFinished()
-{
-	if (netman->getLastError() != 0)
-		mDebug("Overlay process got an error. Error code %d, %s", netman->getLastError(), qPrintable(netman->getLastErrorString()));
 }
 
 QVariant AryaDriver::get(const QString &key)
@@ -258,14 +286,8 @@ QVariant AryaDriver::get(const QString &key)
 	else if (key == "ptz.head.2.digi_zoom_status")
 		return QString("%1")
 				.arg(gungor->getProperty(8));
-	else if (key == "video.overlay")
-		return QString("%1;%2;%3;%4")
-				.arg(olay.pos).arg(olay.posx).arg(olay.posy).arg(olay.textSize);
-	else if (key == "video.overlay.disable")
-		return olay.disabled;
 
 	return PtzpDriver::get(key);
-	return QVariant();
 }
 
 int AryaDriver::set(const QString &key, const QVariant &value)
@@ -339,77 +361,7 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 		gungor->setProperty(10, value.toUInt());
 	else if (key == "ptz.cmd.gungor.digi_zoom")
 		gungor->setProperty(12, value.toUInt());
-	else if (key == "video.overlay") {
-		QString v = value.toString();
-		if (v.contains(";")) {
-			QStringList flds = v.split(";");
-			if (flds.size() != 4)
-				return -EINVAL;
-			olay.pos = (OverlayPos)flds.at(0).toInt();
-			olay.posx = flds.at(1).toInt();
-			olay.posy = flds.at(2).toInt();
-			olay.textSize = flds.at(3).toInt();
-		}
-	} else if (key == "video.overlay.disable")
-		olay.disabled = value.toBool();
-
-	else PtzpDriver::set(key, value);
+	else
+		return PtzpDriver::set(key, value);
 	return 0;
-}
-
-QString AryaDriver::setZoomOverlayString(overlayForHead head)
-{
-	QString config = "ctoken=osdcfg01&action=setconfig";
-	QString type = "type=0";
-	QString display;
-	if (olay.disabled)
-		display = "display=0";
-	else display = "display=2";
-	QString position = QString("position=%1&posx=%2&posy=%3").arg(olay.pos).arg(olay.posx).arg(olay.posy);
-	QString bgspan = "bgspan=0";
-	QString textSize = QString("textsize=%1").arg(olay.textSize);
-	QString dateTimeFormat = "datetimeformat=0";
-	QString showDate = "showdate=0";
-	QString showTime = "showtime=0";
-	QString text = QString("text=%1").arg(QString("ZOOM %1x").arg(thermal->getZoom()));
-	if (head == DAY)
-		text = QString("text=%1").arg(QString("ZOOM %1x").arg(gungor->getZoom()));
-	QString overlayData = config + "&"+
-			type + "&" +
-			display + "&" +
-			position + "&" +
-			bgspan + "&" +
-			textSize + "&" +
-			dateTimeFormat + "&" +
-			showDate + "&" +
-			showTime + "&" +
-			text;
-	return overlayData;
-}
-
-int AryaDriver::setZoomOverlay()
-{
-	QString overlayDataThermal = setZoomOverlayString(THERMAL);
-	netman->post("50.23.169.211", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayDataThermal);
-
-	QString overlayDataDay = setZoomOverlayString(DAY);
-	netman->post("50.23.169.212", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayDataDay);
-	return 0;
-}
-
-int AryaDriver::setOverlay(const QString data)
-{
-	if (vdParams.ip.isEmpty()) {
-		mDebug("Video Device parameter missing.");
-		return -1;
-	}
-	netman->post(vdParams.ip, vdParams.uname, vdParams.pass, "/moxa-cgi/imageoverlay.cgi", data);
-	return 0;
-}
-
-void AryaDriver::setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass)
-{
-	vdParams.ip = ip;
-	vdParams.pass = pass;
-	vdParams.uname = uname;
 }
