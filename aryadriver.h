@@ -26,7 +26,11 @@ public:
 	void setOverlayInterval(int ms);
 protected slots:
 	void timeout();
-
+protected:
+	void reboot();
+	int connectPT(const QString &target);
+	int connectThermal(const QString &target);
+	int connectDay(const QString &target);
 protected:
 	enum DriverState {
 		INIT,
@@ -50,6 +54,7 @@ protected:
 	MoxaControlHead *moxaThermal;
 	MoxaControlHead *moxaDay;
 	int overlayInterval;
+	QElapsedTimer connectLaps;
 };
 
 #endif // ARYADRIVER_H

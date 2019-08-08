@@ -7,6 +7,9 @@
 #include "ptzphttptransport.h"
 #include "debug.h"
 
+#include <QProcess>
+#include <QCoreApplication>
+
 static float speedRegulateThermal(float speed, float zooms[]) {
 	float stepSize = 1575.0;
 	float zoomVal = zooms[0];
@@ -38,30 +41,32 @@ static float speedRegulateArya(float speed, float zooms[]) {
 AryaDriver::AryaDriver(QObject *parent)
 	: PtzpDriver(parent)
 {
-	aryapt = new AryaPTHead;
-	gungor = new MgeoGunGorHead;
-	thermal = new MgeoThermalHead;
-	tcp1 = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
-	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
-	tcp3 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
-	state = SYSTEM_CHECK;
+	tcp1 = NULL;
+	tcp2 = NULL;
+	tcp3 = NULL;
+	aryapt = NULL;
+	gungor = NULL;
+	thermal = NULL;
+	moxaDay = NULL;
+	moxaThermal = NULL;
 
-	defaultPTHead = aryapt;
-	defaultModuleHead = gungor;
+	defaultPTHead = NULL;
+	defaultModuleHead = NULL;
+	state = SYSTEM_CHECK;
+	connectLaps.start();
 
 	checker = new QElapsedTimer();
 	checker->start();
 
 	overlayLaps.start();
 	overlayInterval = 1000;
-
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
 {
-	aryapt->setTransport(tcp1);
-	thermal->setTransport(tcp2);
-	gungor->setTransport(tcp3);
+	connectPT(targetUri);
+	connectThermal(targetUri);
+	connectDay(targetUri);
 
 	SpeedRegulation sreg = getSpeedRegulation();
 	sreg.enable = true;
@@ -70,16 +75,45 @@ int AryaDriver::setTarget(const QString &targetUri)
 	sreg.zoomHead = thermal;
 	sreg.secondZoomHead = gungor;
 	setSpeedRegulation(sreg);
+	return 0;
+}
 
-	int err = tcp1->connectTo(QString("%1:4001").arg(targetUri));
-	if (err)
-		return err;
-	err = tcp2->connectTo(QString("%1:4002").arg(targetUri));
-	if (err)
-		return err;
-	err = tcp3->connectTo(QString("%1:4003").arg(targetUri));
-	if (err)
-		return err;
+void AryaDriver::reboot()
+{
+	mDebug("Application going to restart.");
+	QStringList args = QCoreApplication::instance()->arguments();
+	QString appName = args.takeFirst();
+	if (appName.contains("/"))
+		appName = appName.split("/").last();
+	QProcess::execute(QString("killall %1").arg(appName));
+}
+
+int AryaDriver::connectPT(const QString &target)
+{
+	tcp1 = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
+	tcp1->connectTo(QString("%1:4001").arg(target));
+	aryapt = new AryaPTHead;
+	aryapt->setTransport(tcp1);
+	defaultPTHead = aryapt;
+	return 0;
+}
+
+int AryaDriver::connectThermal(const QString &target)
+{
+	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
+	tcp2->connectTo(QString("%1:4002").arg(target));
+	thermal = new MgeoThermalHead;
+	thermal->setTransport(tcp2);
+	return 0;
+}
+
+int AryaDriver::connectDay(const QString &target)
+{
+	tcp3 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
+	tcp3->connectTo(QString("%1:4003").arg(target));
+	gungor = new MgeoGunGorHead;
+	gungor->setTransport(tcp3);
+	defaultModuleHead = gungor;
 	return 0;
 }
 
@@ -140,6 +174,11 @@ PtzpHead *AryaDriver::getHead(int index)
 
 void AryaDriver::timeout()
 {
+	if (tcp1->getStatus() || tcp2->getStatus() || tcp3->getStatus()) {
+		if (connectLaps.elapsed() > 30000)
+			reboot();
+		return;
+	}
 	mLog("Driver state: %d", state);
 	switch (state) {
 	case SYSTEM_CHECK:
