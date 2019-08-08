@@ -237,7 +237,7 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 	if (opcode == 0x0a) {
 		if (systemChecker == 0)
 			systemChecker = 1;
-		setRegister(R_ZOOM, (p[0] << 8 | p[1]));
+		setRegister(R_ZOOM, ((p[0] & 0xFE) << 8));
 	}
 	else if (opcode == 0x0b)
 		setRegister(R_FOCUS, (p[0] << 8 | p[1]));

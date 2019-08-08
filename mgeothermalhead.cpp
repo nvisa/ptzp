@@ -346,7 +346,7 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(C_FOV, p[0]);
 	} else if (opcode == 0xbc) {
 		//zoom/focus
-		setRegister(C_CONT_ZOOM, (p[1] << 8 | p[0]));
+		setRegister(C_CONT_ZOOM, (p[1] << 8));
 		setRegister(C_FOCUS, (p[3] << 8 | p[2]));
 		setRegister(R_ANGLE, (p[5] << 8 | p[4]));
 		if (systemChecker == 0)
