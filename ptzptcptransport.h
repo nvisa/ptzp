@@ -15,6 +15,11 @@ class PtzpTcpTransport : public QObject, public PtzpTransport
 public:
 	explicit PtzpTcpTransport(LineProtocol proto, QObject *parent = 0);
 
+	enum DevStatus {
+		ALIVE,
+		DEAD
+	};
+
 	class TransportFilterInteface
 	{
 	public:
@@ -25,9 +30,8 @@ public:
 	int connectTo(const QString &targetUri);
 	int disconnectFrom();
 	int send(const char *bytes, int len);
-
 	void setFilter(TransportFilterInteface *iface);
-
+	PtzpTcpTransport::DevStatus getStatus();
 signals:
 	void sendSocketMessage2Main(const QByteArray &ba);
 
@@ -45,6 +49,7 @@ protected:
 	/* udp connection flag*/
 	bool isUdp;
 	int sendDstPort;
+	DevStatus devStatus;
 };
 
 #endif // PTZPTCPTRANSPORT_H
