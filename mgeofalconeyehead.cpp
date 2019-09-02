@@ -67,9 +67,9 @@ enum Commands {
 	C_SET_RELAY_CONTROL,
 
 	C_GET_TARGET_COORDINATES,
+	C_GET_GPS_LOCATION,
 	C_GET_ALL_SYSTEM_VALUES,
 	C_GET_DMC_VALUES,
-	C_GET_GPS_LOCATION,
 	C_GET_OPTIMIZATION_PARAM,
 	C_GET_ZOOM_POS,
 	C_GET_FOCUS_POS,
@@ -121,9 +121,9 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{}, // relay control
 
 	{ 0x04, 0x1f, 0x00, 0xc1, 0x00}, // ask target coordinates
+	{ 0x04, 0x1f, 0x00, 0xc0, 0x00}, // ask gps location -ok
 	{ 0x04, 0x1f, 0x00, 0xb6, 0x00}, // get all system values - ok
 	{ 0x04, 0x1f, 0x00, 0xb9, 0x00}, // ask dmc values - ok
-	{ 0x04, 0x1f, 0x00, 0xc0, 0x00}, // ask gps location -ok
 	{ 0x04, 0x1f, 0x00, 0xe4, 0x00}, // optimization param -ok
 	{ 0x04, 0x1f, 0x00, 0xeb, 0x00}, // zoom pos ok
 	{ 0x04, 0x1f, 0x00, 0xec, 0x00}, // focus pos - ok
@@ -206,8 +206,9 @@ public:
 
 };
 
-MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
+MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps)
 {
+	gpsStatus = gps;
 	dayCamRelay = 4;
 	thermalRelay = 5;
 	standbyRelay = 6;
@@ -291,7 +292,10 @@ int MgeoFalconEyeHead::syncRegisters()
 {
 	if (!transport)
 		return -ENOENT;
-	nextSync = C_GET_ALL_SYSTEM_VALUES;
+	if(gpsStatus)
+		nextSync = C_GET_GPS_DATE_TIME;
+	else
+		nextSync = C_GET_ALL_SYSTEM_VALUES;
 	return syncNext();
 }
 

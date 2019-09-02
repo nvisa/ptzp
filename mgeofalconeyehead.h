@@ -13,7 +13,7 @@ class RelayControlThread;
 class MgeoFalconEyeHead : public PtzpHead
 {
 public:
-	MgeoFalconEyeHead(QList<int> relayConfig);
+	MgeoFalconEyeHead(QList<int> relayConfig,bool gps);
 
 	enum Registers {
 		R_ZOOM,
@@ -111,6 +111,7 @@ protected:
 	QByteArray transportReady();
 	uint nextSync;
 	bool alive;
+	bool gpsStatus;
 
 private:
 	void setPropertyInt(uint r, int x);

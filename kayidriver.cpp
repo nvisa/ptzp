@@ -9,9 +9,9 @@
 #include <errno.h>
 #include <QTcpSocket>
 
-KayiDriver::KayiDriver(QList<int> relayConfig, QObject *parent) : PtzpDriver(parent)
+KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QObject *parent) : PtzpDriver(parent)
 {
-	headModule = new MgeoFalconEyeHead(relayConfig);
+	headModule = new MgeoFalconEyeHead(relayConfig, gps);
 	headDome = new AryaPTHead;
 	headDome->setMaxSpeed(888889);
 	state = INIT;
