@@ -226,6 +226,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig)
 	relth->thermalRelay = thermalRelay;
 	relth->standbyRelay = standbyRelay;
 	relth->start();
+	alive = false;
 
 	syncTimer.start();
 
@@ -468,6 +469,11 @@ QString MgeoFalconEyeHead::whoAmI()
 	return "thermal";
 }
 
+bool MgeoFalconEyeHead::isAlive()
+{
+	return alive;
+}
+
 int MgeoFalconEyeHead::syncNext()
 {
 	unsigned char *p = protoBytes[nextSync];
@@ -484,11 +490,13 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 	if (len < bytes[1] + 4)
 		return -EAGAIN;
 	if (bytes[2] == 0x90)
-		return -ENOENT; //ack
-	if (bytes[2] == 0x95)
-		return -ENOENT; //alive
+		return len; //ack
+	if (bytes[2] == 0x95) {
+		alive = true;
+		return 5; //alive
+	}
 	uchar chk = chksum(bytes, len - 1);
-	if (chk != bytes[len -1]){
+	if (chk != bytes[len -1]) {
 		fDebug("Checksum error");
 		return -ENOENT;
 	}

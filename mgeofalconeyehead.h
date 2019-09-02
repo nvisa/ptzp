@@ -102,12 +102,15 @@ public:
 	virtual void setProperty(const QString &key, const QVariant &value);
 	virtual int getFOV(float &hor, float &ver);
 	virtual QString whoAmI();
+	bool isAlive();
+
 
 protected:
 	int syncNext();
 	virtual int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
 	uint nextSync;
+	bool alive;
 
 private:
 	void setPropertyInt(uint r, int x);

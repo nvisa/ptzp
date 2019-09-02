@@ -84,17 +84,22 @@ void KayiDriver::timeout()
 	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
-		headModule->syncRegisters();
-		tp2->enableQueueFreeCallbacks(true);
-		state = SYNC_HEAD_MODULE;
+		headModule->setProperty(5, 1);
+		headModule->setProperty(37, 1);
+		state = WAIT_ALIVE;
+		break;
+	case WAIT_ALIVE:
+		if (headModule->isAlive() == true){
+			headModule->syncRegisters();
+			tp2->enableQueueFreeCallbacks(true);
+			state = SYNC_HEAD_MODULE;
+		}
 		break;
 	case SYNC_HEAD_MODULE:
 		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
 //			tp1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
-			headModule->setProperty(5, 1);
-			headModule->setProperty(37, 1);
 		}
 		break;
 	case NORMAL:

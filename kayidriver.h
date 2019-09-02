@@ -23,6 +23,7 @@ protected slots:
 protected:
 	enum DriverState {
 		INIT,
+		WAIT_ALIVE,
 		SYNC_HEAD_MODULE,
 		NORMAL,
 	};
