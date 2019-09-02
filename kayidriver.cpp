@@ -91,6 +91,7 @@ void KayiDriver::timeout()
 	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
+		headModule->setProperty(37, 2);
 		headModule->setProperty(5, 1);
 		headModule->setProperty(37, 1);
 		state = WAIT_ALIVE;

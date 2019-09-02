@@ -494,10 +494,10 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 	if (len < bytes[1] + 4)
 		return -EAGAIN;
 	if (bytes[2] == 0x90)
-		return len; //ack
+		return 4; //ack
 	if (bytes[2] == 0x95) {
 		alive = true;
-		return 5; //alive
+		return 4; //alive
 	}
 	uchar chk = chksum(bytes, len - 1);
 	if (chk != bytes[len -1]) {
