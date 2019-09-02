@@ -160,6 +160,10 @@ int PtzpTransport::LineProto::processNewFrame(const unsigned char *bytes, int le
 	}
 
 	if (erroredCount == transport->dataReadyCallbacks.size())
+		/*
+		 * This bytestream contains some sort of garbage, everybody reports error
+		 * so it is wise to discard one byte here
+		 */
 		return 1;
 
 	return -1;
