@@ -387,6 +387,13 @@ QJsonObject TbgthDriver::doExtraDeviceTests()
 	return jsonObject;
 }
 
+bool TbgthDriver::isReady()
+{
+	if (state == NORMAL)
+		return true;
+	return false;
+}
+
 void TbgthDriver::timeout()
 {
 	switch (state) {

@@ -1174,6 +1174,11 @@ bool PtzpDriver::getChangeOverlayState()
 	return changeOverlay;
 }
 
+bool PtzpDriver::isReady()
+{
+	return true;
+}
+
 void PtzpDriver::stopAnyProcess(StopProcess stop)
 {
 	if (stop == PATROL) {

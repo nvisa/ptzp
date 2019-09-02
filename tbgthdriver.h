@@ -26,6 +26,8 @@ public:
 	void enableDriver(bool value) override;
 	virtual grpc::Status SetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response);
 	virtual QJsonObject doExtraDeviceTests();
+	bool isReady();
+
 protected slots:
 	void timeout();
 

@@ -86,6 +86,7 @@ public:
 	void removeStartupProcess();
 	void setChangeOverlayState(bool state);
 	bool getChangeOverlayState();
+	virtual bool isReady();
 
 #ifdef HAVE_PTZP_GRPC_API
 public:

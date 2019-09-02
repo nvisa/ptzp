@@ -79,6 +79,13 @@ int KayiDriver::set(const QString &key, const QVariant &value)
 	return 0;
 }
 
+bool KayiDriver::isReady()
+{
+	if (state == NORMAL)
+		return true;
+	return false;
+}
+
 void KayiDriver::timeout()
 {
 	mLog("Driver state: %d", state);
