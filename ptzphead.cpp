@@ -1,11 +1,11 @@
 #include "ptzphead.h"
-#include "ptzptransport.h"
 #include "debug.h"
+#include "ptzptransport.h"
 
 #include <QFile>
 #include <QJsonArray>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
 
 #include <errno.h>
 #include <unistd.h>
@@ -20,8 +20,7 @@ static const char ioErrorStr[][256] = {
 	"Un-expected last byte for special command",
 	"Un-expected last byte for visca command",
 	"No last command written exist in history",
-	"Visca invalid address"
-};
+	"Visca invalid address"};
 
 PtzpHead::PtzpHead()
 {
@@ -358,7 +357,8 @@ QString PtzpHead::whoAmI()
 int PtzpHead::getSystemStatus()
 {
 	// this function using just check system healt state
-	// if returning value equal to `2`, system healty. But other values you must check Camera parts.
+	// if returning value equal to `2`, system healty. But other values you must
+	// check Camera parts.
 	return systemChecker;
 }
 
@@ -415,7 +415,9 @@ int PtzpHead::getZoomRatio()
 {
 	if (zoomRatios.size() == 0)
 		return 0;
-	auto lowerp = std::lower_bound(zoomRatios.begin(), zoomRatios.end(), getZoom()) - zoomRatios.begin();
+	auto lowerp =
+		std::lower_bound(zoomRatios.begin(), zoomRatios.end(), getZoom()) -
+		zoomRatios.begin();
 
 	return lowerp + 1;
 }
@@ -455,7 +457,7 @@ QVariantMap PtzpHead::getSettings()
 {
 	QVariantMap map;
 	for (auto key : settings.keys())
-		map.insert(key,getProperty(settings[key].second));
+		map.insert(key, getProperty(settings[key].second));
 	foreach (const QString &key, nonRegisterSettings)
 		map.insert(key, getProperty(key));
 	return map;

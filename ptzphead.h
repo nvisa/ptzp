@@ -3,29 +3,29 @@
 
 #include <ecl/ptzp/ioerrors.h>
 
-#include <QHash>
-#include <QMutex>
-#include <QJsonValue>
 #include <QByteArray>
-#include <QVariantMap>
 #include <QElapsedTimer>
+#include <QHash>
+#include <QJsonValue>
+#include <QMutex>
+#include <QVariantMap>
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 class PtzpTransport;
 
-class PtzpHead: public QObject
+class PtzpHead : public QObject
 {
 public:
 	PtzpHead();
 	~PtzpHead() {}
 
 	enum PtzpCapabilities {
-		CAP_PAN			= 0x01,
-		CAP_TILT		= 0x02,
-		CAP_ZOOM		= 0x04,
-		CAP_ADVANCED	= 0x08,
+		CAP_PAN = 0x01,
+		CAP_TILT = 0x02,
+		CAP_ZOOM = 0x04,
+		CAP_ADVANCED = 0x08,
 	};
 	enum HeadStatus {
 		ST_SYNCING,
@@ -36,27 +36,18 @@ public:
 	class RangeMapper
 	{
 	public:
-		RangeMapper()
-		{
-
-		}
+		RangeMapper() {}
 
 		bool isAvailable() { return maps.size() > 1 ? true : false; }
 
 		std::vector<float> map(int value);
 
-		void setLookUpValues(std::vector<int> v)
-		{
-			lookup = v;
-		}
+		void setLookUpValues(std::vector<int> v) { lookup = v; }
 
-		void addMap(std::vector<float> m)
-		{
-			maps.push_back(m);
-		}
+		void addMap(std::vector<float> m) { maps.push_back(m); }
 
 	protected:
-		std::vector<std::vector<float> > maps;
+		std::vector<std::vector<float>> maps;
 		std::vector<int> lookup;
 	};
 
@@ -93,14 +84,14 @@ public:
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();
-	RangeMapper * getRangeMapper() { return &rmapper; }
+	RangeMapper *getRangeMapper() { return &rmapper; }
 
 	void setZoomRatios(std::vector<int> v) { zoomRatios = v; }
 	int getZoomRatio();
 #ifdef HAVE_PTZP_GRPC_API
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
-	QHash<QString, QPair<int, int> > settings {};
+	QHash<QString, QPair<int, int>> settings {};
 	QStringList nonRegisterSettings;
 #endif
 	int getErrorCount(uint err);
@@ -111,6 +102,7 @@ public:
 	static QByteArray transportReady(void *priv);
 	void setTransportInterval(int interval);
 	int getSystemStatus();
+
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();
