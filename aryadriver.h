@@ -35,6 +35,10 @@ public:
 		QString uname;
 	};
 
+	/*
+	 * [CR] [yca] Bu enum'a gerek var mi? setZoomOverlayString()
+	 * fonksiyonuna ilgili kafanin kendisi gecilemez mi?
+	 */
 	enum overlayForHead {
 		THERMAL,
 		DAY

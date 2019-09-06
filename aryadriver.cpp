@@ -49,9 +49,14 @@ AryaDriver::AryaDriver(QObject *parent)
 	defaultPTHead = aryapt;
 	defaultModuleHead = gungor;
 
+	/*
+	 * [CR] [yca] Potansiyel memory leak, desctructor icinde free etmek gerekebilir
+	 * ya da bu sinif QObject'tan kalitildigi icin parent/this gecmek yeterli olur
+	*/
 	checker = new QElapsedTimer();
 	checker->start();
 
+	/* [CR] [yca] yine memory leak */
 	netman = new NetworkAccessManager();
 	olay.pos = LEFT_UP;
 	olay.posx = 0;
@@ -102,6 +107,12 @@ PtzpHead *AryaDriver::getHead(int index)
 void AryaDriver::timeout()
 {
 	mLog("Driver state: %d", state);
+	/*
+	 * [CR] [yca] Bu sinifin state dongusu daha robust
+	 * hale getirilebilir mi? Kafalardan herhangi birisi
+	 * calismasa bile sistem bunu hata olarak belirtip digerlerini
+	 * yonetebilir hale getirilebilir mi?
+	 */
 	switch (state) {
 	case SYSTEM_CHECK:
 		if (checker->elapsed() > 5000) {
@@ -126,6 +137,16 @@ void AryaDriver::timeout()
 		}
 		break;
 	case INIT:
+		/*
+		 * [CR] [yca] Termale ve gunduze baglanamadigi zaman
+		 * sistem hep init state'de kaliyor.
+		 *
+		 * 1. Bunun CIT'a etkisi olur mu? (arya'da yok bildigim kadari ile)
+		 * 2. Pan-tilt calismasini etkiler mi?
+		 *
+		 * Benzer bir durum SYNC_THERMAL_MODULES ve SYNC_GUNGOR_MODULES
+		 * state'leri icinde gecerli.
+		*/
 		if (thermal->getSystemStatus() == 2) {
 			thermal->syncRegisters();
 			thermal->loadRegisters("thermal.json");
@@ -151,6 +172,12 @@ void AryaDriver::timeout()
 		}
 		break;
 	case NORMAL:
+		/*
+		 * [CR] [yca] getChangeOverlayState() fonksiyonunu ya
+		 * generic bir interface haline getirmeliyiz ya da aryadriver
+		 * icerisine almaliyiz, cunku bu haliyle genel kullanima hizmet
+		 * edebilecek bir fonksiyon gibi durmuyor.
+		*/
 		if (getChangeOverlayState()) {
 			setZoomOverlay();
 			setChangeOverlayState(false);
@@ -171,6 +198,7 @@ void AryaDriver::overlayFinished()
 		mDebug("Overlay process got an error. Error code %d, %s", netman->getLastError(), qPrintable(netman->getLastErrorString()));
 }
 
+/* [CR] [yca] Sanirim artik bu fonksiyondan kurtulabilir? */
 QVariant AryaDriver::get(const QString &key)
 {
 	mInfo("Get func: %s", qPrintable(key));
@@ -266,6 +294,7 @@ QVariant AryaDriver::get(const QString &key)
 	return QVariant();
 }
 
+/* [CR] [yca] Sanirim artik bu fonksiyondan kurtulabilir? */
 int AryaDriver::set(const QString &key, const QVariant &value)
 {
 	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
