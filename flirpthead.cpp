@@ -5,11 +5,11 @@
 
 #include <ecl/ptzp/ptzphttptransport.h>
 
-#define MaxSpeed	0x7D0		//		2.000
-#define MaxPanPos	28000.0		//L-R	+180deg
-#define MinPanPos	-27999.0	//R-L	-180deg
-#define MaxTiltPos	9330.0		//U		+30deg
-#define MinTiltPos	27999.0		//D		-90deg
+#define MaxSpeed   0x7D0	//		2.000
+#define MaxPanPos  28000.0	// L-R	+180deg
+#define MinPanPos  -27999.0 // R-L	-180deg
+#define MaxTiltPos 9330.0	// U		+30deg
+#define MinTiltPos 27999.0	// D		-90deg
 
 enum CommandList {
 	C_STOP,
@@ -38,9 +38,9 @@ static QStringList createPTZCommandList()
 	QStringList cmdListFlir;
 	cmdListFlir << QString("H");
 	cmdListFlir << QString("PP&TP&PD&TD&C");
-	cmdListFlir << QString("C=V&PS=-%1"); //C=V&PS=%1&TS=%2&PS=-%3
-	cmdListFlir << QString("C=V&PS=%1"); //C=V&PS=%1&TS=%2&PS=%3
-	cmdListFlir << QString("C=V&TS=%1"); //C=V&TS=%1&PS=%2&TS=%3
+	cmdListFlir << QString("C=V&PS=-%1"); // C=V&PS=%1&TS=%2&PS=-%3
+	cmdListFlir << QString("C=V&PS=%1");  // C=V&PS=%1&TS=%2&PS=%3
+	cmdListFlir << QString("C=V&TS=%1");  // C=V&TS=%1&PS=%2&TS=%3
 	cmdListFlir << QString("C=V&TS=-%1"); // C=V&TS=-%1&PS=%2&TS=-%3
 	cmdListFlir << QString("C=I&PP=0&TP=0&PS=2000&TS=2000");
 	cmdListFlir << QString("C=I&PS=%1&PO=%2");
@@ -57,8 +57,7 @@ static QStringList createPTZCommandList()
 	return cmdListFlir;
 }
 
-FlirPTHead::FlirPTHead()
-	: PtzpHead()
+FlirPTHead::FlirPTHead() : PtzpHead()
 {
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
@@ -112,10 +111,16 @@ int FlirPTHead::panTiltAbs(float pan, float tilt)
 		// left
 		if (tilt < 0) {
 			// up
-			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(-pspeed).arg(tspeed)); // C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
+			saveCommand(
+				ptzCommandList.at(C_PAN_LEFT_TILT_UP)
+					.arg(-pspeed)
+					.arg(
+						tspeed)); // C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
 		} else if (tilt > 0) {
 			// down
-			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_DOWN).arg(-pspeed).arg(-tspeed));
+			saveCommand(ptzCommandList.at(C_PAN_LEFT_TILT_DOWN)
+							.arg(-pspeed)
+							.arg(-tspeed));
 		} else {
 			saveCommand(ptzCommandList.at(C_PAN_LEFT).arg(-pspeed));
 		}
@@ -123,10 +128,13 @@ int FlirPTHead::panTiltAbs(float pan, float tilt)
 		// right
 		if (tilt < 0) {
 			// up
-			saveCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_UP).arg(pspeed).arg(tspeed));
+			saveCommand(
+				ptzCommandList.at(C_PAN_RIGHT_TILT_UP).arg(pspeed).arg(tspeed));
 		} else if (tilt > 0) {
 			// down
-			saveCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_DOWN).arg(pspeed).arg(-tspeed));
+			saveCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_DOWN)
+							.arg(pspeed)
+							.arg(-tspeed));
 		} else {
 			saveCommand(ptzCommandList.at(C_PAN_RIGHT).arg(pspeed));
 		}
@@ -142,29 +150,35 @@ int FlirPTHead::home()
 int FlirPTHead::panWOffset(int speed, int offset)
 {
 	speed = qAbs(speed) * MaxSpeed;
-	return saveCommand(ptzCommandList.at(C_PAN_WITH_OFFSET).arg(speed).arg(offset));
+	return saveCommand(
+		ptzCommandList.at(C_PAN_WITH_OFFSET).arg(speed).arg(offset));
 }
 
 int FlirPTHead::tiltWOffset(int speed, int offset)
 {
 	speed = qAbs(speed) * MaxSpeed;
-	return saveCommand(ptzCommandList.at(C_TILT_WITH_OFFSET).arg(speed).arg(offset));
+	return saveCommand(
+		ptzCommandList.at(C_TILT_WITH_OFFSET).arg(speed).arg(offset));
 }
 
 int FlirPTHead::pantiltWOffset(int pSpeed, int pOffset, int tSpeed, int tOffset)
 {
 	tSpeed = tSpeed * MaxSpeed;
 	pSpeed = pSpeed * MaxSpeed;
-	return saveCommand(ptzCommandList.at(C_PANTILT_WITH_OFFSET).arg(pSpeed).arg(tSpeed).arg(pOffset).arg(tOffset));
+	return saveCommand(ptzCommandList.at(C_PANTILT_WITH_OFFSET)
+						   .arg(pSpeed)
+						   .arg(tSpeed)
+						   .arg(pOffset)
+						   .arg(tOffset));
 }
 
 int FlirPTHead::panSet(int pDeg, int pSpeed)
 {
 	int pPoint;
-	if(pDeg <= 180)
-		pPoint = (int)((pDeg/180) * MaxPanPos);
+	if (pDeg <= 180)
+		pPoint = (int)((pDeg / 180) * MaxPanPos);
 	else
-		pPoint = (int)((1 - ((pDeg-180) / 180)) * MinPanPos);
+		pPoint = (int)((1 - ((pDeg - 180) / 180)) * MinPanPos);
 
 	pSpeed = pSpeed * MaxSpeed;
 	return saveCommand(ptzCommandList.at(C_PAN_SET).arg(pPoint).arg(pSpeed));
@@ -173,10 +187,10 @@ int FlirPTHead::panSet(int pDeg, int pSpeed)
 int FlirPTHead::tiltSet(int tDeg, int tSpeed)
 {
 	int tPoint;
-	if(tDeg <= 180)
-		tPoint = (tDeg/180) * MaxTiltPos;
+	if (tDeg <= 180)
+		tPoint = (tDeg / 180) * MaxTiltPos;
 	else
-		tPoint = (1 - ((tDeg-180) / 180)) * MinTiltPos;
+		tPoint = (1 - ((tDeg - 180) / 180)) * MinTiltPos;
 	tSpeed = tSpeed * MaxSpeed;
 	return saveCommand(ptzCommandList.at(C_TILT_SET).arg(tPoint).arg(tSpeed));
 }
@@ -185,19 +199,23 @@ int FlirPTHead::pantiltSet(float pDeg, float tDeg, int pSpeed, int tSpeed)
 {
 	int pPoint, tPoint;
 
-	if(pDeg <= 180)
-		pPoint = (int)((pDeg/180) * MaxPanPos);
+	if (pDeg <= 180)
+		pPoint = (int)((pDeg / 180) * MaxPanPos);
 	else
-		pPoint = (int)((1 - ((pDeg-180) / 180)) * MinPanPos);
+		pPoint = (int)((1 - ((pDeg - 180) / 180)) * MinPanPos);
 
-	if(tDeg <= 180)
-		tPoint = (int)((tDeg/180) * MaxTiltPos);
+	if (tDeg <= 180)
+		tPoint = (int)((tDeg / 180) * MaxTiltPos);
 	else
-		tPoint = (int)((1 - ((tDeg-180) / 180)) * MinTiltPos);
+		tPoint = (int)((1 - ((tDeg - 180) / 180)) * MinTiltPos);
 
 	pSpeed = qAbs(pSpeed) * MaxSpeed;
 	tSpeed = qAbs(tSpeed) * MaxSpeed;
-	return saveCommand(ptzCommandList.at(C_PANTILT_SET).arg(pPoint).arg(tPoint).arg(pSpeed).arg(tSpeed));
+	return saveCommand(ptzCommandList.at(C_PANTILT_SET)
+						   .arg(pPoint)
+						   .arg(tPoint)
+						   .arg(pSpeed)
+						   .arg(tSpeed));
 }
 
 int FlirPTHead::panTiltGoPos(float ppos, float tpos)
@@ -226,9 +244,12 @@ int FlirPTHead::dataReady(const unsigned char *bytes, int len)
 	mLog("coming message %s, %d", qPrintable(mes), mes.size());
 	if (mes.size() > 100)
 		return mes.size();
-	if(!mes.contains("PD")) return -ENOBUFS;
-	if(!mes.startsWith("{")) return -ENOBUFS;
-	if(!mes.endsWith("}")) return -ENOBUFS;
+	if (!mes.contains("PD"))
+		return -ENOBUFS;
+	if (!mes.startsWith("{"))
+		return -ENOBUFS;
+	if (!mes.endsWith("}"))
+		return -ENOBUFS;
 
 	QStringList flds = mes.split(",");
 	foreach (QString fld, flds) {

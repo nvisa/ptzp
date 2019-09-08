@@ -4,16 +4,16 @@
 
 #include <QFile>
 #include <QJsonArray>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
 
 #include <errno.h>
 
-#define dump(p, len) \
-	for (int i = 0; i < len; i++) \
+#define dump(p, len)                                                           \
+	for (int i = 0; i < len; i++)                                              \
 		mDebug("%s: %d: 0x%x", __func__, i, p[i]);
 
-#define MAX_CMD_LEN	10
+#define MAX_CMD_LEN 10
 
 enum Commands {
 	C_BRIGHTNESS,
@@ -44,7 +44,7 @@ enum Commands {
 	C_GET_IMAGE_FREEZE,
 
 	C_COUNT,
-// missing registers
+	// missing registers
 	R_ANGLE,
 	R_COOLED_DOWN
 };
@@ -103,7 +103,7 @@ MgeoThermalHead::MgeoThermalHead()
 		{"brightness", {C_BRIGHTNESS, C_BRIGHTNESS}},
 		{"contrast", {C_CONTRAST, C_CONTRAST}},
 		{"fov", {C_FOV, C_FOV}},
-		{"focus",{C_FOCUS, C_FOCUS}},
+		{"focus", {C_FOCUS, C_FOCUS}},
 		{"angle", {NULL, R_ANGLE}},
 		{"nuc_table", {C_NUC_SELECT, C_NUC_SELECT}},
 		{"polarity", {C_POL_CHANGE, C_POL_CHANGE}},
@@ -111,8 +111,8 @@ MgeoThermalHead::MgeoThermalHead()
 		{"digi_zoom", {C_DIGITAL_ZOOM, C_DIGITAL_ZOOM}},
 		{"image_freeze", {C_FREEZE_IMAGE, C_FREEZE_IMAGE}},
 		{"agc", {C_AGC_SELECT, C_AGC_SELECT}},
-		{"reticle_intensity", {C_RETICLE_CHANGE, C_RETICLE_CHANGE }},
-		{"nuc",{C_NUC, C_NUC}},
+		{"reticle_intensity", {C_RETICLE_CHANGE, C_RETICLE_CHANGE}},
+		{"nuc", {C_NUC, C_NUC}},
 		{"ibit", {C_IBIT, C_IBIT}},
 		{"ipm_change", {C_IPM_CHANGE, C_IPM_CHANGE}},
 		{"hpf_gain_change", {C_HPF_GAIN_CHANGE, C_HPF_GAIN_CHANGE}},
@@ -148,7 +148,7 @@ int MgeoThermalHead::startZoomIn(int speed)
 	cmd[3] = 0x01;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
-	sendCommand(C_CONT_ZOOM,cmd[3]);
+	sendCommand(C_CONT_ZOOM, cmd[3]);
 	return 0;
 }
 
@@ -159,7 +159,7 @@ int MgeoThermalHead::startZoomOut(int speed)
 	cmd[3] = 0xff;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
-	sendCommand(C_CONT_ZOOM,cmd[3]);
+	sendCommand(C_CONT_ZOOM, cmd[3]);
 	return 0;
 }
 
@@ -169,11 +169,12 @@ int MgeoThermalHead::stopZoom()
 	cmd[3] = 0x00;
 	cmd[9] = chksum(cmd, 9);
 	dump(cmd, 10);
-	sendCommand(C_CONT_ZOOM,cmd[3]);
+	sendCommand(C_CONT_ZOOM, cmd[3]);
 	return 0;
 }
 
-int MgeoThermalHead::getAngle(){
+int MgeoThermalHead::getAngle()
+{
 	return getRegister(R_ANGLE);
 }
 
@@ -186,7 +187,7 @@ int MgeoThermalHead::focusIn(int speed)
 {
 	Q_UNUSED(speed);
 	unsigned char *p = protoBytes[C_FOCUS];
-	p[3] = 0x01; //focus far
+	p[3] = 0x01; // focus far
 	return sendCommand(C_FOCUS, p[3]);
 }
 
@@ -194,7 +195,7 @@ int MgeoThermalHead::focusOut(int speed)
 {
 	Q_UNUSED(speed);
 	unsigned char *p = protoBytes[C_FOCUS];
-	p[3] = 0xFF; //focus near
+	p[3] = 0xFF; // focus near
 	return sendCommand(C_FOCUS, p[3]);
 }
 
@@ -214,10 +215,11 @@ int MgeoThermalHead::getHeadStatus()
 
 void MgeoThermalHead::setProperty(uint r, uint x)
 {
-/*
- * p[0]		p[1]		p[2]		p[3]		p[4]		p[5]		p[6]		p[7]		p[8]		p[9]
- * 35		0A		(OPCODE)		(DATA1)		(DATA2)		(DATA3)		(DATA4)		(DATA5)		(DATA6)		CHECKSUM
- */
+	/*
+	 * p[0]		p[1]		p[2]		p[3]		p[4]		p[5]		p[6]		p[7]		p[8]
+	 * p[9] 35		0A		(OPCODE)		(DATA1)		(DATA2) (DATA3)
+	 * (DATA4)		(DATA5)		(DATA6)		CHECKSUM
+	 */
 	if (r >= C_COUNT)
 		return;
 	unsigned char *p = protoBytes[r];
@@ -227,48 +229,48 @@ void MgeoThermalHead::setProperty(uint r, uint x)
 		p[3] = 0x01;
 		p[4] = x;
 		setRegister(r, x);
-	} else if(r == C_CONTRAST) {
+	} else if (r == C_CONTRAST) {
 		p[4] = x;
-	} else if(r == C_FOV) {
+	} else if (r == C_FOV) {
 		p[3] = x;
-	} else if(r == C_CONT_ZOOM) {
-		if(x == 0)
-			p[3] = 0x00; //zoom stop
-		else if(x == 1)
-			p[3] = 0x01; //zoom in
+	} else if (r == C_CONT_ZOOM) {
+		if (x == 0)
+			p[3] = 0x00; // zoom stop
+		else if (x == 1)
+			p[3] = 0x01; // zoom in
 		else if (x == 2)
-			p[3] = 0xFF; //zoom out
-	} else if(r == C_NUC_SELECT) {
+			p[3] = 0xFF; // zoom out
+	} else if (r == C_NUC_SELECT) {
 		p[3] = x;
-	} else if(r == C_POL_CHANGE) {
+	} else if (r == C_POL_CHANGE) {
 		p[3] = x;
-	} else if(r == C_RETICLE_ONOFF) {
+	} else if (r == C_RETICLE_ONOFF) {
 		p[3] = x;
-	} else if(r == C_DIGITAL_ZOOM) {
+	} else if (r == C_DIGITAL_ZOOM) {
 		p[3] = x ? 0x01 : 0x00;
-	} else if(r == C_FREEZE_IMAGE) {
+	} else if (r == C_FREEZE_IMAGE) {
 		p[3] = x ? 0x01 : 0x00;
 	} else if (r == C_AGC_SELECT) {
 		p[3] = x ? 0x01 : 0x00;
-	}else if(r == C_BRIGHTNESS_CHANGE) {
+	} else if (r == C_BRIGHTNESS_CHANGE) {
 		p[3] = x;
-	} else if(r == C_CONTRAST_CHANGE) {
+	} else if (r == C_CONTRAST_CHANGE) {
 		p[3] = x;
-	} else if(r == C_RETICLE_CHANGE) {
+	} else if (r == C_RETICLE_CHANGE) {
 		p[3] = x;
-	} else if(r == C_NUC) {
+	} else if (r == C_NUC) {
 
-	} else if(r == C_IBIT) {
+	} else if (r == C_IBIT) {
 
-	} else if(r == C_IPM_CHANGE) {
+	} else if (r == C_IPM_CHANGE) {
 		p[3] = x;
-	} else if(r == C_HPF_GAIN_CHANGE) {
+	} else if (r == C_HPF_GAIN_CHANGE) {
 		p[3] = x;
-	} else if(r == C_HPF_SPATIAL_CHANGE) {
+	} else if (r == C_HPF_SPATIAL_CHANGE) {
 		p[3] = x;
-	} else if(r == C_FLIP) {
+	} else if (r == C_FLIP) {
 		p[3] = x;
-	} else if(r == C_IMAGE_UPDATE_SPEED) {
+	} else if (r == C_IMAGE_UPDATE_SPEED) {
 		p[3] = x;
 	} else
 		return;
@@ -297,7 +299,9 @@ int MgeoThermalHead::headSystemChecker()
 	} else if (systemChecker == 0) {
 		mInfo("Waiting Response from thermal CAM");
 	} else if (systemChecker == 1) {
-		mInfo("Completed System Check. Zoom: %f Focus: %f Angle: %f", getRegister(C_CONT_ZOOM), getRegister(C_FOCUS), getRegister(R_ANGLE));
+		mInfo("Completed System Check. Zoom: %f Focus: %f Angle: %f",
+			  getRegister(C_CONT_ZOOM), getRegister(C_FOCUS),
+			  getRegister(R_ANGLE));
 		systemChecker = 2;
 	}
 	return systemChecker;
@@ -339,29 +343,29 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 	const uchar *p = bytes + 3;
 
 	if (opcode == 0xa0) {
-		//cooled down
+		// cooled down
 		setRegister(R_COOLED_DOWN, p[0]);
 	} else if (opcode == 0xa1) {
-		//fov change
+		// fov change
 		setRegister(C_FOV, p[0]);
 	} else if (opcode == 0xbc) {
-		//zoom/focus
+		// zoom/focus
 		setRegister(C_CONT_ZOOM, (p[1] << 8 | p[0]));
 		setRegister(C_FOCUS, (p[3] << 8 | p[2]));
 		setRegister(R_ANGLE, (p[5] << 8 | p[4]));
 		if (systemChecker == 0)
 			systemChecker = 1;
 	} else if (opcode == 0xa4) {
-		//nuc table selection
+		// nuc table selection
 		setRegister(C_NUC_SELECT, p[0]);
 	} else if (opcode == 0xa5) {
-		//polarity change
+		// polarity change
 		setRegister(C_POL_CHANGE, p[0]);
 	} else if (opcode == 0xa7) {
-		//reticle on-off
+		// reticle on-off
 		setRegister(C_RETICLE_ONOFF, p[0]);
 	} else if (opcode == 0xa9) {
-		//digital zoom
+		// digital zoom
 		int x = 0;
 		if (p[0] == 1)
 			x = 0;
@@ -369,32 +373,33 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 			x = 1;
 		setRegister(C_DIGITAL_ZOOM, x);
 	} else if (opcode == 0xaa) {
-		//image freeze
+		// image freeze
 		setRegister(C_FREEZE_IMAGE, p[0]);
 	} else if (opcode == 0xae) {
-		//contrast brightness auto/manual
-		if (p[0] == 0 )
+		// contrast brightness auto/manual
+		if (p[0] == 0)
 			setRegister(C_AGC_SELECT, 1);
-		else setRegister(C_AGC_SELECT, 0);
+		else
+			setRegister(C_AGC_SELECT, 0);
 	} else if (opcode == 0xaf) {
-		//brightness change/get
+		// brightness change/get
 		setRegister(C_BRIGHTNESS, p[0]);
 	} else if (opcode == 0xb1) {
-		//contrast
+		// contrast
 		setRegister(C_CONTRAST, p[0]);
 	} else if (opcode == 0xb5) {
-		//reticle
+		// reticle
 		setRegister(C_RETICLE_CHANGE, p[0]);
 	} else if (opcode == 0xa2) {
-		//one-point
+		// one-point
 		setRegister(C_NUC, p[0]);
 	} else if (opcode == 0xba) {
-		//menu
+		// menu
 	} else if (opcode == 0xbb) {
-		//ibit
+		// ibit
 		setRegister(C_IBIT, p[0]);
 	} else if (opcode == 0xc3) {
-		//c3 ops
+		// c3 ops
 		if (p[0] == 0xd7)
 			setRegister(C_IPM_CHANGE, p[1]);
 		else if (p[0] == 0xd8)
@@ -451,7 +456,7 @@ void MgeoThermalHead::unmarshallloadAllRegisters(const QJsonValue &node)
 			continue;
 		int v = root[key].toInt();
 		int ind = key.remove("reg").toInt();
-		mInfo("Loading register: %d: \t %d",ind, v);
+		mInfo("Loading register: %d: \t %d", ind, v);
 		setProperty(ind, v);
 	}
 }
@@ -482,5 +487,5 @@ int MgeoThermalHead::sendCommand(uint index, uchar data1, uchar data2)
 	cmd[3] = data1;
 	cmd[4] = data2;
 	cmd[cmdlen - 1] = chksum(cmd, cmdlen - 1);
-	return transport->send((const char *)cmd , cmdlen);
+	return transport->send((const char *)cmd, cmdlen);
 }

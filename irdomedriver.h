@@ -13,7 +13,7 @@ class IRDomeDriver : public PtzpDriver
 public:
 	explicit IRDomeDriver(QObject *parent = 0);
 
-	PtzpHead * getHead(int index);
+	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
@@ -30,8 +30,8 @@ protected:
 		NORMAL,
 	};
 
-	OemModuleHead * headModule;
-	IRDomePTHead * headDome;
+	OemModuleHead *headModule;
+	IRDomePTHead *headDome;
 	DriverState state;
 	PtzpTransport *tp;
 	PtzpTransport *tp1;

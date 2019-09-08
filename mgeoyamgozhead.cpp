@@ -4,19 +4,19 @@
 
 #include <QFile>
 #include <QJsonArray>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
 
 #include <errno.h>
 
-#define dump(p, len) \
-	for (int i = 0; i < len; i++) \
+#define dump(p, len)                                                           \
+	for (int i = 0; i < len; i++)                                              \
 		qDebug("%s: %d: 0x%x", __func__, i, p[i]);
 
 static uchar chksum(const uchar *buf, int len)
 {
 	uchar sum = 0;
-	for (int i = len - 10 ; i < len - 1; i++)
+	for (int i = len - 10; i < len - 1; i++)
 		sum += buf[i];
 	return (0x100 - (sum & 0xff));
 }
@@ -35,24 +35,28 @@ enum Commands {
 };
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
-	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xb7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},// e-zoom
-	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},// freeze
-	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xb5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},// polarity
-	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xc3, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},// 1 point nuc
-	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},// video source
-	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0x8e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},// image flip
+	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xb7,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // e-zoom
+	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xb8,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // freeze
+	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xb5,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // polarity
+	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0xc3,
+	 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // 1 point nuc
+	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0x80,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // video source
+	{0x12, 0x40, 0x28, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x35, 0x0a, 0x8e,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // image flip
 };
 
 MgeoYamGozHead::MgeoYamGozHead()
 {
 
-	settings = {
-		{"video_source", { C_SET_VIDEO_SOURCE, R_VIDEO_SOURCE}},
-		{"polarity", { C_SET_POLARITY, R_POLARITY}},
-		{"one_point_nuc", { C_SET_1_POINT_NUC, 0}},
-		{"image_flip", { C_SET_IMAGE_FLIP, R_IMAGE_FLIP}},
-		{"heart_beat", { 0, R_HEART_BEAT}}
-	};
+	settings = {{"video_source", {C_SET_VIDEO_SOURCE, R_VIDEO_SOURCE}},
+				{"polarity", {C_SET_POLARITY, R_POLARITY}},
+				{"one_point_nuc", {C_SET_1_POINT_NUC, 0}},
+				{"image_flip", {C_SET_IMAGE_FLIP, R_IMAGE_FLIP}},
+				{"heart_beat", {0, R_HEART_BEAT}}};
 }
 
 int MgeoYamGozHead::getCapabilities()
@@ -113,7 +117,7 @@ int MgeoYamGozHead::getHeadStatus()
 
 void MgeoYamGozHead::setProperty(uint r, uint x)
 {
-	if(r == C_SET_FREEZE) {
+	if (r == C_SET_FREEZE) {
 		mDebug("Freeze");
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
@@ -122,8 +126,7 @@ void MgeoYamGozHead::setProperty(uint r, uint x)
 		p[17] = chksum(p, len);
 		sendCommand(p, len);
 		setRegister(R_FREEZE, p[11]);
-	}
-	else if (r == C_SET_POLARITY) {
+	} else if (r == C_SET_POLARITY) {
 		mDebug("Polarity");
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
@@ -132,8 +135,7 @@ void MgeoYamGozHead::setProperty(uint r, uint x)
 		p[17] = chksum(p, len);
 		sendCommand(p, len);
 		setRegister(R_POLARITY, p[11]);
-	}
-	else if (r == C_SET_1_POINT_NUC) {
+	} else if (r == C_SET_1_POINT_NUC) {
 		mDebug("1 point nuc");
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
@@ -141,8 +143,7 @@ void MgeoYamGozHead::setProperty(uint r, uint x)
 		p[11] = x;
 		p[17] = chksum(p, len);
 		sendCommand(p, len);
-	}
-	else if (r == C_SET_VIDEO_SOURCE) {
+	} else if (r == C_SET_VIDEO_SOURCE) {
 		mDebug("Video source");
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
@@ -151,8 +152,7 @@ void MgeoYamGozHead::setProperty(uint r, uint x)
 		p[17] = chksum(p, len);
 		sendCommand(p, len);
 		setRegister(R_VIDEO_SOURCE, p[11]);
-	}
-	else if (r == C_SET_IMAGE_FLIP) {
+	} else if (r == C_SET_IMAGE_FLIP) {
 		mDebug("Image rotation");
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
@@ -176,25 +176,25 @@ int MgeoYamGozHead::dataReady(const unsigned char *bytes, int len)
 	if (len < bytes[1])
 		return -EAGAIN;
 	uchar chk = chksum(bytes, len);
-	if (chk != bytes[len -1]){
+	if (chk != bytes[len - 1]) {
 		fDebug("Checksum error");
 		return -ENOENT;
 	}
-	if (bytes[2] == 0x10){
+	if (bytes[2] == 0x10) {
 		setRegister(R_HEART_BEAT, (getRegister(R_HEART_BEAT)) + 1);
-		return -ENOENT; //alive
+		return -ENOENT; // alive
 	}
 
 	if (bytes[2] == 0xb7)
-		setRegister(R_E_ZOOM,bytes[3]);
+		setRegister(R_E_ZOOM, bytes[3]);
 	else if (bytes[2] == 0xb8)
-		setRegister(R_FREEZE,bytes[3]);
+		setRegister(R_FREEZE, bytes[3]);
 	else if (bytes[2] == 0xb5)
-		setRegister(R_POLARITY,bytes[3]);
+		setRegister(R_POLARITY, bytes[3]);
 	else if (bytes[2] == 0x80)
-		setRegister(R_VIDEO_SOURCE,bytes[3]);
+		setRegister(R_VIDEO_SOURCE, bytes[3]);
 	else if (bytes[2] == 0x8e)
-		setRegister(R_IMAGE_FLIP,bytes[3]);
+		setRegister(R_IMAGE_FLIP, bytes[3]);
 
 	return len;
 }
@@ -203,4 +203,3 @@ int MgeoYamGozHead::sendCommand(const unsigned char *cmd, int len)
 {
 	return transport->send((const char *)cmd, len);
 }
-

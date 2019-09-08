@@ -12,7 +12,7 @@ class SwirDriver : public PtzpDriver
 	Q_OBJECT
 public:
 	SwirDriver();
-	PtzpHead * getHead(int index);
+	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
 protected slots:
 	void timeout();

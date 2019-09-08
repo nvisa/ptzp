@@ -1,12 +1,11 @@
 #include "yamgozdriver.h"
+#include "debug.h"
 #include "mgeoyamgozhead.h"
 #include "ptzptcptransport.h"
-#include "debug.h"
 
 #include <QFile>
 
-YamGozDriver::YamGozDriver(QObject *parent)
-	: PtzpDriver(parent)
+YamGozDriver::YamGozDriver(QObject *parent) : PtzpDriver(parent)
 {
 	head0 = new MgeoYamGozHead();
 	head1 = new MgeoYamGozHead();
@@ -61,4 +60,3 @@ void YamGozDriver::timeout()
 
 	PtzpDriver::timeout();
 }
-

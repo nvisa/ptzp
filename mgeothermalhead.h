@@ -3,8 +3,8 @@
 
 #include <ecl/ptzp/ptzphead.h>
 
-#include <QStringList>
 #include <QElapsedTimer>
+#include <QStringList>
 
 class MgeoThermalHead : public PtzpHead
 {
@@ -46,6 +46,7 @@ protected:
 	bool alive;
 
 	QList<int> loadDefaultRegisterValues();
+
 private:
 	/* mgeo/thermal API */
 	int sendCommand(uint index, uchar data1 = 0x00, uchar data2 = 0x00);

@@ -9,13 +9,14 @@ class EvpuPTHead;
 class PtzpSerialTransport;
 class MgeoThermalHead;
 
-class TbgthDriver : public PtzpDriver, public PtzpTcpTransport::TransportFilterInteface
+class TbgthDriver : public PtzpDriver,
+					public PtzpTcpTransport::TransportFilterInteface
 {
 	Q_OBJECT
 public:
 	explicit TbgthDriver(bool useThermal, QObject *parent = 0);
 
-	PtzpHead * getHead(int index);
+	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
@@ -24,7 +25,9 @@ public:
 	int readFilter(QAbstractSocket *sock, QByteArray &ba);
 
 	void enableDriver(bool value) override;
-	virtual grpc::Status SetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response);
+	virtual grpc::Status SetIO(grpc::ServerContext *context,
+							   const ptzp::IOCmdPar *request,
+							   ptzp::IOCmdPar *response);
 	virtual QJsonObject doExtraDeviceTests();
 	bool isReady();
 
@@ -42,12 +45,10 @@ protected:
 		EVPU_GRAB_WAIT,
 	};
 
-	class FilteringState {
+	class FilteringState
+	{
 	public:
-		FilteringState()
-		{
-			payloadLen = 0;
-		}
+		FilteringState() { payloadLen = 0; }
 
 		int payloadLen;
 		QByteArray payload;

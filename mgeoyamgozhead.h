@@ -3,8 +3,8 @@
 
 #include <ecl/ptzp/ptzphead.h>
 
-#include <QStringList>
 #include <QElapsedTimer>
+#include <QStringList>
 
 class MgeoYamGozHead : public PtzpHead
 {

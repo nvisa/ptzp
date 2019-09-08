@@ -1,13 +1,13 @@
 #include "evpupthead.h"
-#include "ptzptcptransport.h"
 #include "debug.h"
+#include "ptzptcptransport.h"
 
-#define MaxSpeedA	25736
-#define MaxSpeedE	21446
-#define MaxPanPos	62831
-#define AvgTiltPos	31416
-#define MinTiltPos	23562
-#define MaxTiltPos	39270
+#define MaxSpeedA  25736
+#define MaxSpeedE  21446
+#define MaxPanPos  62831
+#define AvgTiltPos 31416
+#define MinTiltPos 23562
+#define MaxTiltPos 39270
 
 enum CommandList {
 	C_STOP_ALL,
@@ -43,7 +43,6 @@ static QStringList ptzCommandList = {
 
 EvpuPTHead::EvpuPTHead()
 {
-
 }
 
 int EvpuPTHead::getCapabilities()
@@ -70,14 +69,16 @@ float EvpuPTHead::getPanAngle()
 
 float EvpuPTHead::getTiltAngle()
 {
-	return (float)(90.0 * (tiltPos - AvgTiltPos) / (float)(MaxTiltPos - MinTiltPos));
+	return (float)(90.0 * (tiltPos - AvgTiltPos) /
+				   (float)(MaxTiltPos - MinTiltPos));
 }
 
 int EvpuPTHead::panTiltGoPos(float ppos, float tpos)
 {
 	ppos = ppos / 360.0 * MaxPanPos;
 	tpos = (tpos / 90.0) * (float)(MaxTiltPos - MinTiltPos) + AvgTiltPos;
-	return sendCommand(ptzCommandList.at(C_PAN_TILT_GO_POS).arg((int)ppos).arg((int)tpos));
+	return sendCommand(
+		ptzCommandList.at(C_PAN_TILT_GO_POS).arg((int)ppos).arg((int)tpos));
 }
 
 int EvpuPTHead::setOutput(int no, bool on)
@@ -156,7 +157,7 @@ int EvpuPTHead::panTiltDegree(float pan, float tilt)
 {
 	float pans = pan / 120.0;
 	float tilts = tilt / 120.0;
-	return panTiltAbs(pans,tilts);
+	return panTiltAbs(pans, tilts);
 }
 
 int EvpuPTHead::sendCommand(const QString &key)
@@ -182,14 +183,14 @@ int EvpuPTHead::dataReady(const unsigned char *bytes, int len)
 		return 7;
 	if (data.startsWith("a get")) {
 		QStringList flds = data.split(" ");
-		if (flds.size() < 3) //we have some bug
+		if (flds.size() < 3) // we have some bug
 			return len;
 		panPos = flds[2].toInt();
 		pingTimer.restart();
 		return flds[0].size() + flds[1].size() + flds[2].size() + 4;
 	} else if (data.startsWith("e get")) {
 		QStringList flds = data.split(" ");
-		if (flds.size() < 3) //we have some bug
+		if (flds.size() < 3) // we have some bug
 			return len;
 		tiltPos = flds[2].toInt();
 		pingTimer.restart();

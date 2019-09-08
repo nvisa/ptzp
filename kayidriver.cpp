@@ -1,15 +1,16 @@
 #include "kayidriver.h"
 #include "aryapthead.h"
+#include "debug.h"
 #include "mgeofalconeyehead.h"
 #include "ptzpserialtransport.h"
-#include "debug.h"
 
 #include <QFile>
+#include <QTcpSocket>
 #include <QTimer>
 #include <errno.h>
-#include <QTcpSocket>
 
-KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QObject *parent) : PtzpDriver(parent)
+KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QObject *parent)
+	: PtzpDriver(parent)
 {
 	headModule = new MgeoFalconEyeHead(relayConfig, gps);
 	headDome = new AryaPTHead;
@@ -21,17 +22,17 @@ KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QObject *parent) : Ptzp
 
 PtzpHead *KayiDriver::getHead(int index)
 {
-	if(index == 0)
+	if (index == 0)
 		return headModule;
 	else if (index == 1)
 		return headDome;
 	return NULL;
 }
 
-#define zoomEntry(zoomv, h) \
-	zooms.push_back(zoomv); \
-	hmap.push_back(h); \
-	vmap.push_back(h * (float)4 / 3)
+#define zoomEntry(zoomv, h)                                                    \
+	zooms.push_back(zoomv);                                                    \
+	hmap.push_back(h);                                                         \
+	vmap.push_back(h *(float)4 / 3)
 
 int KayiDriver::setTarget(const QString &targetUri)
 {
@@ -71,11 +72,10 @@ int KayiDriver::setTarget(const QString &targetUri)
 
 int KayiDriver::set(const QString &key, const QVariant &value)
 {
-	if (key == "abc"){
-		headModule->setProperty(5,value.toUInt());
-	}
-	else if (key == "laser.up")
-		headModule->setProperty(40,value.toUInt());
+	if (key == "abc") {
+		headModule->setProperty(5, value.toUInt());
+	} else if (key == "laser.up")
+		headModule->setProperty(40, value.toUInt());
 	return 0;
 }
 
@@ -97,7 +97,7 @@ void KayiDriver::timeout()
 		state = WAIT_ALIVE;
 		break;
 	case WAIT_ALIVE:
-		if (headModule->isAlive() == true){
+		if (headModule->isAlive() == true) {
 			headModule->syncRegisters();
 			tp2->enableQueueFreeCallbacks(true);
 			state = SYNC_HEAD_MODULE;
@@ -106,7 +106,7 @@ void KayiDriver::timeout()
 	case SYNC_HEAD_MODULE:
 		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
-//			tp1->enableQueueFreeCallbacks(true);
+			//			tp1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
 		}
 		break;

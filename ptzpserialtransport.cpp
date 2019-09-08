@@ -1,7 +1,7 @@
 #include "ptzpserialtransport.h"
 #include "debug.h"
-#include "drivers/qextserialport/qextserialport.h"
 #include "drivers/exarconfig.h"
+#include "drivers/qextserialport/qextserialport.h"
 
 #include <QMutex>
 #include <QThread>
@@ -9,8 +9,8 @@
 #include <errno.h>
 #include <unistd.h>
 
-#define WRITE_PERIOD	20000
-#define READ_PERIOD		5000
+#define WRITE_PERIOD 20000
+#define READ_PERIOD	 5000
 
 static QMutex serlock;
 
@@ -24,10 +24,7 @@ public:
 		debug = 0;
 	}
 
-	void setDebugLevel(int v)
-	{
-		debug = v;
-	}
+	void setDebugLevel(int v) { debug = v; }
 
 	void run()
 	{
@@ -115,7 +112,6 @@ public:
 		}
 	}
 
-
 protected:
 	void send(const QByteArray &ba)
 	{
@@ -147,7 +143,7 @@ PtzpSerialTransport::PtzpSerialTransport()
 }
 
 PtzpSerialTransport::PtzpSerialTransport(LineProtocol proto)
-	:PtzpTransport(proto)
+	: PtzpTransport(proto)
 {
 	port = NULL;
 	readThread = NULL;
@@ -187,7 +183,8 @@ int PtzpSerialTransport::connectTo(const QString &targetUri)
 	if (values.contains("protocol"))
 		protocolValue = values["protocol"];
 	if (!port->open(QIODevice::ReadWrite)) {
-		fDebug("error opening serial port '%s': %s", qPrintable(port->portName()), strerror(errno));
+		fDebug("error opening serial port '%s': %s",
+			   qPrintable(port->portName()), strerror(errno));
 		return -EPERM;
 	}
 	if (filename.contains("ttyXRUSB")) {
@@ -210,4 +207,3 @@ int PtzpSerialTransport::send(const char *bytes, int len)
 	writeThread->add(QByteArray(bytes, len), 1);
 	return 0;
 }
-

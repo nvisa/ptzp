@@ -1,42 +1,44 @@
 #include "aryadriver.h"
-#include "gungorhead.h"
 #include "aryapthead.h"
+#include "debug.h"
+#include "gungorhead.h"
 #include "mgeothermalhead.h"
 #include "ptzptcptransport.h"
-#include "debug.h"
 
 #include <QFile>
 
-static float speedRegulateThermal(float speed, float zooms[]) {
+static float speedRegulateThermal(float speed, float zooms[])
+{
 	float stepSize = 1575.0;
 	float zoomVal = zooms[0];
 	float stepAmount = zoomVal / stepSize;
-	float correction = pow((16.8 - stepAmount * 2) / 16.8,2);
+	float correction = pow((16.8 - stepAmount * 2) / 16.8, 2);
 	float result = speed * correction;
 	if (result < 0.003)
 		result = 0.003;
 	return result;
 }
 
-static float speedRegulateDay(float speed, float zooms[]) {
+static float speedRegulateDay(float speed, float zooms[])
+{
 	float stepSize = 1085.0;
 	float zoomVal = zooms[1];
 	float stepAmount = zoomVal / stepSize;
-	float correction = pow((13.751 - stepAmount * 0.229) / 13.751,2);
+	float correction = pow((13.751 - stepAmount * 0.229) / 13.751, 2);
 	float result = speed * correction;
 	if (result < 0.003)
 		result = 0.003;
 	return result;
 }
 
-static float speedRegulateArya(float speed, float zooms[]) {
-	float speedThermal = speedRegulateThermal(speed,zooms);
-	float speedDay = speedRegulateDay(speed,zooms);
+static float speedRegulateArya(float speed, float zooms[])
+{
+	float speedThermal = speedRegulateThermal(speed, zooms);
+	float speedDay = speedRegulateDay(speed, zooms);
 	return speedThermal < speedDay ? speedThermal : speedDay;
 }
 
-AryaDriver::AryaDriver(QObject *parent)
-	: PtzpDriver(parent)
+AryaDriver::AryaDriver(QObject *parent) : PtzpDriver(parent)
 {
 	aryapt = new AryaPTHead;
 	gungor = new MgeoGunGorHead;
@@ -50,9 +52,10 @@ AryaDriver::AryaDriver(QObject *parent)
 	defaultModuleHead = gungor;
 
 	/*
-	 * [CR] [yca] Potansiyel memory leak, desctructor icinde free etmek gerekebilir
-	 * ya da bu sinif QObject'tan kalitildigi icin parent/this gecmek yeterli olur
-	*/
+	 * [CR] [yca] Potansiyel memory leak, desctructor icinde free etmek
+	 * gerekebilir ya da bu sinif QObject'tan kalitildigi icin parent/this
+	 * gecmek yeterli olur
+	 */
 	checker = new QElapsedTimer();
 	checker->start();
 
@@ -146,7 +149,7 @@ void AryaDriver::timeout()
 		 *
 		 * Benzer bir durum SYNC_THERMAL_MODULES ve SYNC_GUNGOR_MODULES
 		 * state'leri icinde gecerli.
-		*/
+		 */
 		if (thermal->getSystemStatus() == 2) {
 			thermal->syncRegisters();
 			thermal->loadRegisters("thermal.json");
@@ -159,14 +162,14 @@ void AryaDriver::timeout()
 		checker->restart();
 		break;
 	case SYNC_THERMAL_MODULES:
-		if(thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
+		if (thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = SYNC_GUNGOR_MODULES;
 			gungor->syncRegisters();
 			gungor->loadRegisters("gungor.json");
 		}
 		break;
 	case SYNC_GUNGOR_MODULES:
-		if(gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
+		if (gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			gungor->setFocusStepper();
 			state = NORMAL;
 		}
@@ -177,7 +180,7 @@ void AryaDriver::timeout()
 		 * generic bir interface haline getirmeliyiz ya da aryadriver
 		 * icerisine almaliyiz, cunku bu haliyle genel kullanima hizmet
 		 * edebilecek bir fonksiyon gibi durmuyor.
-		*/
+		 */
 		if (getChangeOverlayState()) {
 			setZoomOverlay();
 			setChangeOverlayState(false);
@@ -195,7 +198,9 @@ void AryaDriver::timeout()
 void AryaDriver::overlayFinished()
 {
 	if (netman->getLastError() != 0)
-		mDebug("Overlay process got an error. Error code %d, %s", netman->getLastError(), qPrintable(netman->getLastErrorString()));
+		mDebug("Overlay process got an error. Error code %d, %s",
+			   netman->getLastError(),
+			   qPrintable(netman->getLastErrorString()));
 }
 
 /* [CR] [yca] Sanirim artik bu fonksiyondan kurtulabilir? */
@@ -203,90 +208,67 @@ QVariant AryaDriver::get(const QString &key)
 {
 	mInfo("Get func: %s", qPrintable(key));
 	if (key == "ptz.get_cooled_down")
-		return QString("%1")
-			.arg(thermal->getProperty(0));
+		return QString("%1").arg(thermal->getProperty(0));
 	else if (key == "ptz.get_brightness")
-		return QString("%1")
-				.arg(thermal->getProperty(1));
-	else if (key== "ptz.get_contrast")
-		return QString("%1")
-				.arg((thermal->getProperty(2)));
+		return QString("%1").arg(thermal->getProperty(1));
+	else if (key == "ptz.get_contrast")
+		return QString("%1").arg((thermal->getProperty(2)));
 	else if (key == "ptz.get_fov_change")
-		return QString("%1")
-			.arg(thermal->getProperty(3));
+		return QString("%1").arg(thermal->getProperty(3));
 	else if (key == "ptz.get_thermal_zoom")
-		return QString("%1")
-				.arg(thermal->getProperty(4));
+		return QString("%1").arg(thermal->getProperty(4));
 	else if (key == "ptz.get_thermal_focus")
-		return QString("%1")
-			.arg(thermal->getProperty(5));
+		return QString("%1").arg(thermal->getProperty(5));
 	else if (key == "ptz.get_thermal_angle")
-		return QString("%1")
-			.arg(thermal->getProperty(6));
+		return QString("%1").arg(thermal->getProperty(6));
 	else if (key == "ptz.get_nuc_table")
-		return QString("%1")
-			.arg(thermal->getProperty(7));
+		return QString("%1").arg(thermal->getProperty(7));
 	else if (key == "ptz.get_polarity")
-		return QString("%1")
-				.arg(thermal->getProperty(8));
+		return QString("%1").arg(thermal->getProperty(8));
 	else if (key == "ptz.get_reticle")
-		return QString("%1")
-				.arg(thermal->getProperty(9));
+		return QString("%1").arg(thermal->getProperty(9));
 	else if (key == "ptz.get_thermal_digital_zoom")
-		return QString("%1")
-				.arg(thermal->getProperty(10));
+		return QString("%1").arg(thermal->getProperty(10));
 	else if (key == "ptz.get_image_freeze")
-		return QString("%1")
-				.arg(thermal->getProperty(11));
+		return QString("%1").arg(thermal->getProperty(11));
 	else if (key == "ptz.get_agc")
-		return QString("%1")
-				.arg(thermal->getProperty(12));
+		return QString("%1").arg(thermal->getProperty(12));
 	else if (key == "ptz.get_intensity")
-		return QString("%1")
-				.arg(thermal->getProperty(13));
+		return QString("%1").arg(thermal->getProperty(13));
 	else if (key == "ptz.get_ibit")
-		return QString("%1")
-				.arg(thermal->getProperty(15));
+		return QString("%1").arg(thermal->getProperty(15));
 	else if (key == "ptz.get_ipm")
-		return QString("%1")
-				.arg(thermal->getProperty(16));
+		return QString("%1").arg(thermal->getProperty(16));
 	else if (key == "ptz.get_hpf_gain")
-		return QString("%1")
-				.arg(thermal->getProperty(17));
+		return QString("%1").arg(thermal->getProperty(17));
 	else if (key == "ptz.get_hpf_spatial")
-		return QString("%1")
-				.arg(thermal->getProperty(18));
+		return QString("%1").arg(thermal->getProperty(18));
 	else if (key == "ptz.get_thermal_flip")
-		return QString("%1")
-				.arg(thermal->getProperty(19));
+		return QString("%1").arg(thermal->getProperty(19));
 	else if (key == "ptz.get_image_update")
-		return QString("%1")
-				.arg(thermal->getProperty(20));
+		return QString("%1").arg(thermal->getProperty(20));
 	else if (key == "ptz.head.2.zoom")
-		return QString("%1")
-				.arg(gungor->getZoom());
+		return QString("%1").arg(gungor->getZoom());
 	else if (key == "ptz.head.2.focus")
-		return QString("%1")
-				.arg(gungor->getProperty(1));
+		return QString("%1").arg(gungor->getProperty(1));
 	else if (key == "ptz.head.2.chip") {
 		QString vrsn = QString::number(gungor->getProperty(2));
-		vrsn = "V0" + vrsn[0] + "." +vrsn[1] +vrsn[2];
+		vrsn = "V0" + vrsn[0] + "." + vrsn[1] + vrsn[2];
 		return vrsn;
 	} else if (key == "ptz.head.2.digi_zoom")
-		return QString("%1")
-				.arg(gungor->getProperty(5));
+		return QString("%1").arg(gungor->getProperty(5));
 	else if (key == "ptz.head.2.cam_status")
-		return QString("%1")
-				.arg(gungor->getProperty(6));
+		return QString("%1").arg(gungor->getProperty(6));
 	else if (key == "ptz.head.2.auto_focus_status")
-		return QString("%1")
-				.arg(gungor->getProperty(7));
+		return QString("%1").arg(gungor->getProperty(7));
 	else if (key == "ptz.head.2.digi_zoom_status")
-		return QString("%1")
-				.arg(gungor->getProperty(8));
+		return QString("%1").arg(gungor->getProperty(8));
 	else if (key == "video.overlay")
 		return QString("%1;%2;%3;%4")
-				.arg(olay.pos).arg(olay.posx).arg(olay.posy).arg(olay.textSize);
+			.arg(olay.pos)
+			.arg(olay.posx)
+			.arg(olay.posy)
+			.arg(olay.textSize);
 	else if (key == "video.overlay.disable")
 		return olay.disabled;
 
@@ -310,7 +292,7 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 		thermal->setProperty(4, value.toUInt());
 	else if (key == "ptz.cmd.focus")
 		thermal->setProperty(5, value.toUInt());
-	 else if (key == "ptz.cmd.nuc_table")
+	else if (key == "ptz.cmd.nuc_table")
 		thermal->setProperty(6, value.toUInt());
 	else if (key == "ptz.cmd.polarity")
 		thermal->setProperty(7, value.toUInt());
@@ -380,7 +362,8 @@ int AryaDriver::set(const QString &key, const QVariant &value)
 	} else if (key == "video.overlay.disable")
 		olay.disabled = value.toBool();
 
-	else PtzpDriver::set(key, value);
+	else
+		PtzpDriver::set(key, value);
 	return 0;
 }
 
@@ -391,36 +374,37 @@ QString AryaDriver::setZoomOverlayString(overlayForHead head)
 	QString display;
 	if (olay.disabled)
 		display = "display=0";
-	else display = "display=2";
-	QString position = QString("position=%1&posx=%2&posy=%3").arg(olay.pos).arg(olay.posx).arg(olay.posy);
+	else
+		display = "display=2";
+	QString position = QString("position=%1&posx=%2&posy=%3")
+						   .arg(olay.pos)
+						   .arg(olay.posx)
+						   .arg(olay.posy);
 	QString bgspan = "bgspan=0";
 	QString textSize = QString("textsize=%1").arg(olay.textSize);
 	QString dateTimeFormat = "datetimeformat=0";
 	QString showDate = "showdate=0";
 	QString showTime = "showtime=0";
-	QString text = QString("text=%1").arg(QString("ZOOM %1x").arg(thermal->getZoom()));
+	QString text =
+		QString("text=%1").arg(QString("ZOOM %1x").arg(thermal->getZoom()));
 	if (head == DAY)
-		text = QString("text=%1").arg(QString("ZOOM %1x").arg(gungor->getZoom()));
-	QString overlayData = config + "&"+
-			type + "&" +
-			display + "&" +
-			position + "&" +
-			bgspan + "&" +
-			textSize + "&" +
-			dateTimeFormat + "&" +
-			showDate + "&" +
-			showTime + "&" +
-			text;
+		text =
+			QString("text=%1").arg(QString("ZOOM %1x").arg(gungor->getZoom()));
+	QString overlayData = config + "&" + type + "&" + display + "&" + position +
+						  "&" + bgspan + "&" + textSize + "&" + dateTimeFormat +
+						  "&" + showDate + "&" + showTime + "&" + text;
 	return overlayData;
 }
 
 int AryaDriver::setZoomOverlay()
 {
 	QString overlayDataThermal = setZoomOverlayString(THERMAL);
-	netman->post("50.23.169.211", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayDataThermal);
+	netman->post("50.23.169.211", "admin", "moxamoxa",
+				 "/moxa-cgi/imageoverlay.cgi", overlayDataThermal);
 
 	QString overlayDataDay = setZoomOverlayString(DAY);
-	netman->post("50.23.169.212", "admin", "moxamoxa", "/moxa-cgi/imageoverlay.cgi", overlayDataDay);
+	netman->post("50.23.169.212", "admin", "moxamoxa",
+				 "/moxa-cgi/imageoverlay.cgi", overlayDataDay);
 	return 0;
 }
 
@@ -430,11 +414,13 @@ int AryaDriver::setOverlay(const QString data)
 		mDebug("Video Device parameter missing.");
 		return -1;
 	}
-	netman->post(vdParams.ip, vdParams.uname, vdParams.pass, "/moxa-cgi/imageoverlay.cgi", data);
+	netman->post(vdParams.ip, vdParams.uname, vdParams.pass,
+				 "/moxa-cgi/imageoverlay.cgi", data);
 	return 0;
 }
 
-void AryaDriver::setVideoDeviceParams(const QString &ip, const QString &uname, const QString &pass)
+void AryaDriver::setVideoDeviceParams(const QString &ip, const QString &uname,
+									  const QString &pass)
 {
 	vdParams.ip = ip;
 	vdParams.pass = pass;

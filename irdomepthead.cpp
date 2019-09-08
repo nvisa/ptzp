@@ -8,24 +8,24 @@
 #include <unistd.h>
 
 enum Commands {
-	C_CUSTOM_PAN_TILT_POS,		//0
+	C_CUSTOM_PAN_TILT_POS, // 0
 	C_CUSTOM_GO_TO_POS,
 
 	/* pelco-d commands */
-	C_PAN_LEFT,					//1
-	C_PAN_RIGHT,				//2
-	C_TILT_UP,					//3
-	C_TILT_DOWN,				//4
-	C_PAN_LEFT_TILT_UP,			//5
-	C_PAN_LEFT_TILT_DOWN,		//6
-	C_PAN_RIGHT_TILT_UP, 		//7
-	C_PAN_RIGHT_TILT_DOWN,		//8
-	C_PELCOD_STOP,				//9
+	C_PAN_LEFT,			   // 1
+	C_PAN_RIGHT,		   // 2
+	C_TILT_UP,			   // 3
+	C_TILT_DOWN,		   // 4
+	C_PAN_LEFT_TILT_UP,	   // 5
+	C_PAN_LEFT_TILT_DOWN,  // 6
+	C_PAN_RIGHT_TILT_UP,   // 7
+	C_PAN_RIGHT_TILT_DOWN, // 8
+	C_PELCOD_STOP,		   // 9
 
 	C_COUNT,
 };
 
-#define MAX_CMD_LEN	16
+#define MAX_CMD_LEN 16
 
 static uchar protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	/* custom commands */
@@ -41,7 +41,7 @@ static uchar protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x07, 0x00, 0xff, 0x01, 0x00, 0x14, 0x00, 0x00, 0x00},
 	{0x07, 0x00, 0xff, 0x01, 0x00, 0x0a, 0x00, 0x00, 0x00},
 	{0x07, 0x00, 0xff, 0x01, 0x00, 0x12, 0x00, 0x00, 0x00},
-	{0x07, 0x07, 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00}, //pelcod_stop
+	{0x07, 0x07, 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00}, // pelcod_stop
 };
 
 static uint checksum(const uchar *cmd, uint lenght)
@@ -110,22 +110,22 @@ int IRDomePTHead::panTiltAbs(float pan, float tilt)
 		return 0;
 	}
 	if (pan < 0) {
-		//left
+		// left
 		if (tilt < 0) {
-			//up
+			// up
 			panTilt(C_PAN_LEFT_TILT_UP, pspeed, tspeed);
 		} else if (tilt > 0) {
-			//down
+			// down
 			panTilt(C_PAN_LEFT_TILT_DOWN, pspeed, tspeed);
 		} else
 			panTilt(C_PAN_LEFT, pspeed, tspeed);
 	} else {
-		//right
+		// right
 		if (tilt < 0) {
-			//up
+			// up
 			panTilt(C_PAN_RIGHT_TILT_UP, pspeed, tspeed);
 		} else if (tilt > 0) {
-			//down
+			// down
 			panTilt(C_PAN_RIGHT_TILT_DOWN, pspeed, tspeed);
 		} else
 			panTilt(C_PAN_RIGHT, pspeed, tspeed);
@@ -135,8 +135,12 @@ int IRDomePTHead::panTiltAbs(float pan, float tilt)
 
 int IRDomePTHead::panTiltDegree(float pan, float tilt)
 {
-	auto lowerp = std::lower_bound(speedTableMapping.begin(), speedTableMapping.end(), qAbs(pan)) - speedTableMapping.begin();
-	auto lowert = std::lower_bound(speedTableMapping.begin(), speedTableMapping.end(), qAbs(tilt)) - speedTableMapping.begin();
+	auto lowerp = std::lower_bound(speedTableMapping.begin(),
+								   speedTableMapping.end(), qAbs(pan)) -
+				  speedTableMapping.begin();
+	auto lowert = std::lower_bound(speedTableMapping.begin(),
+								   speedTableMapping.end(), qAbs(tilt)) -
+				  speedTableMapping.begin();
 
 	int speed_pan = lowerp * 3 + 2;
 	int speed_tilt = lowert * 3 + 2;
@@ -145,7 +149,7 @@ int IRDomePTHead::panTiltDegree(float pan, float tilt)
 	if (tilt < 0)
 		speed_tilt *= -1;
 	ffDebug() << speed_pan << speed_tilt << pan << tilt;
-	return panTiltAbs((float)speed_pan/63.0, (float)speed_tilt/63.0);
+	return panTiltAbs((float)speed_pan / 63.0, (float)speed_tilt / 63.0);
 }
 
 int IRDomePTHead::panTiltStop()
@@ -195,7 +199,7 @@ int IRDomePTHead::panTilt(uint cmd, int pspeed, int tspeed)
 QJsonValue IRDomePTHead::marshallAllRegisters()
 {
 	QJsonObject json;
-	for(int i = 0; i < R_COUNT; i++)
+	for (int i = 0; i < R_COUNT; i++)
 		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
 	json.insert("irLedLevel", irLedLevel);
 	return json;
@@ -206,7 +210,8 @@ void IRDomePTHead::unmarshallloadAllRegisters(const QJsonValue &node)
 
 	QJsonObject root = node.toObject();
 	QString key = "reg%1";
-	panTilt(C_CUSTOM_GO_TO_POS, root.value(key.arg(R_PAN_ANGLE)).toInt(), root.value(key.arg(R_TILT_ANGLE)).toInt());
+	panTilt(C_CUSTOM_GO_TO_POS, root.value(key.arg(R_PAN_ANGLE)).toInt(),
+			root.value(key.arg(R_TILT_ANGLE)).toInt());
 	sleep(2);
 	irLedLevel = root.value("irLedLevel").toInt();
 	if (irLedLevel != 8)
@@ -225,7 +230,7 @@ float IRDomePTHead::getTiltAngle()
 
 int IRDomePTHead::dataReady(const unsigned char *bytes, int len)
 {
-	for (int i = 0 ; i < len; i++)
+	for (int i = 0; i < len; i++)
 		mLogv("%d", bytes[i]);
 	const unsigned char *p = bytes;
 	if (p[0] != 0x3a)
@@ -254,7 +259,7 @@ QByteArray IRDomePTHead::transportReady()
 	if (syncEnabled && syncTime.elapsed() > syncInterval) {
 		mLogv("Syncing pan and tilt pos");
 		unsigned char *p = protoBytes[C_CUSTOM_PAN_TILT_POS];
-		p[2 + 7]  = checksum(p + 2, 7);
+		p[2 + 7] = checksum(p + 2, 7);
 		syncTime.restart();
 		return QByteArray((const char *)p + 2, p[0]);
 	}
@@ -263,7 +268,7 @@ QByteArray IRDomePTHead::transportReady()
 
 int IRDomePTHead::panTiltGoPos(float ppos, float tpos)
 {
-	panTilt(C_CUSTOM_GO_TO_POS, ppos*100, tpos*100);
+	panTilt(C_CUSTOM_GO_TO_POS, ppos * 100, tpos * 100);
 	return 0;
 }
 

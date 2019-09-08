@@ -1,18 +1,18 @@
 #include "aryapthead.h"
-#include "ptzptcptransport.h"
 #include "debug.h"
+#include "ptzptcptransport.h"
 
 #include <assert.h>
 
-#define MaxPanPos	6399999.0
-#define MaxTiltPos	799999.0
+#define MaxPanPos  6399999.0
+#define MaxTiltPos 799999.0
 
 /**
-  * Input parameter: example ascii parameter is "<IP2PRR:%1;IP0"
-  * Because this function can calculate checksum values
-  * and append to ascii parameters
-  * Output value: return value is "<IP2PRR:%1;IP05C>"
-  * */
+ * Input parameter: example ascii parameter is "<IP2PRR:%1;IP0"
+ * Because this function can calculate checksum values
+ * and append to ascii parameters
+ * Output value: return value is "<IP2PRR:%1;IP05C>"
+ * */
 static QString createPTZCommand(const QString &ascii)
 {
 	if (!ascii.size())
@@ -21,9 +21,10 @@ static QString createPTZCommand(const QString &ascii)
 	int len = ba.length();
 	const char *el = ba.constData();
 	char checksum = el[0];
-	for (int i = 1; i < len ; i++)
+	for (int i = 1; i < len; i++)
 		checksum = checksum ^ el[i];
-	return QString("%1%2>").arg(ascii).arg(QString::number((uint)checksum, 16).toUpper());
+	return QString("%1%2>").arg(ascii).arg(
+		QString::number((uint)checksum, 16).toUpper());
 }
 
 enum CommandList {
@@ -71,8 +72,7 @@ static QStringList createPTZCommandList()
 	return cmdList;
 }
 
-AryaPTHead::AryaPTHead()
-	: PtzpHead()
+AryaPTHead::AryaPTHead() : PtzpHead()
 {
 	MaxSpeed = 899999;
 	ptzCommandList = createPTZCommandList();
@@ -127,10 +127,13 @@ int AryaPTHead::panTiltAbs(float pan, float tilt)
 		// left
 		if (tilt < 0) {
 			// up
-			sendCommand(ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
+			sendCommand(
+				ptzCommandList.at(C_PAN_LEFT_TILT_UP).arg(pspeed).arg(tspeed));
 		} else if (tilt > 0) {
 			// down
-			sendCommand(ptzCommandList.at(C_PAN_LEFT_TILT_DOWN).arg(pspeed).arg(tspeed));
+			sendCommand(ptzCommandList.at(C_PAN_LEFT_TILT_DOWN)
+							.arg(pspeed)
+							.arg(tspeed));
 		} else {
 			sendCommand(ptzCommandList.at(C_PAN_LEFT_RATE).arg(pspeed));
 		}
@@ -138,10 +141,13 @@ int AryaPTHead::panTiltAbs(float pan, float tilt)
 		// right
 		if (tilt < 0) {
 			// up
-			sendCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_UP).arg(pspeed).arg(tspeed));
+			sendCommand(
+				ptzCommandList.at(C_PAN_RIGHT_TILT_UP).arg(pspeed).arg(tspeed));
 		} else if (tilt > 0) {
 			// down
-			sendCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_DOWN).arg(pspeed).arg(tspeed));
+			sendCommand(ptzCommandList.at(C_PAN_RIGHT_TILT_DOWN)
+							.arg(pspeed)
+							.arg(tspeed));
 		} else {
 			sendCommand(ptzCommandList.at(C_PAN_RIGHT_RATE).arg(pspeed));
 		}
@@ -176,7 +182,8 @@ int AryaPTHead::panTiltGoPos(float ppos, float tpos)
 {
 	ppos = qAbs(ppos) / 360 * MaxPanPos;
 	tpos = tpos / 45 * MaxTiltPos;
-	return sendCommand(ptzCommandList.at(C_PAN_TILT_POS).arg((int)ppos).arg((int)tpos));
+	return sendCommand(
+		ptzCommandList.at(C_PAN_TILT_POS).arg((int)ppos).arg((int)tpos));
 }
 
 int AryaPTHead::headSystemChecker()
@@ -227,4 +234,3 @@ QByteArray AryaPTHead::transportReady()
 {
 	return ptzCommandList.at(C_GET_PAN_POS).toUtf8();
 }
-

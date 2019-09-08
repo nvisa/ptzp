@@ -1,20 +1,20 @@
 #include "ptzptcptransport.h"
 #include "debug.h"
 
-#include <QUdpSocket>
-#include <QTcpSocket>
 #include <QHostAddress>
+#include <QTcpSocket>
+#include <QUdpSocket>
 
 PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
-	: QObject(parent),
-	PtzpTransport(proto)
+	: QObject(parent), PtzpTransport(proto)
 {
 	sock = NULL;
 	timer = new QTimer();
 	filterInterface = NULL;
 	timer->start(periodTimer);
 	connect(timer, SIGNAL(timeout()), SLOT(callback()));
-	connect(this, SIGNAL(sendSocketMessage2Main(QByteArray)), SLOT(sendSocketMessage(QByteArray)));
+	connect(this, SIGNAL(sendSocketMessage2Main(QByteArray)),
+			SLOT(sendSocketMessage(QByteArray)));
 }
 
 int PtzpTcpTransport::connectTo(const QString &targetUri)
@@ -45,8 +45,9 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 	connect(sock, SIGNAL(connected()), SLOT(connected()));
 	connect(sock, SIGNAL(disconnected()), SLOT(clientDisconnected()));
 	connect(sock, SIGNAL(readyRead()), SLOT(dataReady()));
-	if (!sock->waitForConnected(3000)){
-		mDebug("Socket connection error: Error code: %d, Error string: %s", sock->error(), qPrintable(sock->errorString()));
+	if (!sock->waitForConnected(3000)) {
+		mDebug("Socket connection error: Error code: %d, Error string: %s",
+			   sock->error(), qPrintable(sock->errorString()));
 		return -1;
 	}
 	return 0;
@@ -75,7 +76,8 @@ int PtzpTcpTransport::send(const char *bytes, int len)
 	return len;
 }
 
-void PtzpTcpTransport::setFilter(PtzpTcpTransport::TransportFilterInteface *iface)
+void PtzpTcpTransport::setFilter(
+	PtzpTcpTransport::TransportFilterInteface *iface)
 {
 	filterInterface = iface;
 }
@@ -127,7 +129,8 @@ void PtzpTcpTransport::sendSocketMessage(const QByteArray &ba)
 	if (!sock)
 		return;
 	if (isUdp && sendDstPort)
-		((QUdpSocket*) sock)->writeDatagram(ba, sock->peerAddress(), sendDstPort);
+		((QUdpSocket *)sock)
+			->writeDatagram(ba, sock->peerAddress(), sendDstPort);
 	else if (sock)
 		sock->write(ba);
 }

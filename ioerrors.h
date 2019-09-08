@@ -19,4 +19,3 @@ enum IOErr {
 };
 
 #endif // IOERRORS_H
-

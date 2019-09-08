@@ -23,6 +23,7 @@ public:
 	int setFocusValue(uint x);
 	int getFocusMode();
 	int getFocus();
+
 protected:
 	QStringList commandList;
 	int sendCommand(const QString &key);
@@ -32,8 +33,6 @@ protected:
 	int zoomPos;
 	int lastGetCommand;
 	QHash<QString, QString> camModes;
-
-
 };
 
 #endif // FLIRMODULEHEAD_H

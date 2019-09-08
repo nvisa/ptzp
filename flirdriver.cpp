@@ -16,12 +16,11 @@ FlirDriver::FlirDriver()
 
 FlirDriver::~FlirDriver()
 {
-
 }
 
 PtzpHead *FlirDriver::getHead(int index)
 {
-	if(index == 0)
+	if (index == 0)
 		return headModule;
 	else if (index == 1)
 		return headDome;

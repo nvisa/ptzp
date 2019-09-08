@@ -13,7 +13,7 @@ class YamGozDriver : public PtzpDriver
 public:
 	explicit YamGozDriver(QObject *parent = 0);
 
-	PtzpHead * getHead(int index);
+	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
 
 protected slots:

@@ -1,10 +1,10 @@
 #ifndef PTZPTRANSPORT_H
 #define PTZPTRANSPORT_H
 
-#include <QList>
-#include <QString>
 #include <QByteArray>
 #include <QElapsedTimer>
+#include <QList>
+#include <QString>
 
 class LineProto;
 
@@ -41,8 +41,8 @@ public:
 		virtual void dataReady(const QByteArray &ba) = 0;
 		int processNewFrame(const unsigned char *bytes, int len);
 	};
-protected:
 
+protected:
 	QByteArray queueFreeCallback();
 
 	QElapsedTimer queueFreeEnabledTimer;

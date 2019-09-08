@@ -12,8 +12,7 @@ public:
 };
 
 PtzpHttpTransport::PtzpHttpTransport(LineProtocol proto, QObject *parent)
-	: QObject(parent),
-	  PtzpTransport(proto)
+	: QObject(parent), PtzpTransport(proto)
 {
 	priv = new PtzpHttpTransportPriv();
 	priv->port = 80;
@@ -39,28 +38,39 @@ int PtzpHttpTransport::connectTo(const QString &targetUri)
 			priv->port = flds.at(3).toInt();
 	} else
 		priv->uri = targetUri;
-	mInfo("Url '%s', port '%d', Username '%s', Password '%s'", qPrintable(priv->uri), priv->port, qPrintable(priv->username), qPrintable(priv->password));
+	mInfo("Url '%s', port '%d', Username '%s', Password '%s'",
+		  qPrintable(priv->uri), priv->port, qPrintable(priv->username),
+		  qPrintable(priv->password));
 
 	if (contentType == AppXFormUrlencoded)
-		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+		request.setHeader(QNetworkRequest::ContentTypeHeader,
+						  "application/x-www-form-urlencoded");
 	else if (contentType == AppJson)
-		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+		request.setHeader(QNetworkRequest::ContentTypeHeader,
+						  "application/json");
 	else {
 		mDebug("unknown content type");
 		return -EPROTO;
 	}
 	if (!priv->username.isEmpty())
-		request.setRawHeader("Authorization", "Basic "
-							 + QString("%1:%2").arg(priv->username).arg(priv->password).toLatin1().toBase64());
+		request.setRawHeader("Authorization",
+							 "Basic " + QString("%1:%2")
+											.arg(priv->username)
+											.arg(priv->password)
+											.toLatin1()
+											.toBase64());
 	QUrl url;
 	url.setUrl(priv->uri);
 	url.setPort(priv->port);
 	request.setUrl(url);
 
 	netman = new QNetworkAccessManager(this);
-	connect(this, SIGNAL(sendPostMessage2Main(QByteArray)), SLOT(sendPostMessage(QByteArray)));
-	connect(this, SIGNAL(sendGetMessage2Main(QByteArray)), SLOT(sendGetMessage(QByteArray)));
-	connect(netman, SIGNAL(finished(QNetworkReply*)), SLOT(dataReady(QNetworkReply *)));
+	connect(this, SIGNAL(sendPostMessage2Main(QByteArray)),
+			SLOT(sendPostMessage(QByteArray)));
+	connect(this, SIGNAL(sendGetMessage2Main(QByteArray)),
+			SLOT(sendGetMessage(QByteArray)));
+	connect(netman, SIGNAL(finished(QNetworkReply *)),
+			SLOT(dataReady(QNetworkReply *)));
 	return 0;
 }
 
@@ -81,7 +91,8 @@ int PtzpHttpTransport::send(const char *bytes, int len)
 	return len;
 }
 
-void PtzpHttpTransport::setContentType(PtzpHttpTransport::KnownContentTypes type)
+void PtzpHttpTransport::setContentType(
+	PtzpHttpTransport::KnownContentTypes type)
 {
 	contentType = type;
 }

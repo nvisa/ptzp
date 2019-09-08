@@ -3,9 +3,9 @@
 
 #include <ecl/ptzp/ptzptransport.h>
 
-#include <QTimer>
 #include <QMutex>
 #include <QObject>
+#include <QTimer>
 
 class QAbstractSocket;
 

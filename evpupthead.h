@@ -27,6 +27,7 @@ public:
 	int setOutput(int no, bool on);
 	void syncDevice();
 	virtual QString whoAmI();
+
 protected:
 	int panPos;
 	int tiltPos;

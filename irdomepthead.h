@@ -33,6 +33,7 @@ public:
 
 	int setIRLed(int led);
 	int getIRLed();
+
 protected:
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();

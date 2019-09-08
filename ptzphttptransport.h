@@ -1,23 +1,19 @@
 #ifndef PTZPHTTPTRANSPORT_H
 #define PTZPHTTPTRANSPORT_H
 
-#include <QObject>
-#include <ecl/ptzp/ptzptransport.h>
-#include <QNetworkRequest>
-#include <QNetworkAccessManager>
-#include <QTimer>
 #include <QMutex>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QTimer>
+#include <ecl/ptzp/ptzptransport.h>
 
 class PtzpHttpTransportPriv;
 class PtzpHttpTransport : public QObject, public PtzpTransport
 {
 	Q_OBJECT
 public:
-	enum KnownContentTypes {
-		AppJson,
-		AppXFormUrlencoded,
-		Unknown
-	};
+	enum KnownContentTypes { AppJson, AppXFormUrlencoded, Unknown };
 	explicit PtzpHttpTransport(LineProtocol proto, QObject *parent = nullptr);
 	int connectTo(const QString &targetUri);
 	int send(const char *bytes, int len);
@@ -31,6 +27,7 @@ protected slots:
 	void callback();
 	void sendPostMessage(const QByteArray &ba);
 	void sendGetMessage(const QByteArray &ba);
+
 protected:
 	PtzpHttpTransportPriv *priv;
 	QNetworkRequest request;

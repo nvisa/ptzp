@@ -1,8 +1,8 @@
 #include "swirdriver.h"
 
+#include "aryapthead.h"
 #include "debug.h"
 #include "errno.h"
-#include "aryapthead.h"
 #include "mgeoswirhead.h"
 #include "ptzpserialtransport.h"
 
@@ -20,7 +20,7 @@ SwirDriver::SwirDriver()
 
 PtzpHead *SwirDriver::getHead(int index)
 {
-	if(index == 0)
+	if (index == 0)
 		return headModule;
 	else if (index == 1)
 		return headDome;
@@ -58,7 +58,7 @@ void SwirDriver::timeout()
 				state = LOAD_MODULE_REGISTERS;
 			else
 				state = NORMAL;
-//			tp1->enableQueueFreeCallbacks(true);
+			//			tp1->enableQueueFreeCallbacks(true);
 			tp2->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
 		}

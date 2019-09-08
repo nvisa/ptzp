@@ -1,25 +1,25 @@
 #include "tbgthdriver.h"
-#include "yamanolenshead.h"
-#include "evpupthead.h"
-#include "ptzpserialtransport.h"
-#include "ptzptcptransport.h"
-#include "mgeothermalhead.h"
 #include "debug.h"
 #include "drivers/gpiocontroller.h"
+#include "evpupthead.h"
+#include "mgeothermalhead.h"
+#include "ptzpserialtransport.h"
+#include "ptzptcptransport.h"
+#include "yamanolenshead.h"
 
 #include <QFile>
+#include <QTcpSocket>
 #include <QTimer>
 #include <errno.h>
-#include <QTcpSocket>
 
-#define GPIO_WIPER			187
-#define GPIO_WATER			186
-#define GPIO_WIPER_STATUS	89
-#define GPIO_WATER_STATUS	202
+#define GPIO_WIPER		  187
+#define GPIO_WATER		  186
+#define GPIO_WIPER_STATUS 89
+#define GPIO_WATER_STATUS 202
 
-#define zoomEntry(zoomv, h, v) \
-	zooms.push_back(zoomv); \
-	hmap.push_back(h); \
+#define zoomEntry(zoomv, h, v)                                                 \
+	zooms.push_back(zoomv);                                                    \
+	hmap.push_back(h);                                                         \
 	vmap.push_back(v)
 
 static float speedRegulateDay(float speed, float fovs[])
@@ -54,8 +54,7 @@ static float speedRegulateThermal(float speed, float fovs[])
 	return speed;
 }
 
-TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
-	: PtzpDriver(parent)
+TbgthDriver::TbgthDriver(bool useThermal, QObject *parent) : PtzpDriver(parent)
 {
 	headLens = new YamanoLensHead;
 	headEvpuPt = new EvpuPTHead;
@@ -72,8 +71,10 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 
 	gpiocont->requestGpio(GPIO_WATER, GpioController::OUTPUT, "WaterControl");
 	gpiocont->requestGpio(GPIO_WIPER, GpioController::OUTPUT, "WiperControl");
-	gpiocont->requestGpio(GPIO_WATER_STATUS, GpioController::INPUT, "WaterStatus");
-	gpiocont->requestGpio(GPIO_WIPER_STATUS, GpioController::INPUT, "WiperStatus");
+	gpiocont->requestGpio(GPIO_WATER_STATUS, GpioController::INPUT,
+						  "WaterStatus");
+	gpiocont->requestGpio(GPIO_WIPER_STATUS, GpioController::INPUT,
+						  "WiperStatus");
 
 	/* yamano fov mapping */
 	std::vector<float> hmap, vmap;
@@ -109,26 +110,26 @@ TbgthDriver::TbgthDriver(bool useThermal, QObject *parent)
 		headLens->getRangeMapper()->addMap(hmap);
 		headLens->getRangeMapper()->addMap(vmap);
 	}
-	//hmap.clear();
-	//vmap.clear();
-	//zooms.clear();
-	else if (useThermal){
+	// hmap.clear();
+	// vmap.clear();
+	// zooms.clear();
+	else if (useThermal) {
 		zoomEntry(6875, 0.82, 0.66);
-		//zoomEntry(6875, 9.38, 7.44);
+		// zoomEntry(6875, 9.38, 7.44);
 		zoomEntry(10625, 0.92, 0.75);
-		//zoomEntry(10625, 5.28, 3.98);
+		// zoomEntry(10625, 5.28, 3.98);
 		zoomEntry(13750, 1.25, 0.93);
-		//zoomEntry(13750, 3.19, 2.25);
+		// zoomEntry(13750, 3.19, 2.25);
 		zoomEntry(17500, 1.42, 1.08);
-		//zoomEntry(17500, 1.46, 1.28);
+		// zoomEntry(17500, 1.46, 1.28);
 		zoomEntry(20625, 1.46, 1.28);
-		//zoomEntry(20625, 1.42, 1.08);
+		// zoomEntry(20625, 1.42, 1.08);
 		zoomEntry(24375, 3.19, 2.25);
-		//zoomEntry(24375, 1.25, 0.93);
+		// zoomEntry(24375, 1.25, 0.93);
 		zoomEntry(27656, 5.28, 3.98);
-		//zoomEntry(27656, 0.92, 0.75);
+		// zoomEntry(27656, 0.92, 0.75);
 		zoomEntry(31249, 9.38, 7.44);
-		//zoomEntry(31249, 0.82, 0.66);
+		// zoomEntry(31249, 0.82, 0.66);
 		headThermal->getRangeMapper()->setLookUpValues(zooms);
 		headThermal->getRangeMapper()->addMap(hmap);
 		headThermal->getRangeMapper()->addMap(vmap);
@@ -164,7 +165,7 @@ int TbgthDriver::setTarget(const QString &targetUri)
 			headEvpuPt->setTransport(tp1);
 			if (controlThermal)
 				headThermal->setTransport(tp1);
-			//hack us in for EVPU offloading
+			// hack us in for EVPU offloading
 			((PtzpTcpTransport *)tp1)->setFilter(this);
 
 			tp1ConnectionString = QString("%1").arg(field);
@@ -202,26 +203,19 @@ int TbgthDriver::setTarget(const QString &targetUri)
 QVariant TbgthDriver::get(const QString &key)
 {
 	if (key == "ptz.get_zoom_pos")
-		return QString("%1")
-				.arg(headLens->getZoom());
+		return QString("%1").arg(headLens->getZoom());
 	else if (key == "ptz.get_focus_pos")
-		return QString("%1")
-				.arg(headLens->getProperty(1));
+		return QString("%1").arg(headLens->getProperty(1));
 	else if (key == "ptz.get_iris_pos")
-		return QString("%1")
-				.arg(headLens->getProperty(1));
+		return QString("%1").arg(headLens->getProperty(1));
 	else if (key == "ptz.get_version")
-		return QString("%1")
-				.arg(headLens->getProperty(1));
+		return QString("%1").arg(headLens->getProperty(1));
 	else if (key == "ptz.get_filter_pos")
-		return QString("%1")
-				.arg(headLens->getProperty(1));
+		return QString("%1").arg(headLens->getProperty(1));
 	else if (key == "ptz.get_focus_mode")
-		return QString("%1")
-				.arg(headLens->getProperty(1));
+		return QString("%1").arg(headLens->getProperty(1));
 	else if (key == "ptz.get_iris_mod")
-		return QString("%1")
-				.arg(headLens->getProperty(1));
+		return QString("%1").arg(headLens->getProperty(1));
 	else
 		return PtzpDriver::get(key);
 	return "almost_there";
@@ -257,16 +251,16 @@ int TbgthDriver::set(const QString &key, const QVariant &value)
 		headLens->setProperty(16, value.toUInt());
 	else if (key == "ptz.cmd.auto_iris")
 		headLens->setProperty(17, value.toUInt());
-	else if(key == "ptz.cmd.zoom_set")
+	else if (key == "ptz.cmd.zoom_set")
 		headLens->setZoom(value.toUInt());
 
-	return PtzpDriver::set(key,value);
+	return PtzpDriver::set(key, value);
 }
 
 QByteArray TbgthDriver::sendFilter(const char *bytes, int len)
 {
 	if (bytes[0] == 0x35) {
-		//dump(QByteArray(bytes, len));
+		// dump(QByteArray(bytes, len));
 		QByteArray mes = QString("s4 data %1 ").arg(len).toUtf8();
 		mes.append(bytes, len);
 		return mes;
@@ -311,7 +305,8 @@ int TbgthDriver::readFilter(QAbstractSocket *sock, QByteArray &ba)
 		QByteArray pba = sock->read(maxlen);
 		fstate.payload.append(pba);
 		if (fstate.payload.size() == fstate.payloadLen) {
-			//ffDebug() << fstate.payload << fstate.fields << fstate.payload.size();
+			// ffDebug() << fstate.payload << fstate.fields <<
+			// fstate.payload.size();
 			ba.append(fstate.payload);
 			fstate = FilteringState();
 			return 0;
@@ -319,7 +314,8 @@ int TbgthDriver::readFilter(QAbstractSocket *sock, QByteArray &ba)
 		return -EAGAIN;
 	}
 
-	mDebug("Unexpected filter state - %d %d", fstate.payload.size(), fstate.payloadLen);
+	mDebug("Unexpected filter state - %d %d", fstate.payload.size(),
+		   fstate.payloadLen);
 	return -EIO;
 }
 
@@ -333,7 +329,9 @@ void TbgthDriver::enableDriver(bool value)
 	}
 }
 
-grpc::Status TbgthDriver::SetIO(grpc::ServerContext *context, const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response)
+grpc::Status TbgthDriver::SetIO(grpc::ServerContext *context,
+								const ptzp::IOCmdPar *request,
+								ptzp::IOCmdPar *response)
 {
 	if (request->name_size() != request->state_size())
 		return grpc::Status::CANCELLED;
@@ -348,27 +346,27 @@ grpc::Status TbgthDriver::SetIO(grpc::ServerContext *context, const ptzp::IOCmdP
 		if (name.compare(std::string("thermal")) == 0) {
 			qDebug() << "sin value is " << sin.value();
 			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
-				headEvpuPt->setOutput(7,1);
+				headEvpuPt->setOutput(7, 1);
 			else
-				headEvpuPt->setOutput(7,0);
+				headEvpuPt->setOutput(7, 0);
 		} else if (name.compare(std::string("daytv")) == 0) {
 			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
-				headEvpuPt->setOutput(6,1);
+				headEvpuPt->setOutput(6, 1);
 			else
-				headEvpuPt->setOutput(6,0);
-		}else if (name.compare(std::string("heater")) == 0) {
+				headEvpuPt->setOutput(6, 0);
+		} else if (name.compare(std::string("heater")) == 0) {
 			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
-				headEvpuPt->setOutput(5,1);
+				headEvpuPt->setOutput(5, 1);
 			else
-				headEvpuPt->setOutput(5,0);
+				headEvpuPt->setOutput(5, 0);
 		} else if (name.compare(std::string("wiper")) == 0) {
 			if (sin.value() == ptzp::IOState_OutputValue_HIGH)
-				headEvpuPt->setOutput(4,1);
+				headEvpuPt->setOutput(4, 1);
 			else
-				headEvpuPt->setOutput(4,0);
+				headEvpuPt->setOutput(4, 0);
 		}
 	}
-	return PtzpDriver::SetIO(context,request,response);
+	return PtzpDriver::SetIO(context, request, response);
 }
 
 QJsonObject TbgthDriver::doExtraDeviceTests()
@@ -378,9 +376,9 @@ QJsonObject TbgthDriver::doExtraDeviceTests()
 	if (!controlThermal) {
 		jsonObject.insert("device_type", QString("day_camera"));
 		int wiperStatus = gpiocont->getGpioValue(89);
-		jsonObject.insert("wiper_status",wiperStatus);
-		int waterStatus= gpiocont->getGpioValue(202);
-		jsonObject.insert("water_status",waterStatus);
+		jsonObject.insert("wiper_status", wiperStatus);
+		int waterStatus = gpiocont->getGpioValue(202);
+		jsonObject.insert("water_status", waterStatus);
 		return jsonObject;
 	}
 	jsonObject.insert("device_type", QString("thermal_camera"));

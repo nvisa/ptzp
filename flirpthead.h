@@ -38,7 +38,6 @@ protected:
 	int dataReady(const unsigned char *bytes, int len);
 	int saveCommand(const QString &key);
 	QByteArray transportReady();
-
 };
 
 #endif // FLIRPTHEAD_H

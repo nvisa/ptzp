@@ -7,8 +7,7 @@
 class LifeTimeHead : public PtzpHead
 {
 public:
-	LifeTimeHead()
-		: PtzpHead()
+	LifeTimeHead() : PtzpHead()
 	{
 		lifetc = 0;
 		lifet.start();
@@ -30,10 +29,7 @@ public:
 		lifet.start();
 	}
 
-	int getLifetime()
-	{
-		return lifetc + lifet.elapsed() / 1000;
-	}
+	int getLifetime() { return lifetc + lifet.elapsed() / 1000; }
 
 	QElapsedTimer lifet;
 	int lifetc;
@@ -42,33 +38,20 @@ public:
 class VirtualPtzpPTHead : public LifeTimeHead
 {
 public:
-	VirtualPtzpPTHead()
-		: LifeTimeHead()
-	{
-	}
+	VirtualPtzpPTHead() : LifeTimeHead() {}
 
-	int getCapabilities()
-	{
-		return PtzpHead::CAP_TILT | PtzpHead::CAP_PAN;
-	}
+	int getCapabilities() { return PtzpHead::CAP_TILT | PtzpHead::CAP_PAN; }
 };
 
 class VirtualPtzpZoomHead : public LifeTimeHead
 {
 public:
-	VirtualPtzpZoomHead()
-		: LifeTimeHead()
-	{
-	}
+	VirtualPtzpZoomHead() : LifeTimeHead() {}
 
-	int getCapabilities()
-	{
-		return PtzpHead::CAP_ZOOM;
-	}
+	int getCapabilities() { return PtzpHead::CAP_ZOOM; }
 };
 
-VirtualPtzpDriver::VirtualPtzpDriver(QObject *parent)
-	: PtzpDriver(parent)
+VirtualPtzpDriver::VirtualPtzpDriver(QObject *parent) : PtzpDriver(parent)
 {
 	head0 = new VirtualPtzpPTHead;
 	head1 = new VirtualPtzpPTHead;

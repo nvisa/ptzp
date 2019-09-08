@@ -15,9 +15,9 @@ public:
 		R_SOFTWARE_VERSION,
 		R_HARDWARE_VERSION,
 		R_DIGI_ZOOM,
-		R_CAM_STATUS,//manuel set
-		R_AUTO_FOCUS_STATUS,//manuel set
-		R_DIGI_ZOOM_STATUS,//manuel set
+		R_CAM_STATUS,		 // manuel set
+		R_AUTO_FOCUS_STATUS, // manuel set
+		R_DIGI_ZOOM_STATUS,	 // manuel set
 
 		R_COUNT,
 	};

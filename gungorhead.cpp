@@ -4,8 +4,8 @@
 
 #include <QFile>
 #include <QJsonArray>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
 
 #include "errno.h"
 
@@ -14,8 +14,8 @@
 enum Commands {
 	C_SET_OPEN,
 	C_SET_CLOSE,
-//	C_SET_ZOOM_TELE,
-//	C_SET_ZOOM_WIDE,
+	//	C_SET_ZOOM_TELE,
+	//	C_SET_ZOOM_WIDE,
 	C_SET_ZOOM_INC_START,
 	C_SET_ZOOM_STOP,
 	C_SET_ZOOM_DEC_START,
@@ -42,8 +42,8 @@ enum Commands {
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x05, 0xF1, 0x08, 0x00, 0x00, 0x07},
 	{0x05, 0xF1, 0x09, 0x00, 0x00, 0x06},
-//	{0x05, 0xF1, 0x0F, 0x00, 0x00, 0xF5},
-//	{0x05, 0xF1, 0x0E, 0x00, 0x00, 0xF5},
+	//	{0x05, 0xF1, 0x0F, 0x00, 0x00, 0xF5},
+	//	{0x05, 0xF1, 0x0E, 0x00, 0x00, 0xF5},
 	{0x05, 0xF1, 0x1A, 0x00, 0x00, 0xF5},
 	{0x05, 0xF1, 0x1B, 0x00, 0x00, 0xF4},
 	{0x05, 0xF1, 0x1C, 0x00, 0x00, 0xF3},
@@ -57,7 +57,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x05, 0xF1, 0x78, 0x00, 0x00, 0xEB},
 	{0x05, 0xF1, 0x80, 0x00, 0x00, 0x8F},
 	{0x05, 0xF1, 0x29, 0xEA, 0x60, 0x9C},
-	{0x05, 0xF1, 0x0A, 0x00, 0x00, 0x05},//GET
+	{0x05, 0xF1, 0x0A, 0x00, 0x00, 0x05}, // GET
 	{0x05, 0xF1, 0x0B, 0x00, 0x00, 0x04},
 	{0x05, 0xF1, 0xA4, 0x00, 0x00, 0x6B},
 	{0x05, 0xF1, 0x91, 0x00, 0x00, 0x7E},
@@ -75,15 +75,15 @@ static uchar chksum(const uchar *buf, int len)
 
 MgeoGunGorHead::MgeoGunGorHead()
 {
-	for (int i = C_GET_ZOOM; i<=C_GET_DIGI_ZOOM; i++)
+	for (int i = C_GET_ZOOM; i <= C_GET_DIGI_ZOOM; i++)
 		syncList << i;
 	nextSync = syncList.size();
 	syncTimer.start();
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
-		{"focus", {C_SET_FOCUS_INC_START,R_FOCUS}},
-		{"chip_version",{ NULL, R_CHIP_VERSION}},
-		{"digi_zoom", { NULL, R_DIGI_ZOOM}},
+		{"focus", {C_SET_FOCUS_INC_START, R_FOCUS}},
+		{"chip_version", {NULL, R_CHIP_VERSION}},
+		{"digi_zoom", {NULL, R_DIGI_ZOOM}},
 		{"cam_status", {C_SET_OPEN, R_CAM_STATUS}},
 		{"auto_focus", {C_SET_AUTO_FOCUS_ON, R_AUTO_FOCUS_STATUS}},
 		{"digi_zoom", {C_SET_DIGI_ZOOM_ON, R_DIGI_ZOOM_STATUS}},
@@ -115,7 +115,8 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 	} else if (r == C_SET_DIGI_ZOOM_ON) {
 		if (x == 0)
 			sendCommand(C_SET_DIGI_ZOOM_OFF);
-		else sendCommand(C_SET_DIGI_ZOOM_ON, x);
+		else
+			sendCommand(C_SET_DIGI_ZOOM_ON, x);
 		setRegister(R_DIGI_ZOOM_STATUS, x);
 	}
 }
@@ -186,7 +187,7 @@ int MgeoGunGorHead::getZoom()
 
 int MgeoGunGorHead::setZoom(uint pos)
 {
-	return sendCommand(C_SET_ZOOM,(pos & 0xff00) >> 8, (pos & 0x00ff));
+	return sendCommand(C_SET_ZOOM, (pos & 0xff00) >> 8, (pos & 0x00ff));
 }
 
 int MgeoGunGorHead::focusIn(int speed)
@@ -214,7 +215,7 @@ int MgeoGunGorHead::sendCommand(uint index, uchar data1, uchar data2)
 	cmd[2] = data1;
 	cmd[3] = data2;
 	cmd[cmdlen - 1] = chksum(cmd, cmdlen - 1);
-	return transport->send((const char *)cmd , cmdlen);
+	return transport->send((const char *)cmd, cmdlen);
 }
 
 int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
@@ -238,8 +239,7 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 		if (systemChecker == 0)
 			systemChecker = 1;
 		setRegister(R_ZOOM, (p[0] << 8 | p[1]));
-	}
-	else if (opcode == 0x0b)
+	} else if (opcode == 0x0b)
 		setRegister(R_FOCUS, (p[0] << 8 | p[1]));
 	else if (opcode == 0xa4)
 		setRegister(R_CHIP_VERSION, ((p[0] * 100) + p[1]));
@@ -292,7 +292,7 @@ void MgeoGunGorHead::unmarshallloadAllRegisters(const QJsonValue &node)
 		if (!key.startsWith("reg"))
 			continue;
 		int ind = key.remove("reg").toInt();
-		key = (QString)"reg" + key;
+		key = (QString) "reg" + key;
 		setProperty(ind, root[key].toInt());
 	}
 }

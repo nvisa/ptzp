@@ -12,7 +12,8 @@ public:
 
 		int readlen = 0;
 		do {
-			readlen = processNewFrame((const uchar *)buf.constData(), buf.size());
+			readlen =
+				processNewFrame((const uchar *)buf.constData(), buf.size());
 			if (readlen > 0)
 				buf = buf.mid(readlen);
 		} while (readlen > 0 && buf.size());
@@ -24,10 +25,7 @@ public:
 class StringProto : public PtzpTransport::LineProto
 {
 public:
-	StringProto()
-	{
-		delim = ">";
-	}
+	StringProto() { delim = ">"; }
 	void dataReady(const QByteArray &ba)
 	{
 		buf.append(QString::fromUtf8(ba));
@@ -35,7 +33,8 @@ public:
 		while (buf.contains(delim)) {
 			int off = buf.indexOf(delim);
 			QString mes = buf.left(off + 1);
-			processNewFrame((const uchar *)mes.toUtf8().constData(), mes.length());
+			processNewFrame((const uchar *)mes.toUtf8().constData(),
+							mes.length());
 			buf = buf.mid(off + 1);
 		}
 	}
@@ -77,14 +76,16 @@ int PtzpTransport::send(const QByteArray &ba)
 	return send(ba.constData(), ba.size());
 }
 
-int PtzpTransport::addReadyCallback(PtzpTransport::dataReady callback, void *priv)
+int PtzpTransport::addReadyCallback(PtzpTransport::dataReady callback,
+									void *priv)
 {
 	dataReadyCallbacks << callback;
 	dataReadyCallbackPrivs << priv;
 	return 0;
 }
 
-int PtzpTransport::addQueueFreeCallback(PtzpTransport::queueFree callback, void *priv)
+int PtzpTransport::addQueueFreeCallback(PtzpTransport::queueFree callback,
+										void *priv)
 {
 	queueFreeCallbacks << callback;
 	queueFreeCallbackPrivs << priv;
@@ -128,7 +129,8 @@ QByteArray PtzpTransport::queueFreeCallback(void *priv)
 QByteArray PtzpTransport::queueFreeCallback()
 {
 	if (!queueFreeEnabled) {
-		if (queueFreeEnabledTimeout && queueFreeEnabledTimer.elapsed() > queueFreeEnabledTimeout) {
+		if (queueFreeEnabledTimeout &&
+			queueFreeEnabledTimer.elapsed() > queueFreeEnabledTimeout) {
 			queueFreeEnabled = false;
 		} else
 			return QByteArray();
@@ -143,11 +145,13 @@ QByteArray PtzpTransport::queueFreeCallback()
 	return QByteArray();
 }
 
-int PtzpTransport::LineProto::processNewFrame(const unsigned char *bytes, int len)
+int PtzpTransport::LineProto::processNewFrame(const unsigned char *bytes,
+											  int len)
 {
 	int erroredCount = 0;
 	for (int i = 0; i < transport->dataReadyCallbacks.size(); i++) {
-		int read = transport->dataReadyCallbacks[i](bytes, len, transport->dataReadyCallbackPrivs[i]);
+		int read = transport->dataReadyCallbacks[i](
+			bytes, len, transport->dataReadyCallbackPrivs[i]);
 		if (read > 0)
 			return read;
 
@@ -161,8 +165,8 @@ int PtzpTransport::LineProto::processNewFrame(const unsigned char *bytes, int le
 
 	if (erroredCount == transport->dataReadyCallbacks.size())
 		/*
-		 * This bytestream contains some sort of garbage, everybody reports error
-		 * so it is wise to discard one byte here
+		 * This bytestream contains some sort of garbage, everybody reports
+		 * error so it is wise to discard one byte here
 		 */
 		return 1;
 

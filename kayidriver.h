@@ -13,7 +13,7 @@ class KayiDriver : public PtzpDriver
 public:
 	explicit KayiDriver(QList<int> relayConfig, bool gps, QObject *parent = 0);
 
-	PtzpHead * getHead(int index);
+	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
 	int set(const QString &key, const QVariant &value);
 	bool isReady();

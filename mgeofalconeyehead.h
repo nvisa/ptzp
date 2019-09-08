@@ -1,11 +1,11 @@
 #ifndef MGEOFALCONEYEHEAD_H
 #define MGEOFALCONEYEHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
 #include <drivers/i2cdevice.h>
+#include <ecl/ptzp/ptzphead.h>
 
-#include <QStringList>
 #include <QElapsedTimer>
+#include <QStringList>
 
 class PCA9538Driver;
 class RelayControlThread;
@@ -13,7 +13,7 @@ class RelayControlThread;
 class MgeoFalconEyeHead : public PtzpHead
 {
 public:
-	MgeoFalconEyeHead(QList<int> relayConfig,bool gps);
+	MgeoFalconEyeHead(QList<int> relayConfig, bool gps);
 
 	enum Registers {
 		R_ZOOM,
@@ -103,7 +103,6 @@ public:
 	virtual int getFOV(float &hor, float &ver);
 	virtual QString whoAmI();
 	bool isAlive();
-
 
 protected:
 	int syncNext();

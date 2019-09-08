@@ -1,10 +1,10 @@
 #include "flirmodulehead.h"
 
 #include "debug.h"
-#include <ecl/ptzp/ptzptransport.h>
 #include <assert.h>
+#include <ecl/ptzp/ptzptransport.h>
 
-enum Commands{
+enum Commands {
 	CGI_SET_FOCUS_INC,
 	CGI_SET_FOCUS_DEC,
 	CGI_SET_FOCUS_POS,
@@ -35,16 +35,34 @@ enum ComandList {
 static QStringList createCommandList()
 {
 	QStringList cmdList;
-	cmdList << QString("/cgi-bin/control.cgi?action=update&group=PTZCTRL&channel=0&PTZCTRL.action=40&nRanId=96325");
-	cmdList << QString("/cgi-bin/control.cgi?action=update&group=PTZCTRL&channel=0&PTZCTRL.action=13&PTZCTRL.speed=%1&nRanId=341425");
-	cmdList << QString("/cgi-bin/control.cgi?action=update&group=PTZCTRL&channel=0&PTZCTRL.action=14&PTZCTRL.speed=%1&nRanId=341425");
-	cmdList << QString("/cgi-bin/param.cgi?action=list&group=CAM&channel=0&CAM.autoFocusMode=%1");
-	cmdList << QString("/cgi-bin/param.cgi?action=list&group=CAM&channel=0&CAM.autoFocusMode=%1"); // dene bunu auto focus 1
-	cmdList << QString("/cgi-bin/control.cgi?action=update&group=PTZCTRL&channel=0&PTZCTRL.action=15&PTZCTRL.speed=%1&nRanId=341425");
-	cmdList << QString("/cgi-bin/control.cgi?action=update&group=PTZCTRL&channel=0&PTZCTRL.action=16&PTZCTRL.speed=%1&nRanId=341425");
-	cmdList << QString("/cgi-bin/control.cgi?action=update&group=PTZCTRL&channel=0&PTZCTRL.action=41&PTZCTRL.speed=%1&nRanId=341425");
+	cmdList << QString("/cgi-bin/"
+					   "control.cgi?action=update&group=PTZCTRL&channel=0&"
+					   "PTZCTRL.action=40&nRanId=96325");
+	cmdList << QString("/cgi-bin/"
+					   "control.cgi?action=update&group=PTZCTRL&channel=0&"
+					   "PTZCTRL.action=13&PTZCTRL.speed=%1&nRanId=341425");
+	cmdList << QString("/cgi-bin/"
+					   "control.cgi?action=update&group=PTZCTRL&channel=0&"
+					   "PTZCTRL.action=14&PTZCTRL.speed=%1&nRanId=341425");
+	cmdList << QString(
+		"/cgi-bin/"
+		"param.cgi?action=list&group=CAM&channel=0&CAM.autoFocusMode=%1");
+	cmdList << QString("/cgi-bin/"
+					   "param.cgi?action=list&group=CAM&channel=0&CAM."
+					   "autoFocusMode=%1"); // dene bunu auto focus 1
+	cmdList << QString("/cgi-bin/"
+					   "control.cgi?action=update&group=PTZCTRL&channel=0&"
+					   "PTZCTRL.action=15&PTZCTRL.speed=%1&nRanId=341425");
+	cmdList << QString("/cgi-bin/"
+					   "control.cgi?action=update&group=PTZCTRL&channel=0&"
+					   "PTZCTRL.action=16&PTZCTRL.speed=%1&nRanId=341425");
+	cmdList << QString("/cgi-bin/"
+					   "control.cgi?action=update&group=PTZCTRL&channel=0&"
+					   "PTZCTRL.action=41&PTZCTRL.speed=%1&nRanId=341425");
 	cmdList << QString("/cgi-bin/param.cgi?action=list&group=CAMPOS&channel=0");
-	cmdList << QString("/cgi-bin/param.cgi?action=update&group=CAMPOS&channel=0&CAMPOS.focuspos=%1");
+	cmdList << QString(
+		"/cgi-bin/"
+		"param.cgi?action=update&group=CAMPOS&channel=0&CAMPOS.focuspos=%1");
 	cmdList << QString("/cgi-bin/param.cgi?action=list&group=CAM&channel=0");
 	return cmdList;
 }
@@ -161,15 +179,17 @@ QByteArray FlirModuleHead::transportReady()
 
 int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 {
-	 QString data = QString::fromUtf8((const char *)bytes, len);
+	QString data = QString::fromUtf8((const char *)bytes, len);
 
-	 if (data.contains("root.ERR.no=4") || data.size() > 1000) // unnecessary message
-		 return len;
+	if (data.contains("root.ERR.no=4") ||
+		data.size() > 1000) // unnecessary message
+		return len;
 
 	if (lastGetCommand == C_GET_CAMPOS) {
 		QStringList lines = data.split("\n");
 		foreach (QString line, lines) {
-			if (line.isEmpty() || !line.contains("CAMPOS") || line.contains("html"))
+			if (line.isEmpty() || !line.contains("CAMPOS") ||
+				line.contains("html"))
 				continue;
 			line.remove("\r");
 			line.remove("root.CAMPOS.");
@@ -178,11 +198,11 @@ int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 			if (line.contains("focuspos"))
 				focusPos = line.split("=").last().toInt();
 		}
-	}
-	else if (lastGetCommand == C_GET_CAM_MODES) {
+	} else if (lastGetCommand == C_GET_CAM_MODES) {
 		QStringList lines = data.split("\n");
 		foreach (QString line, lines) {
-			if (line.isEmpty() || !line.contains("CAM") || line.contains("html"))
+			if (line.isEmpty() || !line.contains("CAM") ||
+				line.contains("html"))
 				continue;
 			line.remove("\r");
 			line.remove("root.CAM.");
