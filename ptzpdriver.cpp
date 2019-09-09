@@ -685,6 +685,20 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context,
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+
+	float signPan = (pan > 0) ? 1.0 : -1.0;
+	float signTilt = (tilt > 0) ? 1.0 : -1.0;
+	pan = qAbs(pan);
+	tilt = qAbs(tilt);
+
+	if (sreg.enable && sreg.zoomHead) {
+		pan = regulateSpeed(pan, sreg.zoomHead->getZoom());
+		tilt = regulateSpeed(tilt, sreg.zoomHead->getZoom());
+	}
+
+	pan *= signPan;
+	tilt *= signTilt;
+
 	commandUpdate(PtzControlInterface::C_PAN_TILT_ABS_MOVE, pan, tilt);
 	head->panTiltAbs(pan, tilt);
 	return grpc::Status::OK;
