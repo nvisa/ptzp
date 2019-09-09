@@ -94,6 +94,14 @@ enum Commands {
 /* [CR] [yca] define'lar genelde include'lardan sonra oluyor */
 #define MAX_CMD_LEN 16
 
+const Commands queryPatternList[] = {
+	C_VISCA_GET_ZOOM,
+	C_VISCA_GET_ZOOM,
+	C_VISCA_GET_ZOOM,
+	C_VISCA_GET_ZOOM,
+	C_VISCA_GET_IRCF_STATUS,
+};
+
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	/* visca commands */
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x4b, 0x00, 0x00, 0x00, 0x0f,
@@ -580,8 +588,12 @@ QByteArray OemModuleHead::transportReady()
 	if (syncEnabled && syncTime.elapsed() > syncInterval) {
 		mLogv("Syncing zoom positon");
 		syncTime.restart();
-		const unsigned char *p = protoBytes[C_VISCA_GET_ZOOM];
-		hist->add(C_VISCA_GET_ZOOM);
+		static uint ind = 0;
+		Commands q = queryPatternList[ind++];
+		if (ind >= sizeof(queryPatternList) / sizeof(queryPatternList[0]))
+			ind = 0;
+		const unsigned char *p = protoBytes[q];
+		hist->add(q);
 		return QByteArray((const char *)p + 2, p[0]);
 	}
 	return QByteArray();
