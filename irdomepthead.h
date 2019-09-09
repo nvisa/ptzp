@@ -31,6 +31,8 @@ public:
 	void enableSyncing(bool en);
 	void setSyncInterval(int interval);
 
+	float getMaxPatternSpeed() const;
+
 	int setIRLed(int led);
 	int getIRLed();
 
@@ -43,6 +45,7 @@ protected:
 
 	/* [CR] [yca] bunu bir register yapamiyor muyuz? */
 	int irLedLevel;
+	int maxPatternSpeed;
 	bool syncEnabled;
 	int syncInterval;
 	QElapsedTimer syncTime;

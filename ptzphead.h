@@ -81,6 +81,7 @@ public:
 	virtual void setProperty(const QString &key, const QVariant &value);
 	virtual int headSystemChecker();
 	virtual QString whoAmI();
+	virtual float getMaxPatternSpeed() const;
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();

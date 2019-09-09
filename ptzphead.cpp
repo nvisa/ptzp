@@ -354,6 +354,11 @@ QString PtzpHead::whoAmI()
 	return "";
 }
 
+float PtzpHead::getMaxPatternSpeed() const
+{
+	return -EINVAL;
+}
+
 int PtzpHead::getSystemStatus()
 {
 	// this function using just check system healt state

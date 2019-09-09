@@ -470,6 +470,13 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context,
 	}
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
+
+	float maxSpeed = head->getMaxPatternSpeed();
+	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+		if (speed > maxSpeed)
+			speed = maxSpeed;
+	}
+
 	commandUpdate(PtzControlInterface::C_PAN_LEFT, speed, 0);
 	head->panLeft(speed);
 	return grpc::Status::OK;
@@ -492,6 +499,13 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context,
 	}
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
+
+	float maxSpeed = head->getMaxPatternSpeed();
+	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+		if (speed > maxSpeed)
+			speed = maxSpeed;
+	}
+
 	commandUpdate(PtzControlInterface::C_PAN_RIGHT, speed, 0);
 	head->panRight(speed);
 	return grpc::Status::OK;
@@ -597,6 +611,13 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context,
 
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
+
+	float maxSpeed = head->getMaxPatternSpeed();
+	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+		if (speed > maxSpeed)
+			speed = maxSpeed;
+	}
+
 	commandUpdate(PtzControlInterface::C_TILT_UP, speed, 0);
 	head->tiltUp(speed);
 	return grpc::Status::OK;
@@ -620,6 +641,13 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context,
 
 	if (sreg.enable && sreg.zoomHead)
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
+
+	float maxSpeed = head->getMaxPatternSpeed();
+	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+		if (speed > maxSpeed)
+			speed = maxSpeed;
+	}
+
 	commandUpdate(PtzControlInterface::C_TILT_DOWN, speed, 0);
 	head->tiltDown(speed);
 	return grpc::Status::OK;
@@ -694,6 +722,14 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context,
 	if (sreg.enable && sreg.zoomHead) {
 		pan = regulateSpeed(pan, sreg.zoomHead->getZoom());
 		tilt = regulateSpeed(tilt, sreg.zoomHead->getZoom());
+	}
+
+	float maxSpeed = head->getMaxPatternSpeed();
+	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+		if (pan > maxSpeed)
+			pan = maxSpeed;
+		if (tilt > maxSpeed)
+			tilt = maxSpeed;
 	}
 
 	pan *= signPan;

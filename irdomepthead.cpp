@@ -54,6 +54,7 @@ static uint checksum(const uchar *cmd, uint lenght)
 
 IRDomePTHead::IRDomePTHead()
 {
+	maxPatternSpeed = 30;
 	syncEnabled = true;
 	syncInterval = 20;
 	syncTime.start();
@@ -207,6 +208,7 @@ QJsonValue IRDomePTHead::marshallAllRegisters()
 		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
 	/* [CR] [yca] IR led seviyesi neden bir register degil */
 	json.insert("irLedLevel", irLedLevel);
+	json.insert("maxPatternSpeed", maxPatternSpeed);
 	return json;
 }
 
@@ -232,6 +234,10 @@ void IRDomePTHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	irLedLevel = root.value("irLedLevel").toInt();
 	if (irLedLevel != 8)
 		setIRLed(0);
+
+	QJsonValue val = root.value("maxPatternSpeed");
+	if (!val.isUndefined())
+		maxPatternSpeed = val.toInt();
 }
 
 float IRDomePTHead::getPanAngle()
@@ -300,6 +306,11 @@ void IRDomePTHead::setSyncInterval(int interval)
 {
 	syncInterval = interval;
 	mInfo("Sync interval: %d", syncInterval);
+}
+
+float IRDomePTHead::getMaxPatternSpeed() const
+{
+	return float(maxPatternSpeed) / 0x3F;
 }
 
 int IRDomePTHead::setIRLed(int led)
