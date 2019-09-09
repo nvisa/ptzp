@@ -58,6 +58,7 @@ IRDomePTHead::IRDomePTHead()
 	syncInterval = 20;
 	syncTime.start();
 
+	/* [CR] [yca] Hiz kontrolunu PtzpHead API'ye tasimaliyiz */
 	speedTableMapping.push_back(0.1);
 	speedTableMapping.push_back(0.3);
 	speedTableMapping.push_back(1);
@@ -79,6 +80,7 @@ int IRDomePTHead::getCapabilities()
 
 int IRDomePTHead::panLeft(float speed)
 {
+	/* [CR] [yca] maximum hizi define haline getirebiliriz... */
 	int pspeed = qAbs(speed) * 0x3f;
 	return panTilt(C_PAN_LEFT, pspeed, 0);
 }
@@ -148,7 +150,9 @@ int IRDomePTHead::panTiltDegree(float pan, float tilt)
 		speed_pan *= -1;
 	if (tilt < 0)
 		speed_tilt *= -1;
+	/* [CR] [yca] Bu yorum mDebug/mInfo kullanilacak hale getirilebilir */
 	ffDebug() << speed_pan << speed_tilt << pan << tilt;
+	/* [CR] [yca] Maximum degeri bir define'a baglayabiliriz */
 	return panTiltAbs((float)speed_pan / 63.0, (float)speed_tilt / 63.0);
 }
 
@@ -201,17 +205,29 @@ QJsonValue IRDomePTHead::marshallAllRegisters()
 	QJsonObject json;
 	for (int i = 0; i < R_COUNT; i++)
 		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
+	/* [CR] [yca] IR led seviyesi neden bir register degil */
 	json.insert("irLedLevel", irLedLevel);
 	return json;
 }
 
 void IRDomePTHead::unmarshallloadAllRegisters(const QJsonValue &node)
 {
-
+	/* [CR] [yca] Fazla bosluk, style dosyamiz bunu neden
+	 * yakalamamis bakmak lazim (yca)...
+	 */
 	QJsonObject root = node.toObject();
 	QString key = "reg%1";
 	panTilt(C_CUSTOM_GO_TO_POS, root.value(key.arg(R_PAN_ANGLE)).toInt(),
 			root.value(key.arg(R_TILT_ANGLE)).toInt());
+	/* [CR] [yca] oops fix sleep suresi. Bir kac sakinca soz konusu:
+	 *	1. 2 saniye uyuma suresi fazla garantili olmus gibi,
+	 *	   gerekli sure test edilip 100/200 milisaniye tolerans
+	 *	   ile buraya girilmeli.
+	 *	2. Buranin bu sekilde sleep icermesi bu fonskiyonu cagiran
+	 *	   katmanlarda soruna neden olabilir mi? (IRDomeDriver)
+	 *	   Eger sorun teskil etmiyorsa buraya uygun bir yorum
+	 *	   yazmak iyi olur.
+	 */
 	sleep(2);
 	irLedLevel = root.value("irLedLevel").toInt();
 	if (irLedLevel != 8)
@@ -220,11 +236,13 @@ void IRDomePTHead::unmarshallloadAllRegisters(const QJsonValue &node)
 
 float IRDomePTHead::getPanAngle()
 {
+	/* [CR] [yca] neden 100? */
 	return getRegister(R_PAN_ANGLE) / 100.0;
 }
 
 float IRDomePTHead::getTiltAngle()
 {
+	/* [CR] [yca] neden 100? */
 	return getRegister(R_TILT_ANGLE) / 100.0;
 }
 

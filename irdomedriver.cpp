@@ -44,7 +44,14 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 	headModule = new OemModuleHead;
 	headDome = new IRDomePTHead;
 	QStringList fields = targetUri.split(";");
+	/* [CR] [yca] Bildigim kadari ile bu sinifa eger ikinci alan
+	 * kullanilmayacaksa ikinci parametre olarak null gecmek gerekiyor.
+	 * Yani fields.size() = 1 olamiyor. Ya bu kod bunu karsilayacak sekilde
+	 * temizlenmeli ya da fields.size() = 1 oldugu durum calisir hale
+	 * getirilmeli.
+	 */
 	if (fields.size() == 1) {
+		/* [CR] [yca] memory leak, constructor'da release etmeli */
 		tp = new PtzpSerialTransport();
 		headModule->setTransport(tp);
 		headModule->enableSyncing(true);
@@ -58,6 +65,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		if (tp->connectTo(fields[0]))
 			return -EPERM;
 	} else {
+		/* [CR] [yca] memory leak ... */
 		tp = new PtzpSerialTransport();
 		headModule->setTransport(tp);
 		headModule->enableSyncing(true);
@@ -68,6 +76,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 
 		if (fields[1] != "null") {
 			ptSupport = true;
+			/* [CR] [yca] memory leak ... */
 			tp1 = new PtzpSerialTransport();
 			headDome->setTransport(tp1);
 			headDome->enableSyncing(true);
@@ -138,6 +147,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 	return 0;
 }
 
+/* [CR] [yca] Artik bu API deprecated, bunlardan kurtulabilir miyiz? */
 QVariant IRDomeDriver::get(const QString &key)
 {
 	mInfo("Get func: %s", qPrintable(key));
@@ -316,6 +326,14 @@ void IRDomeDriver::timeout()
 		if (headModule->getModulID() != 0)
 			state = SYNC_HEAD_MODULE;
 		else if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL)
+			/*
+			 * [CR] [yca] sync API'si istenmeyen durumlarda hata kodu
+			 * donduruyor, bunu burada handle etmemiz iyi bir fikir olabilir.
+			 *
+			 * Ayrica su anda modul sync() olamazsa gordugum kadari ile
+			 * driver sonsuza kadar bu state'de kaliyor. Burayi biraz daha
+			 * robust hale getirebilir miyiz?
+			 */
 			headModule->syncRegisters();
 		break;
 	case SYNC_HEAD_MODULE:
@@ -348,11 +366,27 @@ void IRDomeDriver::timeout()
 			autoIRcontrol();
 		}
 		manageRegisterSaving();
+		/*
+		 * [CR] [yca] Bu ozellige arya'da rastladim, tam olarak
+		 * doStartupProcess nedir anlayamadim.
+		 *
+		 * 1. Bunun gercek yeri burasi mi yoksa bu bir hack() mi
+		 *	  aciklayabilir misiniz?
+		 * 2. Eger dogru bir is yapiyorsak, en azindan bununla ilgili bir
+		 *	  dokumantastasyon yazabilir miyiz? Nedir, neler yapabilir vs.
+		 * 3. Eger bu faydali bir ozellik ise diger suruculurde de olmasi
+		 *	  gerekmez mi? ilk soru ile birlikte dusunulebilir...
+		 */
 		if (doStartupProcess) {
 			doStartupProcess = false;
 			getStartupProcess();
 		}
 
+		/*
+		 * [CR] [yca] [fo] 2243fe3110 commit'ini de review edebilir miyiz?
+		 * O committe dogru olmayan bazi isler yapilimis gibi hissediyorum?
+		 * Ornegin bu timeout() burada hic olmamis gibi...
+		 */
 		PtzpDriver::timeout();
 		break;
 	}
@@ -361,6 +395,7 @@ void IRDomeDriver::timeout()
 	}
 }
 
+/* [CR] [yca] IR kontrolunun burada olmasi dogru mu? */
 void IRDomeDriver::autoIRcontrol()
 {
 	int ledLevel = 1;

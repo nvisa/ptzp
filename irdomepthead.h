@@ -41,6 +41,7 @@ protected:
 	QJsonValue marshallAllRegisters();
 	void unmarshallloadAllRegisters(const QJsonValue &node);
 
+	/* [CR] [yca] bunu bir register yapamiyor muyuz? */
 	int irLedLevel;
 	bool syncEnabled;
 	int syncInterval;

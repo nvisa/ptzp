@@ -91,6 +91,7 @@ enum Commands {
 	C_COUNT,
 };
 
+/* [CR] [yca] define'lar genelde include'lardan sonra oluyor */
 #define MAX_CMD_LEN 16
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
@@ -205,6 +206,7 @@ protected:
 OemModuleHead::OemModuleHead()
 {
 	oldZoomValue = 0;
+	/* [CR] [yca] Memory leak... */
 	hist = new CommandHistory;
 	nextSync = C_COUNT;
 	syncEnabled = true;
@@ -326,12 +328,16 @@ int OemModuleHead::focusStop()
 
 void OemModuleHead::enableSyncing(bool en)
 {
+	/* [CR] [yca] syncEnabled'a cok rastliyorum, bunu PtzpHead'e
+	 * tasimak epey bir kafa icin faydali olacak sanirim?
+	 */
 	syncEnabled = en;
 	mInfo("Sync status: %d", (int)syncEnabled);
 }
 
 void OemModuleHead::setSyncInterval(int interval)
 {
+	/* [CR] [yca] syncEnabled gibi... */
 	syncInterval = interval;
 	mInfo("Sync interval: %d", syncInterval);
 }
@@ -340,6 +346,9 @@ int OemModuleHead::syncNext()
 {
 	unsigned char const *p = protoBytes[nextSync];
 	char modulFlag = p[2 + p[0]];
+	/* [CR] [yca] [fo] Bu while burada tehlikeli bunun uzerinde
+	 * konusup duzeltebilir miyiz?
+	 */
 	while (modulFlag > 0) {
 		if (getRegister(R_VISCA_MODUL_ID) == SONY_FCB_CV7500 && modulFlag == 1)
 			break;
@@ -896,6 +905,7 @@ uint OemModuleHead::getProperty(uint r)
 	return getRegister(r);
 }
 
+/* [CR] [yca] galiba bu API kalkabilir? */
 void OemModuleHead::setDeviceDefinition(QString definition)
 {
 	deviceDefinition = definition;

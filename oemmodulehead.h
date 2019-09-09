@@ -97,6 +97,7 @@ protected:
 	uint nextSync;
 	QElapsedTimer syncTime;
 	QString deviceDefinition;
+	/* TODO: investigate zoomSpeed and move to PtzpHead if possible */
 	int zoomSpeed;
 	int oldZoomValue;
 };
