@@ -208,6 +208,12 @@ QJsonValue IRDomePTHead::marshallAllRegisters()
 		json.insert(QString("reg%1").arg(i), (int)getRegister(i));
 	/* [CR] [yca] IR led seviyesi neden bir register degil */
 	json.insert("irLedLevel", irLedLevel);
+	/*
+	 * [CR] [yca] bu json ayarlari kaydetmek icin uygun bir yer degil. Eger
+	 * max pattern hizini ayarlanabilir bir deger yapmak istiyorsak, (ki
+	 * su ana kadar gordugum kadari ile oyle bir gereksinim yok) baska bir
+	 * yere kaydetmemiz lazim.
+	 */
 	json.insert("maxPatternSpeed", maxPatternSpeed);
 	return json;
 }
@@ -310,6 +316,10 @@ void IRDomePTHead::setSyncInterval(int interval)
 
 float IRDomePTHead::getMaxPatternSpeed() const
 {
+	/*
+	 * [CR] [yca] burada istenen degeri degisken tanimladan dondurebiliriz sanki,
+	 * zaten maxPatternSpeed degistirilebilir degil?
+	 */
 	return float(maxPatternSpeed) / 0x3F;
 }
 

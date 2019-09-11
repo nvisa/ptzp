@@ -94,6 +94,11 @@ enum Commands {
 /* [CR] [yca] define'lar genelde include'lardan sonra oluyor */
 #define MAX_CMD_LEN 16
 
+/*
+ * [CR] [yca] yaklasik 500 msec/1 saniyede bir IRCF okumak cok degil mi?
+ * Bunun yerine bir timer ile birlikte IRCF okunamaz mi? Daha da az surecek
+ * bir sekilde? 10 saniyede, 20, 30 saniyede 1 falan?
+*/
 const Commands queryPatternList[] = {
 	C_VISCA_GET_ZOOM,
 	C_VISCA_GET_ZOOM,
@@ -588,6 +593,7 @@ QByteArray OemModuleHead::transportReady()
 	if (syncEnabled && syncTime.elapsed() > syncInterval) {
 		mLogv("Syncing zoom positon");
 		syncTime.restart();
+		/* [CR] [yca] ooops, static degisken :( */
 		static uint ind = 0;
 		Commands q = queryPatternList[ind++];
 		if (ind >= sizeof(queryPatternList) / sizeof(queryPatternList[0]))

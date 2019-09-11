@@ -356,6 +356,11 @@ QString PtzpHead::whoAmI()
 
 float PtzpHead::getMaxPatternSpeed() const
 {
+	/*
+	 * [CR] [yca] negative deger yerine 1.0 dondurmemiz daha iyi olabilir.
+	 * Dondurdugumuz deger float oldugu icin bunu bir error kod gibi
+	 * kullanmak uygun degil.
+	 */
 	return -EINVAL;
 }
 
