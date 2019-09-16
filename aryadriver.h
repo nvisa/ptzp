@@ -24,6 +24,8 @@ public:
 	int setMoxaControl(const QString &targetThermal, const QString &targetDay);
 	void updateZoomOverlay(int thermal, int day);
 	void setOverlayInterval(int ms);
+	void setThermalInterval(int ms);
+	void setGungorInterval(int ms);
 	grpc::Status GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
 	grpc::Status SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
 protected slots:
@@ -57,6 +59,9 @@ protected:
 	MoxaControlHead *moxaDay;
 	int overlayInterval;
 	QElapsedTimer connectLaps;
+	int thermalInterval;
+	int gungorInterval;
+
 };
 
 #endif // ARYADRIVER_H

@@ -41,6 +41,8 @@ static float speedRegulateArya(float speed, float zooms[]) {
 AryaDriver::AryaDriver(QObject *parent)
 	: PtzpDriver(parent)
 {
+	gungorInterval = 100;
+	thermalInterval = 1000;
 	tcp1 = NULL;
 	tcp2 = NULL;
 	tcp3 = NULL;
@@ -103,6 +105,7 @@ int AryaDriver::connectThermal(const QString &target)
 {
 	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	tcp2->connectTo(QString("%1:4002").arg(target));
+	tcp2->setTimerInterval(thermalInterval);
 	thermal = new MgeoThermalHead;
 	thermal->setTransport(tcp2);
 	return 0;
@@ -112,6 +115,7 @@ int AryaDriver::connectDay(const QString &target)
 {
 	tcp3 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	tcp3->connectTo(QString("%1:4003").arg(target));
+	tcp3->setTimerInterval(gungorInterval);
 	gungor = new MgeoGunGorHead;
 	gungor->setTransport(tcp3);
 	defaultModuleHead = gungor;
@@ -160,6 +164,16 @@ void AryaDriver::setOverlayInterval(int ms)
 {
 	if (ms != 0)
 		overlayInterval = ms;
+}
+
+void AryaDriver::setThermalInterval(int ms)
+{
+	thermalInterval = ms;
+}
+
+void AryaDriver::setGungorInterval(int ms)
+{
+	gungorInterval = ms;
 }
 
 grpc::Status AryaDriver::GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
