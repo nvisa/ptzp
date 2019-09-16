@@ -409,8 +409,12 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray MgeoThermalHead::transportReady()
 {
-	sendCommand(C_GET_ZOOM_FOCUS);
-	return QByteArray();
+	if (nextSync != syncList.size())
+		return QByteArray();
+	unsigned char *cmd = protoBytes[C_GET_ZOOM_FOCUS];
+	int cmdlen = cmd[1];
+	cmd[cmdlen - 1] = chksum(cmd, cmdlen - 1);
+	return QByteArray((const char*)cmd, cmdlen);
 }
 
 int MgeoThermalHead::syncNext()
