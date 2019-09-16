@@ -92,6 +92,7 @@ int AryaDriver::connectPT(const QString &target)
 {
 	tcp1 = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	tcp1->connectTo(QString("%1:4001").arg(target));
+	tcp1->enableQueueFreeCallbacks(true);
 	aryapt = new AryaPTHead;
 	aryapt->setTransport(tcp1);
 	defaultPTHead = aryapt;
@@ -221,6 +222,8 @@ void AryaDriver::timeout()
 	case SYNC_GUNGOR_MODULES:
 		if(gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			gungor->setFocusStepper();
+			tcp2->enableQueueFreeCallbacks(true);
+			tcp3->enableQueueFreeCallbacks(true);
 			state = NORMAL;
 		}
 		break;
