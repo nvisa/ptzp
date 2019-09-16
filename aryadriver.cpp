@@ -41,6 +41,7 @@ static float speedRegulateArya(float speed, float zooms[]) {
 AryaDriver::AryaDriver(QObject *parent)
 	: PtzpDriver(parent)
 {
+	apiEnable = false;
 	gungorInterval = 100;
 	thermalInterval = 1000;
 	tcp1 = NULL;
@@ -70,13 +71,7 @@ int AryaDriver::setTarget(const QString &targetUri)
 	connectThermal(targetUri);
 	connectDay(targetUri);
 
-	SpeedRegulation sreg = getSpeedRegulation();
-	sreg.enable = true;
-	sreg.ipol = SpeedRegulation::ARYA;
-	sreg.interFunc = speedRegulateArya;
-	sreg.zoomHead = thermal;
-	sreg.secondZoomHead = gungor;
-	setSpeedRegulation(sreg);
+	setRegulateSettings();
 	return 0;
 }
 
@@ -178,23 +173,47 @@ void AryaDriver::setGungorInterval(int ms)
 
 grpc::Status AryaDriver::GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
 {
-	if (defaultModuleHead == thermal)
-		response->set_head_id(1);
-	else if (defaultModuleHead == gungor)
-		response->set_head_id(2);
+	if (!apiEnable) {
+		int headID = request->head_id();
+		if (headID == 1)
+			defaultModuleHead = thermal;
+		else if (headID == 2)
+			defaultModuleHead = gungor;
+		setRegulateSettings();
+	}
 	return PtzpDriver::GetSettings(context, request, response);
 }
 
 grpc::Status AryaDriver::SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
 {
-	int headID = request->head_id();
-	if (headID == 1)
-		defaultModuleHead = thermal;
-	else if (headID == 2)
-		defaultModuleHead = gungor;
+	if (request->json() == "change_head") {
+		apiEnable = true;
+		int headID = request->head_id();
+		if (headID == 1)
+			defaultModuleHead = thermal;
+		else if (headID == 2)
+			defaultModuleHead = gungor;
+		setRegulateSettings();
+		return grpc::Status::OK;
+	}
 	return PtzpDriver::SetSettings(context, request, response);
 }
 
+void AryaDriver::setRegulateSettings()
+{
+	SpeedRegulation sreg = getSpeedRegulation();
+	sreg.enable = true;
+	sreg.ipol = SpeedRegulation::CUSTOM; //custom
+	if (defaultModuleHead == gungor) {
+		sreg.interFunc = speedRegulateDay;
+		sreg.zoomHead = gungor;
+	}
+	else {
+		sreg.interFunc = speedRegulateThermal;
+		sreg.zoomHead = thermal;
+	}
+	setSpeedRegulation(sreg);
+}
 PtzpHead *AryaDriver::getHead(int index)
 {
 	if (index == 0)

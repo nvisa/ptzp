@@ -35,6 +35,7 @@ protected:
 	int connectPT(const QString &target);
 	int connectThermal(const QString &target);
 	int connectDay(const QString &target);
+	void setRegulateSettings();
 protected:
 	enum DriverState {
 		INIT,
@@ -61,7 +62,7 @@ protected:
 	QElapsedTimer connectLaps;
 	int thermalInterval;
 	int gungorInterval;
-
+	bool apiEnable;
 };
 
 #endif // ARYADRIVER_H
