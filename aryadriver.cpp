@@ -52,7 +52,7 @@ AryaDriver::AryaDriver(QObject *parent)
 
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
-	state = SYSTEM_CHECK;
+	state = INIT;
 	connectLaps.start();
 
 	checker = new QElapsedTimer();
@@ -193,46 +193,23 @@ PtzpHead *AryaDriver::getHead(int index)
 
 void AryaDriver::timeout()
 {
-	if (tcp1->getStatus() || tcp2->getStatus() || tcp3->getStatus()) {
+	if (thermal->getHeadStatus() != PtzpHead::ST_NORMAL
+		||	gungor->getHeadStatus() != PtzpHead::ST_NORMAL
+		||	aryapt->getHeadStatus() != PtzpHead::ST_NORMAL) {
+		mDebug("System heads didn't initialize...System will go to restart;\n"
+			  "Thermal State %d, Gungor State %d, PanTilt State %d.",
+			   thermal->getHeadStatus(), gungor->getHeadStatus(), aryapt->getHeadStatus());
 		if (connectLaps.elapsed() > 30000)
 			reboot();
 		return;
-	}
+	} else
+		connectLaps.restart();
 	mLog("Driver state: %d", state);
 	switch (state) {
-	case SYSTEM_CHECK:
-		if (checker->elapsed() > 5000) {
-			if (aryapt->getSystemStatus() == 2)
-				tcp1->enableQueueFreeCallbacks(true);
-			if (gungor->getSystemStatus() == 2)
-				tcp3->enableQueueFreeCallbacks(true);
-			if (thermal->getSystemStatus() == 2) {
-				tcp2->enableQueueFreeCallbacks(true);
-			}
-			state = INIT;
-		}
-
-		if (aryapt->getSystemStatus() != 2) {
-			aryapt->headSystemChecker();
-		}
-		if (gungor->getSystemStatus() != 2) {
-			gungor->headSystemChecker();
-		}
-		if (thermal->getSystemStatus() != 2) {
-			thermal->headSystemChecker();
-		}
-		break;
 	case INIT:
-		if (thermal->getSystemStatus() == 2) {
-			thermal->syncRegisters();
-			thermal->loadRegisters("head1.json");
-			state = SYNC_THERMAL_MODULES;
-		} else if (gungor->getSystemStatus() == 2) {
-			gungor->syncRegisters();
-			gungor->loadRegisters("head2.json");
-			state = SYNC_GUNGOR_MODULES;
-		}
-		checker->restart();
+		thermal->syncRegisters();
+		thermal->loadRegisters("head1.json");
+		state = SYNC_THERMAL_MODULES;
 		break;
 	case SYNC_THERMAL_MODULES:
 		if(thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
