@@ -24,6 +24,8 @@ public:
 	int setMoxaControl(const QString &targetThermal, const QString &targetDay);
 	void updateZoomOverlay(int thermal, int day);
 	void setOverlayInterval(int ms);
+	grpc::Status GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
+	grpc::Status SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
 protected slots:
 	void timeout();
 protected:

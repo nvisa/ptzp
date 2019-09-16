@@ -161,6 +161,25 @@ void AryaDriver::setOverlayInterval(int ms)
 		overlayInterval = ms;
 }
 
+grpc::Status AryaDriver::GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
+{
+	if (defaultModuleHead == thermal)
+		response->set_head_id(1);
+	else if (defaultModuleHead == gungor)
+		response->set_head_id(2);
+	return PtzpDriver::GetSettings(context, request, response);
+}
+
+grpc::Status AryaDriver::SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
+{
+	int headID = request->head_id();
+	if (headID == 1)
+		defaultModuleHead = thermal;
+	else if (headID == 2)
+		defaultModuleHead = gungor;
+	return PtzpDriver::SetSettings(context, request, response);
+}
+
 PtzpHead *AryaDriver::getHead(int index)
 {
 	if (index == 0)
