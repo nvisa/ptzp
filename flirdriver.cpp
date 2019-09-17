@@ -52,6 +52,11 @@ int FlirDriver::setTarget(const QString &targetUri)
 	return 0;
 }
 
+/*
+ * [CR] [fo] flirmodulehead içerisinde modülün durumuna göre
+ * işlem yapılan birkaç özellik var.Bu yüzden buraya sync state'i ve
+ * modulehead içerisine sync işlemi eklenmeli.
+ */
 void FlirDriver::timeout()
 {
 	PtzpDriver::timeout();

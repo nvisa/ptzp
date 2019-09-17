@@ -142,6 +142,9 @@ int FlirPTHead::panTiltAbs(float pan, float tilt)
 	return 0;
 }
 
+/*
+ * [CR] [fo] Pt modülene özgü komutları setSettings() içerisine taşıyabiliriz.
+ */
 int FlirPTHead::home()
 {
 	return saveCommand(ptzCommandList.at(C_PT_HOME));

@@ -3,6 +3,13 @@
 
 #include <errno.h>
 
+/*
+ * [CR] [fo] transport yapısı kesinlikle dökümante edilmeli.
+ * Buranın çalışma yapısı bilinmediği için yapılan geliştirmeler
+ * sistemi etkileyebilecek hatalara sebebiyet verebiliyor.
+ * Örn; tbgth termak head sync sorunu, ki bu hatanın sebebi pt head de yapılan
+ * değişiklikten kaynaklanıyordu. Bu nedenle bu yapı için dökümantasyon gerekli.
+ */
 class BufferedProto : public PtzpTransport::LineProto
 {
 public:

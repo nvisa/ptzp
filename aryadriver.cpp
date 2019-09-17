@@ -76,6 +76,11 @@ int AryaDriver::setTarget(const QString &targetUri)
 	thermal->setTransport(tcp2);
 	gungor->setTransport(tcp3);
 
+	/*
+	 * [CR] [fo] speedRegulation sadece driver başlatıldığında mı yapılıyor?
+	 * Yoksa çalışma esnasında yönetilen/görüntülenen head'e göre
+	 * değişkenlik gösteriyor mu?
+	 */
 	SpeedRegulation sreg = getSpeedRegulation();
 	sreg.enable = true;
 	sreg.ipol = SpeedRegulation::ARYA;

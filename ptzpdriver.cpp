@@ -112,6 +112,9 @@ int PtzpDriver::startGrpcApi(quint16 port)
 #endif
 }
 
+/*
+ * [CR] [fo] Artık bu api'ları kullanmadığımız için kaldırılabilir.
+ */
 QVariant PtzpDriver::get(const QString &key)
 {
 	mInfo("Get func: %s", qPrintable(key));
@@ -150,6 +153,9 @@ QVariant PtzpDriver::get(const QString &key)
 	return QVariant();
 }
 
+/*
+ * [CR] [fo] Artık bu api'ları kullanmadığımız için kaldırılabilir.
+ */
 int PtzpDriver::set(const QString &key, const QVariant &value)
 {
 	PatrolNg *ptrl = PatrolNg::getInstance();
@@ -476,7 +482,12 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context,
 		if (speed > maxSpeed)
 			speed = maxSpeed;
 	}
-
+	/*
+	 * [CR] [fo] pattern recording aktif olmasa bile alttaki satır çalışmaz mı?
+	 * Gereksiz yere bu metoda gidip işlem yapacak.
+	 * Bir üztteki if scope'una taşınması daha doğru gibi.
+	 * Eğer doğru bir kullanımsa sebebine dair buraya açıklama getirlmeli.
+	 */
 	commandUpdate(PtzControlInterface::C_PAN_LEFT, speed, 0);
 	head->panLeft(speed);
 	return grpc::Status::OK;
@@ -505,7 +516,9 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context,
 		if (speed > maxSpeed)
 			speed = maxSpeed;
 	}
-
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_PAN_RIGHT, speed, 0);
 	head->panRight(speed);
 	return grpc::Status::OK;
@@ -525,6 +538,9 @@ grpc::Status PtzpDriver::PanStop(grpc::ServerContext *context,
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 	head->panTiltStop();
 
@@ -547,6 +563,9 @@ grpc::Status PtzpDriver::ZoomIn(grpc::ServerContext *context,
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_ZOOM_IN, speed, 0);
 	head->startZoomIn(speed);
 	return grpc::Status::OK;
@@ -568,6 +587,9 @@ grpc::Status PtzpDriver::ZoomOut(grpc::ServerContext *context,
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_ZOOM_OUT, speed, 0);
 	head->startZoomOut(speed);
 	return grpc::Status::OK;
@@ -587,6 +609,9 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context,
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_ZOOM_STOP, 0, 0);
 	head->stopZoom();
 	setChangeOverlayState(true);
@@ -618,6 +643,9 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context,
 			speed = maxSpeed;
 	}
 
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_TILT_UP, speed, 0);
 	head->tiltUp(speed);
 	return grpc::Status::OK;
@@ -648,6 +676,9 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context,
 			speed = maxSpeed;
 	}
 
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_TILT_DOWN, speed, 0);
 	head->tiltDown(speed);
 	return grpc::Status::OK;
@@ -667,6 +698,9 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context,
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 	head->panTiltStop();
 	return grpc::Status::OK;
@@ -691,6 +725,9 @@ grpc::Status PtzpDriver::PanTilt2Pos(grpc::ServerContext *context,
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_PAN_TILT_GOTO_POS, 0, 0);
 	head->panTiltGoPos(pan, tilt);
 	return grpc::Status::OK;
@@ -735,6 +772,9 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context,
 	pan *= signPan;
 	tilt *= signTilt;
 
+	/*
+	 * [CR] [fo] Aynı "ptrn->isRecording()" sorunu.
+	 */
 	commandUpdate(PtzControlInterface::C_PAN_TILT_ABS_MOVE, pan, tilt);
 	head->panTiltAbs(pan, tilt);
 	return grpc::Status::OK;

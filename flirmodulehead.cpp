@@ -4,6 +4,9 @@
 #include <assert.h>
 #include <ecl/ptzp/ptzptransport.h>
 
+/*
+ * [CR] [fo] Hangi enum kullanılacak?
+ */
 enum Commands {
 	CGI_SET_FOCUS_INC,
 	CGI_SET_FOCUS_DEC,
@@ -128,6 +131,11 @@ int FlirModuleHead::focusStop()
 	return sendCommand(commandList.at(C_FOCUS_STOP));
 }
 
+/*[CR] [fo] Neden ayrı fonksiyonlarda?
+ * Kullanım esnasında bunlar içinde api yazılması gerekmez mi?
+ * setProperty() zaten bu kullanımlar için var.
+ * (setFocusMode, setFocusValue, getFocusMode)
+ */
 int FlirModuleHead::setFocusMode(uint x)
 {
 	return sendCommand(commandList.at(C_SET_MANUAL_FOCUS).arg(x));

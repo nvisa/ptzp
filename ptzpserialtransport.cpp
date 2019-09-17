@@ -14,6 +14,9 @@
 
 static QMutex serlock;
 
+/*
+ * [CR] [fo] read ve write threadlerinin çalışma yapısı dökümante edilmeli.
+ */
 class ReadThread : public QThread
 {
 public:

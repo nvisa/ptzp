@@ -247,6 +247,12 @@ void PtzpHead::setSyncInterval(int interval)
 	Q_UNUSED(interval);
 }
 
+/*
+ * [CR] [fo] Bu dataReady'nin çalışma mantığını hala daha çok kavrayamadım.
+ * Bir yerlerden bir yerlere gidiyoruz, gerekli şeyleri çağırıyoruz ama nasıl?
+ * callback işlemleri dataReady çalışma mantığı, queue yapısı detaylı bir şekilde
+ * dökümante edilirse geliştirme esnasında çok daha verimli olunabilir.
+ */
 int PtzpHead::dataReady(const unsigned char *bytes, int len, void *priv)
 {
 	return ((PtzpHead *)priv)->dataReady(bytes, len);
@@ -418,6 +424,19 @@ int PtzpHead::loadRegisters(const QString &filename)
 
 int PtzpHead::communicationElapsed()
 {
+	/*
+	 * [CR] [fo] [yca] [key]
+	 * pingTimer birçok head içerisinde tekrardan tanımlanmış.
+	 * Bu nedenle ping time bilgisi bu metoda düşmez diye düşünüyorum.
+	 * Sonuçta aynı isimli farklı değişkenler haline gelmişler.
+	 *
+	 * Ayrıca bu tanımlamaları kaldırıp base class'taki ping timer'ı
+	 * kullanmak istesek dahi aynı driverdaki farklı headler içerisinde
+	 * aynı timer kick edileceği için yine bir çözüm olmayacak gibi duruyor.
+	 *
+	 * pingtime süresine göre bir işlem yapmak istiyorsak buraya farklı bir
+	 * çözüm getirmeliyiz diye düşünüyorum.
+	 */
 	return pingTimer.elapsed();
 }
 
