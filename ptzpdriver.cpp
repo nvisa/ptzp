@@ -1010,7 +1010,6 @@ float PtzpDriver::regulateSpeed(float raw, int zoom)
 	if (sreg.ipol == SpeedRegulation::ARYA) {
 		float zooms[2];
 		zooms[0] = sreg.zoomHead->getZoom();
-		zooms[1] = sreg.secondZoomHead->getZoom();
 		return sreg.interFunc(raw,zooms);
 	}
 	if (sreg.ipol == SpeedRegulation::CUSTOM) {

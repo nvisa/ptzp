@@ -23,7 +23,7 @@ static float speedRegulateThermal(float speed, float zooms[]) {
 
 static float speedRegulateDay(float speed, float zooms[]) {
 	float stepSize = 1085.0;
-	float zoomVal = zooms[1];
+	float zoomVal = zooms[0];
 	float stepAmount = zoomVal / stepSize;
 	float correction = pow((13.751 - stepAmount * 0.229) / 13.751,2);
 	float result = speed * correction;
@@ -203,7 +203,7 @@ void AryaDriver::setRegulateSettings()
 {
 	SpeedRegulation sreg = getSpeedRegulation();
 	sreg.enable = true;
-	sreg.ipol = SpeedRegulation::CUSTOM; //custom
+	sreg.ipol = SpeedRegulation::ARYA;
 	if (defaultModuleHead == gungor) {
 		sreg.interFunc = speedRegulateDay;
 		sreg.zoomHead = gungor;
