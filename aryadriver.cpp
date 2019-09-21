@@ -230,7 +230,7 @@ void AryaDriver::timeout()
 	if (thermal->getHeadStatus() != PtzpHead::ST_NORMAL
 		||	gungor->getHeadStatus() != PtzpHead::ST_NORMAL
 		||	aryapt->getHeadStatus() != PtzpHead::ST_NORMAL) {
-		mDebug("System heads didn't initialize...System will go to restart;\n"
+		mLog("System heads didn't initialize...System will go to restart;\n"
 			  "Thermal State %d, Gungor State %d, PanTilt State %d.",
 			   thermal->getHeadStatus(), gungor->getHeadStatus(), aryapt->getHeadStatus());
 		if (connectLaps.elapsed() > 30000)
