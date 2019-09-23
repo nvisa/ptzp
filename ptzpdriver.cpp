@@ -479,7 +479,7 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context,
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 
 	float maxSpeed = head->getMaxPatternSpeed();
-	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+	if (ptrn->isRecording() && maxSpeed != 1.0) {
 		if (speed > maxSpeed)
 			speed = maxSpeed;
 	}
@@ -513,7 +513,7 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context,
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 
 	float maxSpeed = head->getMaxPatternSpeed();
-	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+	if (ptrn->isRecording() && maxSpeed != 1.0) {
 		if (speed > maxSpeed)
 			speed = maxSpeed;
 	}
@@ -639,7 +639,7 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context,
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 
 	float maxSpeed = head->getMaxPatternSpeed();
-	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+	if (ptrn->isRecording() && maxSpeed != 1.0) {
 		if (speed > maxSpeed)
 			speed = maxSpeed;
 	}
@@ -672,7 +672,7 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context,
 		speed = regulateSpeed(speed, sreg.zoomHead->getZoom());
 
 	float maxSpeed = head->getMaxPatternSpeed();
-	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+	if (ptrn->isRecording() && maxSpeed != 1.0) {
 		if (speed > maxSpeed)
 			speed = maxSpeed;
 	}
@@ -763,7 +763,7 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context,
 	}
 
 	float maxSpeed = head->getMaxPatternSpeed();
-	if (ptrn->isRecording() && maxSpeed != -EINVAL) {
+	if (ptrn->isRecording() && maxSpeed != 1.0) {
 		if (pan > maxSpeed)
 			pan = maxSpeed;
 		if (tilt > maxSpeed)
