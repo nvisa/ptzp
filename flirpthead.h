@@ -28,7 +28,21 @@ public:
 	int panTiltStop();
 	float getPanAngle();
 	float getTiltAngle();
+	int getFlirConfig();
 
+protected:
+	struct FlirConfigs
+	{
+		float panUpperSpeed;
+		float tiltUpperSpeed;
+		float maxPanPos;
+		float minPanPos;
+		float maxTiltPos;
+		float minTiltPos;
+	};
+	FlirConfigs flir;
+	QHash<QString, QString> flirConfig;
+	void setupFlirConfigs();
 protected:
 	QStringList ptzCommandList;
 	int panPos;

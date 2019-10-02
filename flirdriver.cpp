@@ -49,6 +49,8 @@ int FlirDriver::setTarget(const QString &targetUri)
 		return ret;
 	httpTransportModule->enableQueueFreeCallbacks(true);
 	httpTransportModule->setTimerInterval(200);
+
+	headDome->getFlirConfig();
 	return 0;
 }
 
