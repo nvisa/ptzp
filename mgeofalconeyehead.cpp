@@ -954,9 +954,9 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 			i2c->controlRelay(0x01, ((1 << (standbyRelay-1))));
 		}
 #else
-		relth->switch2(x);
+		if (!relth->switch2(x))
+			setRegister(R_RELAY_STATUS, x);
 #endif
-		setRegister(R_RELAY_STATUS, x);
 	}
 }
 

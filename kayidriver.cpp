@@ -8,6 +8,7 @@
 #include <QTcpSocket>
 #include <QTimer>
 #include <errno.h>
+#include <unistd.h>
 
 KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QObject *parent)
 	: PtzpDriver(parent)
@@ -94,6 +95,10 @@ void KayiDriver::timeout()
 		headModule->setProperty(37, 2);
 		headModule->setProperty(5, 1);
 		headModule->setProperty(37, 1);
+		while (headModule->getProperty(61) != 1) {
+			usleep(1000);
+			headModule->setProperty(37, 1);
+		}
 		state = WAIT_ALIVE;
 		break;
 	case WAIT_ALIVE:
