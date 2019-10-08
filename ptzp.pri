@@ -29,6 +29,7 @@ HEADERS += \
     ptzp/htrswirpthead.h \
     ptzp/htrswirdriver.h \
     ptzp/htrswirmodulehead.h
+    ptzp/moxacontrolhead.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -60,6 +61,7 @@ SOURCES += \
     ptzp/htrswirpthead.cpp \
     ptzp/htrswirdriver.cpp \
     ptzp/htrswirmodulehead.cpp
+    ptzp/moxacontrolhead.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API
@@ -93,6 +95,7 @@ ptzp-grpc {
     grpc_decl.input = PROTOS
     grpc_decl.output = ${QMAKE_FILE_IN_PATH}/${QMAKE_FILE_BASE}.grpc.pb.h
     grpc_decl.commands = protoc --grpc_out=${QMAKE_FILE_IN_PATH} --plugin=protoc-gen-grpc=$(EXPORT_GRPC_CPP_PLUGIN_PATH) --proto_path=${QMAKE_FILE_IN_PATH} ${QMAKE_FILE_NAME}
+    grpc_decl.depends = ${QMAKE_FILE_IN_PATH}/${QMAKE_FILE_BASE}.pb.h
     grpc_decl.variable_out = HEADERS
     QMAKE_EXTRA_COMPILERS += grpc_decl
 

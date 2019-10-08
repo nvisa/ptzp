@@ -9,6 +9,7 @@ PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 	: QObject(parent), PtzpTransport(proto)
 {
 	sock = NULL;
+	devStatus = DEAD;
 	timer = new QTimer();
 	filterInterface = NULL;
 	timer->start(periodTimer);
@@ -60,6 +61,7 @@ int PtzpTcpTransport::disconnectFrom()
 	sock->disconnectFromHost();
 	sock->deleteLater();
 	sock = NULL;
+	devStatus = DEAD;
 	return 0;
 }
 
@@ -85,10 +87,18 @@ void PtzpTcpTransport::setFilter(
 void PtzpTcpTransport::connected()
 {
 	mInfo("connected");
+	devStatus = ALIVE;
+}
+
+PtzpTcpTransport::DevStatus PtzpTcpTransport::getStatus()
+{
+	return devStatus;
 }
 
 void PtzpTcpTransport::dataReady()
 {
+	if (devStatus != ALIVE)
+		return;
 	if (filterInterface) {
 		while (sock->bytesAvailable()) {
 			QByteArray ba;
@@ -108,6 +118,7 @@ void PtzpTcpTransport::dataReady()
 void PtzpTcpTransport::clientDisconnected()
 {
 	ffDebug() << "disconnected";
+	disconnectFrom();
 }
 /**
  * @brief PtzpTcpTransport::callback
@@ -126,7 +137,7 @@ void PtzpTcpTransport::callback()
 
 void PtzpTcpTransport::sendSocketMessage(const QByteArray &ba)
 {
-	if (!sock)
+	if (devStatus != ALIVE || !sock)
 		return;
 	if (isUdp && sendDstPort)
 		((QUdpSocket *)sock)

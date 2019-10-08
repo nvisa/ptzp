@@ -1073,7 +1073,11 @@ grpc::Status PtzpDriver::SetSettings(grpc::ServerContext *context,
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
 	QVariantMap map = jsonToMap(request->json().c_str());
-	head->setSettings(map);
+	QVariantMap normMap;
+	int ret = normalizeValues(request->head_id(), map, &normMap);
+	if (ret < 0)
+		return grpc::Status::CANCELLED;
+	head->setSettings(normMap);
 	return grpc::Status::OK;
 }
 
@@ -1188,8 +1192,7 @@ float PtzpDriver::regulateSpeed(float raw, int zoom)
 	if (sreg.ipol == SpeedRegulation::ARYA) {
 		float zooms[2];
 		zooms[0] = sreg.zoomHead->getZoom();
-		zooms[1] = sreg.secondZoomHead->getZoom();
-		return sreg.interFunc(raw, zooms);
+		return sreg.interFunc(raw,zooms);
 	}
 	if (sreg.ipol == SpeedRegulation::CUSTOM) {
 		float fovs[2];
@@ -1383,4 +1386,120 @@ void PtzpDriver::stopAnyProcess(StopProcess stop)
 		stopAnyProcess(PATROL);
 		stopAnyProcess(PATTERN);
 	}
+}
+
+int PtzpDriver::createHeadMaps()
+{
+	if (QFile::exists("headmaps.json"))
+		return 0;
+	QJsonObject mainObj;
+	for (int i = 0; i < getHeadCount(); i++) {
+		PtzpHead *head = getHead(i);
+		QJsonArray arr;
+		foreach (QString key, head->getSettings().keys()) {
+			QJsonObject obj;
+			obj.insert("dmax", 0);
+			obj.insert("dmin", 0);
+			QJsonObject subObj;
+			subObj.insert(key, obj);
+			arr.append(subObj);
+		}
+		mainObj.insert(QString("head%1").arg(i), arr);
+	}
+	mainObj.insert("normalize_value", false);
+	mainObj.insert("normalize_value_max", 1);
+	mainObj.insert("normalize_value_min", -1);
+	QJsonDocument doc;
+	doc.setObject(mainObj);
+	QFile f("headmaps.json");
+	if (!f.open(QIODevice::WriteOnly)) {
+		mDebug("file opening error '%s'", qPrintable(f.fileName()));
+		return -1;
+	}
+	mDebug("Exporting settings of heads.");
+	f.write(doc.toJson());
+	f.close();
+	return 0;
+}
+
+int PtzpDriver::readHeadMaps(const QString &filename)
+{
+	if (!QFile::exists(filename))
+		createHeadMaps();
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly))
+		return -ENODEV;
+	QByteArray ba = f.readAll();
+	f.close();
+	QJsonObject obj = QJsonDocument::fromJson(ba).object();
+	if (obj.isEmpty())
+		return -ENODATA;
+	headMaps = obj;
+	return 0;
+}
+
+int PtzpDriver::getHeadValueRanges(int head, const QString &key, QJsonObject *val)
+{
+	if (key.isEmpty() || headMaps.isEmpty())
+		return -ENOENT;
+	QJsonValue headObj = headMaps.value(QString("head%1").arg(head));
+	if (!headObj.isArray())
+		return -ENOKEY;
+	QJsonArray arr = headObj.toArray();
+	for (int i = 0; i < arr.size(); i++) {
+		QJsonObject setsObj = arr[i].toObject();
+		if (setsObj.keys()[0] != key)
+			continue;
+		*val = setsObj.value(key).toObject();
+	}
+	return 0;
+}
+
+int PtzpDriver::normalizeValues(int head, const QVariantMap &map, QVariantMap *resMap)
+{
+	*resMap = map;
+	bool normalizeValues = false;
+	if (headMaps.isEmpty()) {
+		if (!readHeadMaps("headmaps.json"))
+			normalizeValues = headMaps.value("normalize_value").toBool();
+	} else
+		normalizeValues = headMaps.value("normalize_value").toBool();
+	if (normalizeValues) {
+		QMapIterator<QString, QVariant> mi(map);
+		while (mi.hasNext()) {
+			mi.next();
+			bool validateRange = true;
+			float valmin = headMaps.value("normalize_value_min").toDouble();
+			float valmax = headMaps.value("normalize_value_max").toDouble();
+			QJsonObject dvalues;
+			int ret = getHeadValueRanges(head, mi.key(), &dvalues);
+			if (ret < 0)
+				return ret;
+			float dmin = dvalues.value("dmin").toDouble();
+			float dmax = dvalues.value("dmax").toDouble();
+			float val = mi.value().toFloat();
+			if (valmin > valmax)
+				return -1;
+			if (validateRange && val < valmin)
+				return -1;
+			if (validateRange && val > valmax)
+				return -1;
+			/*
+			 * For instance:
+			 *
+			 *    brightness driver range: 20-300
+			 *
+			 *    float dmin = 20;
+			 *    float dmax = 300;
+			 *    float valmin = 0;
+			 *    flaot valmax = 1;
+			 */
+			// change to absolute normalize value 0-100, -1 - +1, 0-1 etc...
+			val = (val - valmin) / (valmax - valmin);
+			float val2 = (dmax - dmin) * val + dmin;
+			mLog("normalize processing, '%f' to '%f'", mi.value().toFloat(), val2);
+			resMap->insert(mi.key(), val2);
+		}
+	}
+	return 0;
 }

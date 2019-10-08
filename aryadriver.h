@@ -1,56 +1,41 @@
 #ifndef ARYADRIVER_H
 #define ARYADRIVER_H
 
-#include <ecl/net/networkaccessmanager.h>
 #include <ecl/ptzp/ptzpdriver.h>
+#include <QElapsedTimer>
 
 class AryaPTHead;
 class MgeoThermalHead;
 class MgeoGunGorHead;
 class PtzpTcpTransport;
-
+class PtzpHttpTransport;
+class MoxaControlHead;
 class AryaDriver : public PtzpDriver
 {
 	Q_OBJECT
 public:
-	enum OverlayPos { LEFT_UP, RIGHT_UP, LEFT_DOWN, RIGHT_DOWN, CUSTOM };
-
-	struct Overlay {
-		OverlayPos pos;
-		int posx;
-		int posy;
-		int textSize;
-		bool disabled;
-	};
-
-	struct VideoDeviceParams {
-		QString ip;
-		QString pass;
-		QString uname;
-	};
-
-	/*
-	 * [CR] [yca] Bu enum'a gerek var mi? setZoomOverlayString()
-	 * fonksiyonuna ilgili kafanin kendisi gecilemez mi?
-	 */
-	enum overlayForHead { THERMAL, DAY };
-
 	explicit AryaDriver(QObject *parent = 0);
 
 	virtual int setTarget(const QString &targetUri);
 	virtual PtzpHead *getHead(int index);
 	QVariant get(const QString &key);
 	int set(const QString &key, const QVariant &value);
-	int setZoomOverlay();
 
-	int setOverlay(const QString data);
-	QString setZoomOverlayString(overlayForHead head);
-	void setVideoDeviceParams(const QString &ip, const QString &uname,
-							  const QString &pass);
+	int setMoxaControl(const QString &targetThermal, const QString &targetDay);
+	void updateZoomOverlay(int thermal, int day);
+	void setOverlayInterval(int ms);
+	void setThermalInterval(int ms);
+	void setGungorInterval(int ms);
+	grpc::Status GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
+	grpc::Status SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
 protected slots:
 	void timeout();
-	void overlayFinished();
-
+protected:
+	void reboot();
+	int connectPT(const QString &target);
+	int connectThermal(const QString &target);
+	int connectDay(const QString &target);
+	void setRegulateSettings();
 protected:
 	enum DriverState {
 		INIT,
@@ -67,10 +52,17 @@ protected:
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
-	NetworkAccessManager *netman;
-	Overlay olay;
 	QElapsedTimer *checker;
-	VideoDeviceParams vdParams;
+	QElapsedTimer overlayLaps;
+	PtzpHttpTransport *httpThermal;
+	PtzpHttpTransport *httpDay;
+	MoxaControlHead *moxaThermal;
+	MoxaControlHead *moxaDay;
+	int overlayInterval;
+	QElapsedTimer connectLaps;
+	int thermalInterval;
+	int gungorInterval;
+	bool apiEnable;
 };
 
 #endif // ARYADRIVER_H

@@ -9,9 +9,9 @@
 
 #include <errno.h>
 
-#define dump(p, len)                                                           \
-	for (int i = 0; i < len; i++)                                              \
-		mDebug("%s: %d: 0x%x", __func__, i, p[i]);
+#define dump(p, len) \
+	for (int i = 0; i < len; i++) \
+		mInfo("%s: %d: 0x%x", __func__, i, p[i]);
 
 #define MAX_CMD_LEN 10
 
@@ -349,8 +349,8 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		// fov change
 		setRegister(C_FOV, p[0]);
 	} else if (opcode == 0xbc) {
-		// zoom/focus
-		setRegister(C_CONT_ZOOM, (p[1] << 8 | p[0]));
+		//zoom/focus
+		setRegister(C_CONT_ZOOM, (p[1] << 8));
 		setRegister(C_FOCUS, (p[3] << 8 | p[2]));
 		setRegister(R_ANGLE, (p[5] << 8 | p[4]));
 		if (systemChecker == 0)
@@ -414,8 +414,12 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray MgeoThermalHead::transportReady()
 {
-	sendCommand(C_GET_ZOOM_FOCUS);
-	return QByteArray();
+	if (nextSync != syncList.size())
+		return QByteArray();
+	unsigned char *cmd = protoBytes[C_GET_ZOOM_FOCUS];
+	int cmdlen = cmd[1];
+	cmd[cmdlen - 1] = chksum(cmd, cmdlen - 1);
+	return QByteArray((const char*)cmd, cmdlen);
 }
 
 int MgeoThermalHead::syncNext()

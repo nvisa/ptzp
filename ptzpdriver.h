@@ -183,10 +183,10 @@ public:
 								const ptzp::PatternCmd *request,
 								ptzp::PresetList *response);
 	// settings
-	grpc::Status GetSettings(grpc::ServerContext *context,
+	virtual grpc::Status GetSettings(grpc::ServerContext *context,
 							 const ptzp::Settings *request,
 							 ptzp::Settings *response);
-	grpc::Status SetSettings(grpc::ServerContext *context,
+	virtual grpc::Status SetSettings(grpc::ServerContext *context,
 							 const ptzp::Settings *request,
 							 ptzp::Settings *response);
 	// focus
@@ -207,7 +207,11 @@ public:
 #endif
 
 protected:
+	int createHeadMaps();
 	float regulateSpeed(float raw, int zoom);
+	int readHeadMaps(const QString &filename);
+	int getHeadValueRanges(int head, const QString &key, QJsonObject *val);
+	int normalizeValues(int head, const QVariantMap &map, QVariantMap *resMap);
 
 protected slots:
 	virtual void timeout();
@@ -232,6 +236,7 @@ protected:
 	int runPatrol(QString name);
 	bool changeOverlay;
 	void stopAnyProcess(StopProcess stop = ANY);
+	QJsonObject headMaps;
 };
 
 #endif // PTZPDRIVER_H
