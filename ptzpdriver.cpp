@@ -1327,7 +1327,7 @@ QVariant PtzpDriver::headInfo(const QString &key, PtzpHead *head)
 void PtzpDriver::commandUpdate(int c, float arg1, float arg2)
 {
 	stopAnyProcess();
-	if (defaultPTHead && defaultModuleHead)
+	if (defaultPTHead && defaultModuleHead && ptrn->isRecording())
 		ptrn->commandUpdate(defaultPTHead->getPanAngle(),
 							defaultPTHead->getTiltAngle(),
 							defaultModuleHead->getZoom(), c, arg1, arg2);

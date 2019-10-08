@@ -145,6 +145,7 @@ void PtzpHttpTransport::callback()
 		emit sendGetMessage2Main(m);
 	else if (contentType == AppXFormUrlencoded)
 		emit sendPostMessage2Main(m);
+	timer->setInterval(periodTimer);
 	return;
 }
 
