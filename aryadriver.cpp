@@ -244,7 +244,6 @@ void AryaDriver::timeout()
 			   thermal->getHeadStatus(), gungor->getHeadStatus(), aryapt->getHeadStatus());
 		if (connectLaps.elapsed() > 30000)
 			reboot();
-		return;
 	} else
 		connectLaps.restart();
 	mLog("Driver state: %d", state);
