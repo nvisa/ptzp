@@ -247,12 +247,12 @@ OemModuleHead::OemModuleHead()
 		{"program_ae_mode", {C_VISCA_SET_PROGRAM_AE_MODE, R_PROGRAM_AE_MODE}},
 		{"flip", {C_VISCA_SET_FLIP_MODE, R_FLIP}},
 		{"mirror", {C_VISCA_SET_MIRROR_MODE, R_MIRROR}},
-		{"one_push_af", {C_VISCA_SET_ONE_PUSH, NULL}},
-		{"display_rotation", {NULL, R_DISPLAY_ROT}},
-		{"digi_zoom_pos", {NULL, R_DIGI_ZOOM_POS}},
-		{"optic_zoom_pos", {NULL, R_OPTIC_ZOOM_POS}},
-		{"focus", {C_VISCA_SET_FOCUS, NULL}},
-		{"cam_model", {NULL, R_VISCA_MODUL_ID}},
+		{"one_push_af", {C_VISCA_SET_ONE_PUSH, R_COUNT}},
+		{"display_rotation", {-1, R_DISPLAY_ROT}},
+		{"digi_zoom_pos", {-1, R_DIGI_ZOOM_POS}},
+		{"optic_zoom_pos", {-1, R_OPTIC_ZOOM_POS}},
+		{"focus", {C_VISCA_SET_FOCUS, R_COUNT}},
+		{"cam_model", {-1, R_VISCA_MODUL_ID}}
 	};
 #endif
 	setRegister(R_VISCA_MODUL_ID, 0);
