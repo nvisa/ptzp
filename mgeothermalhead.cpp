@@ -42,6 +42,7 @@ enum Commands {
 	C_GET_POLARITY,
 	C_GET_FOV,
 	C_GET_IMAGE_FREEZE,
+	C_AUTO_FOCUS,
 
 	C_COUNT,
 	// missing registers
@@ -76,6 +77,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x35, 0x0a, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	{0x35, 0x0a, 0xb3, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 };
 
 static uchar chksum(const uchar *buf, int len)
@@ -119,6 +121,9 @@ MgeoThermalHead::MgeoThermalHead()
 		{"hpf_spatial_change", {C_HPF_SPATIAL_CHANGE, C_HPF_SPATIAL_CHANGE}},
 		{"flip", {C_FLIP, C_FLIP}},
 		{"image_update_speed", {C_IMAGE_UPDATE_SPEED, C_IMAGE_UPDATE_SPEED}},
+		{"auto_focus", {C_AUTO_FOCUS, C_AUTO_FOCUS}},
+		{"contrast_change", {C_CONTRAST_CHANGE, C_CONTRAST}},
+		{"brigthness_change", {C_BRIGHTNESS_CHANGE, C_BRIGHTNESS}},
 	};
 #endif
 }
@@ -225,11 +230,11 @@ void MgeoThermalHead::setProperty(uint r, uint x)
 	unsigned char *p = protoBytes[r];
 	p[3] = 0x00;
 	p[4] = 0x00;
-	if (r == C_BRIGHTNESS) {
+	if (r == C_BRIGHTNESS && getRegister(C_AGC_SELECT)) {
 		p[3] = 0x01;
 		p[4] = x;
-		setRegister(r, x);
-	} else if (r == C_CONTRAST) {
+	} else if (r == C_CONTRAST && getRegister(C_AGC_SELECT)) {
+		p[3] = 0x01;
 		p[4] = x;
 	} else if (r == C_FOV) {
 		p[3] = x;
@@ -272,10 +277,14 @@ void MgeoThermalHead::setProperty(uint r, uint x)
 		p[3] = x;
 	} else if (r == C_IMAGE_UPDATE_SPEED) {
 		p[3] = x;
+	} else if (r == C_AUTO_FOCUS) {
+		p[3] = 0x02;
 	} else
 		return;
 	sendCommand(r, p[3], p[4]);
 	setRegister(r, x);
+	if (r == C_BRIGHTNESS || r == C_CONTRAST)
+		sendCommand(r, 0x02);
 }
 
 uint MgeoThermalHead::getProperty(uint r)
