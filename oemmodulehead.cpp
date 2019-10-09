@@ -665,29 +665,36 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 		setProperty(C_VISCA_SET_EXP_COMPVAL,
 					root.value(key.arg(R_EXP_COMPVAL)).toInt());
 		usleep(sleepDur);
-	} else if (getRegister(R_VISCA_MODUL_ID) != OEM) {
+	} else if (getRegister(R_VISCA_MODUL_ID) == OEM) {
 		// OEM Limits
-		setProperty(C_VISCA_SET_EXPOSURE_TARGET,
-					root.value(key.arg(R_EXPOSURE_TARGET)).toInt());
+		uint exposure_target = root.value(key.arg(R_EXPOSURE_TARGET)).toInt();
+		if (exposure_target == 0)
+			exposure_target = 110;
+		setProperty(C_VISCA_SET_EXPOSURE_TARGET, exposure_target);
 		usleep(sleepDur);
+
 		uint gainLimit = (root.value(key.arg(R_TOP_GAIN)).toInt() << 8) +
 						 root.value(key.arg(R_BOT_GAIN)).toInt();
 		if (gainLimit == 0) {
 			gainLimit = 0x7000; // 112,0
 		}
-		setProperty(C_VISCA_GET_GAIN_LIMIT_OEM, gainLimit);
+		setProperty(C_VISCA_SET_GAIN_LIMIT_OEM, gainLimit);
+		usleep(sleepDur);
+
 		uint shutterLimit = (root.value(key.arg(R_TOP_SHUTTER)).toInt() << 12) +
 							root.value(key.arg(R_BOT_SHUTTER)).toInt();
 		if (shutterLimit == 0) {
 			shutterLimit = 0x45f000; // 1119,0
 		}
-		setProperty(C_VISCA_GET_SHUTTER_LIMIT_OEM, shutterLimit);
+		setProperty(C_VISCA_SET_SHUTTER_LIMIT_OEM, shutterLimit);
+		usleep(sleepDur);
+
 		uint irisLimit = (root.value(key.arg(R_TOP_IRIS)).toInt() << 12) +
 						 root.value(key.arg(R_BOT_IRIS)).toInt();
-		if (shutterLimit == 0) {
-			shutterLimit = 0x2BC000; // 700,0
+		if (irisLimit == 0) {
+			irisLimit = 0x2BC000; // 700,0
 		}
-		setProperty(C_VISCA_GET_IRIS_LIMIT_OEM, irisLimit);
+		setProperty(C_VISCA_SET_IRIS_LIMIT_OEM, irisLimit);
 	}
 
 	uint ae_mode = root.value(key.arg(R_PROGRAM_AE_MODE)).toInt();
@@ -877,16 +884,16 @@ void OemModuleHead::setProperty(uint r, uint x)
 		p[6 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXPOSURE_TARGET, (int)x);
-	} else if (r == C_VISCA_GET_GAIN_LIMIT_OEM) {
+	} else if (r == C_VISCA_SET_GAIN_LIMIT_OEM) {
 		unsigned char *p = protoBytes[r];
 		p[5 + 2] = (x & 0xf000) >> 12;
 		p[6 + 2] = (x & 0x0f00) >> 8;
 		p[7 + 2] = (x & 0x00f0) >> 4;
 		p[8 + 2] = (x & 0x000f);
 		transport->send((const char *)p + 2, p[0]);
-		setRegister(R_TOP_SHUTTER, (int)((x & 0xff00) >> 8));
-		setRegister(R_BOT_SHUTTER, (int)(x & 0x00ff));
-	} else if (r == C_VISCA_GET_SHUTTER_LIMIT_OEM) {
+		setRegister(R_TOP_GAIN, (int)((x & 0xff00) >> 8));
+		setRegister(R_BOT_GAIN, (int)(x & 0x00ff));
+	} else if (r == C_VISCA_SET_SHUTTER_LIMIT_OEM) {
 		unsigned char *p = protoBytes[r];
 		p[5 + 2] = (x & 0xf00000) >> 20;
 		p[6 + 2] = (x & 0x0f0000) >> 16;
@@ -895,9 +902,9 @@ void OemModuleHead::setProperty(uint r, uint x)
 		p[9 + 2] = (x & 0x0000f0) >> 4;
 		p[10 + 2] = (x & 0x00000f);
 		transport->send((const char *)p + 2, p[0]);
-		setRegister(R_TOP_GAIN, (int)((x & 0xfff000) >> 12));
-		setRegister(R_BOT_GAIN, (int)(x & 0x000fff));
-	} else if (r == C_VISCA_GET_IRIS_LIMIT_OEM) {
+		setRegister(R_TOP_SHUTTER, (int)((x & 0xfff000) >> 12));
+		setRegister(R_BOT_SHUTTER, (int)(x & 0x000fff));
+	} else if (r == C_VISCA_SET_IRIS_LIMIT_OEM) {
 		unsigned char *p = protoBytes[r];
 		p[5 + 2] = (x & 0xf00000) >> 20;
 		p[6 + 2] = (x & 0x0f0000) >> 16;
