@@ -1,6 +1,7 @@
 #include "aryadriver.h"
 #include "aryapthead.h"
 
+#include "gungorhead.h"
 #include "moxacontrolhead.h"
 #include "mgeothermalhead.h"
 #include "ptzptcptransport.h"

@@ -18,8 +18,6 @@ public:
 
 	virtual int setTarget(const QString &targetUri);
 	virtual PtzpHead *getHead(int index);
-	QVariant get(const QString &key);
-	int set(const QString &key, const QVariant &value);
 
 	int setMoxaControl(const QString &targetThermal, const QString &targetDay);
 	void updateZoomOverlay(int thermal, int day);

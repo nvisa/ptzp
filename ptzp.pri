@@ -28,7 +28,7 @@ HEADERS += \
     ptzp/ptzphttptransport.h \
     ptzp/htrswirpthead.h \
     ptzp/htrswirdriver.h \
-    ptzp/htrswirmodulehead.h
+    ptzp/htrswirmodulehead.h \
     ptzp/moxacontrolhead.h
 
 SOURCES += \
@@ -60,7 +60,7 @@ SOURCES += \
     ptzp/ptzphttptransport.cpp \
     ptzp/htrswirpthead.cpp \
     ptzp/htrswirdriver.cpp \
-    ptzp/htrswirmodulehead.cpp
+    ptzp/htrswirmodulehead.cpp \
     ptzp/moxacontrolhead.cpp
 
 ptzp-grpc {
