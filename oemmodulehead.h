@@ -82,8 +82,6 @@ public:
 	int setGainLimit(uchar topLim, uchar botLim);
 	QString getGainLimit();
 
-	uint getModulID();
-
 protected:
 	int syncNext();
 	int dataReady(const unsigned char *bytes, int len);

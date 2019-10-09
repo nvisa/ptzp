@@ -144,6 +144,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 	}
 
 	state = INIT;
+	headModule->syncRegisters();
 	return 0;
 }
 
@@ -323,25 +324,21 @@ void IRDomeDriver::timeout()
 	//	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
-		if (headModule->getModulID() != 0)
-			state = SYNC_HEAD_MODULE;
-		else if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL)
-			/*
-			 * [CR] [yca] sync API'si istenmeyen durumlarda hata kodu
-			 * donduruyor, bunu burada handle etmemiz iyi bir fikir olabilir.
-			 *
-			 * Ayrica su anda modul sync() olamazsa gordugum kadari ile
-			 * driver sonsuza kadar bu state'de kaliyor. Burayi biraz daha
-			 * robust hale getirebilir miyiz?
-			 */
+		if (headModule->getHeadStatus() == PtzpHead::ST_SYNCING)
+			break;
+		if (headModule->getHeadStatus() == PtzpHead::ST_ERROR)
 			headModule->syncRegisters();
+		state = SYNC_HEAD_MODULE;
 		break;
 	case SYNC_HEAD_MODULE:
-		if (headModule->getHeadStatus() != PtzpHead::ST_NORMAL)
+		if (headModule->getHeadStatus() == PtzpHead::ST_SYNCING)
 			break;
 
-		if (registerSavingEnabled)
-			headModule->loadRegisters("head0.json");
+		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
+			if (registerSavingEnabled)
+				headModule->loadRegisters("head0.json");
+			tp->enableQueueFreeCallbacks(true);
+		}
 
 		if (ptSupport == true) {
 			state = SYNC_HEAD_DOME;
@@ -349,7 +346,6 @@ void IRDomeDriver::timeout()
 		} else {
 			state = NORMAL;
 		}
-		tp->enableQueueFreeCallbacks(true);
 		break;
 	case SYNC_HEAD_DOME:
 		if (headDome->getHeadStatus() != PtzpHead::ST_NORMAL)

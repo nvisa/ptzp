@@ -276,8 +276,12 @@ int OemModuleHead::syncRegisters()
 
 int OemModuleHead::getHeadStatus()
 {
-	if (nextSync == C_COUNT)
-		return ST_NORMAL;
+	if (nextSync == C_COUNT) {
+		if (getRegister(R_VISCA_MODUL_ID) == 0)
+			return ST_ERROR;
+		else
+			return ST_NORMAL;
+	}
 	return ST_SYNCING;
 }
 
@@ -1024,9 +1028,4 @@ QString OemModuleHead::getGainLimit()
 					  .arg(getProperty(R_TOP_GAIN))
 					  .arg(getProperty(R_BOT_GAIN));
 	return mes;
-}
-
-uint OemModuleHead::getModulID()
-{
-	return getRegister(R_VISCA_MODUL_ID);
 }
