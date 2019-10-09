@@ -88,6 +88,7 @@ protected:
 	QByteArray transportReady();
 	QJsonValue marshallAllRegisters();
 	void unmarshallloadAllRegisters(const QJsonValue &node);
+	int addSpecialModulSettings();
 
 	bool syncEnabled;
 	int syncInterval;

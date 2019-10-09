@@ -229,9 +229,6 @@ OemModuleHead::OemModuleHead()
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
 		{"gain_value", {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
-		{"exp_comp_mode", {C_VISCA_SET_EXP_COMPMODE, R_EXP_COMPMODE}},
-		{"exp_comp_val", {C_VISCA_SET_EXP_COMPVAL, R_EXP_COMPVAL}},
-		{"gain_limit", {C_VISCA_SET_GAIN_LIM, R_GAIN_LIM}},
 		{"shutter", {C_VISCA_SET_SHUTTER, R_SHUTTER}},
 		{"noise_reduct", {C_VISCA_SET_NOISE_REDUCT, R_NOISE_REDUCT}},
 		{"wdr_stat", {C_VISCA_SET_WDRSTAT, R_WDRSTAT}},
@@ -259,6 +256,22 @@ OemModuleHead::OemModuleHead()
 	};
 #endif
 	setRegister(R_VISCA_MODUL_ID, 0);
+}
+
+int OemModuleHead::addSpecialModulSettings() {
+	if (getRegister(R_VISCA_MODUL_ID) == SONY_FCB_CV7500) {
+		settings.insert("exp_comp_mode", {C_VISCA_SET_EXP_COMPMODE, R_EXP_COMPMODE});
+		settings.insert("exp_comp_val", {C_VISCA_SET_EXP_COMPVAL, R_EXP_COMPVAL});
+		settings.insert("gain_limit", {C_VISCA_SET_GAIN_LIM, R_GAIN_LIM});
+	} else if (getRegister(R_VISCA_MODUL_ID) == OEM) {
+		settings.insert("exposure_target", {C_VISCA_SET_EXPOSURE_TARGET, R_EXPOSURE_TARGET});
+		settings.insert("shutter_limit_bot", {C_VISCA_SET_SHUTTER_LIMIT_OEM, R_BOT_SHUTTER});
+		settings.insert("shutter_limit_top", {C_VISCA_SET_SHUTTER_LIMIT_OEM, R_TOP_SHUTTER});
+		settings.insert("iris_limit_bot", {C_VISCA_SET_IRIS_LIMIT_OEM, R_BOT_IRIS});
+		settings.insert("iris_limit_top", {C_VISCA_SET_IRIS_LIMIT_OEM, R_TOP_IRIS});
+		settings.insert("gain_limit_bot", {C_VISCA_SET_GAIN_LIMIT_OEM, R_BOT_GAIN});
+		settings.insert("gain_limit_top", {C_VISCA_SET_GAIN_LIMIT_OEM, R_TOP_GAIN});
+	}
 }
 
 int OemModuleHead::getCapabilities()
@@ -558,6 +571,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		mInfo("Version synced");
 		if (p[1] == 0x50 && p[2] == 0x00 && p[3] == 0x20) {
 			setRegister(R_VISCA_MODUL_ID, (uint(p[4]) << 8) + p[5]);
+			addSpecialModulSettings();
 		}
 	} else if (sendcmd == C_VISCA_GET_GAIN_LIMIT_OEM) {
 		mInfo("Oem Gain Limit synced");
