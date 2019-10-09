@@ -354,7 +354,6 @@ void IRDomeDriver::timeout()
 		if (registerSavingEnabled)
 			headDome->loadRegisters("head1.json");
 		state = NORMAL;
-		timer->setInterval(1000);
 		tp1->enableQueueFreeCallbacks(true);
 		break;
 	case NORMAL: {
