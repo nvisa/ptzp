@@ -262,6 +262,7 @@ int FlirPTHead::getFlirConfig()
 
 int FlirPTHead::dataReady(const unsigned char *bytes, int len)
 {
+	pingTimer.restart();
 	const QString mes = QString::fromUtf8((const char *)bytes, len);
 	mLog("coming message %s, %d", qPrintable(mes), mes.size());
 	if (mes.contains("VS")) {

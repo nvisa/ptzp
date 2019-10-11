@@ -187,6 +187,7 @@ QByteArray FlirModuleHead::transportReady()
 
 int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 {
+	pingTimer.restart();
 	QString data = QString::fromUtf8((const char *)bytes, len);
 
 	if (data.contains("root.ERR.no=4") ||
