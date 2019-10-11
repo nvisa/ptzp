@@ -115,12 +115,14 @@ void PtzpHttpTransport::setAuthorizationType(PtzpHttpTransport::AuthorizationTyp
 
 void PtzpHttpTransport::dataReady(QNetworkReply *reply)
 {
-	if (reply->error() != QNetworkReply::NoError) {
-		mDebug("Error in send/get command %d", reply->error());
-		return;
+	if (reply->error() == QNetworkReply::NoError) {
+		protocol->dataReady(reply->readAll());
+	} else {
+		mDebug("Error in URL '%s', error no: '%d' error str: '%s'",
+				qPrintable(reply->url().url()), reply->error(),
+				qPrintable(reply->errorString()));
 	}
-	QByteArray ba = reply->readAll();
-	protocol->dataReady(ba);
+	reply->deleteLater();
 }
 
 void PtzpHttpTransport::sendPostMessage(const QByteArray &ba)
