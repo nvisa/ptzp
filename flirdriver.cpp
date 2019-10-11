@@ -41,14 +41,14 @@ int FlirDriver::setTarget(const QString &targetUri)
 	if (ret)
 		return ret;
 	httpTransportDome->enableQueueFreeCallbacks(true);
-	httpTransportDome->setTimerInterval(200);
+	httpTransportDome->setTimerInterval(5000);
 
 	httpTransportModule->setContentType(PtzpHttpTransport::AppJson);
 	ret = httpTransportModule->connectTo(fields[0]);
 	if (ret)
 		return ret;
 	httpTransportModule->enableQueueFreeCallbacks(true);
-	httpTransportModule->setTimerInterval(200);
+	httpTransportModule->setTimerInterval(5000);
 
 	headDome->getFlirConfig();
 	return 0;
