@@ -1,12 +1,14 @@
 #ifndef FLIRPTHEAD_H
 #define FLIRPTHEAD_H
 
+#include <QTimer>
 #include <QStringList>
 
 #include "ecl/ptzp/ptzphead.h"
 
 class FlirPTHead : public PtzpHead
 {
+	Q_OBJECT
 public:
 	FlirPTHead();
 
@@ -52,6 +54,10 @@ protected:
 	int dataReady(const unsigned char *bytes, int len);
 	int saveCommand(const QString &key);
 	QByteArray transportReady();
+	QStringList cmdList;
+	QTimer *timer;
+protected slots:
+	void sendCommand();
 };
 
 #endif // FLIRPTHEAD_H

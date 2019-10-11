@@ -59,6 +59,11 @@ FlirPTHead::FlirPTHead() : PtzpHead()
 {
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
+
+	timer = new QTimer(this);
+	timer->start(200);
+	connect(timer, SIGNAL(timeout()), this, SLOT(sendCommand()));
+
 	setupFlirConfigs();
 }
 
@@ -290,8 +295,19 @@ int FlirPTHead::dataReady(const unsigned char *bytes, int len)
 
 int FlirPTHead::saveCommand(const QString &key)
 {
-	mInfo("Sending Command %s", qPrintable(key));
-	return transport->send(key.toUtf8());
+	cmdList << key;
+	mLog("Command in queue %d '%s'", cmdList.size(), qPrintable(key));
+	return 0;
+}
+
+void FlirPTHead::sendCommand()
+{
+	if (cmdList.isEmpty())
+		return;
+	QString key = cmdList.first();
+	transport->send(key.toUtf8());
+	cmdList.pop_front();
+	return;
 }
 
 QByteArray FlirPTHead::transportReady()
