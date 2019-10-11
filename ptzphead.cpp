@@ -24,6 +24,7 @@ static const char ioErrorStr[][256] = {
 
 PtzpHead::PtzpHead()
 {
+	headName = "ptz_controller";
 	systemChecker = -1;
 	transport = NULL;
 	pingTimer.start();
@@ -368,6 +369,11 @@ float PtzpHead::getMaxPatternSpeed() const
 	 * kullanmak uygun degil.
 	 */
 	return -EINVAL;
+}
+
+void PtzpHead::setHeadName(const QString &name)
+{
+	headName = name;
 }
 
 int PtzpHead::getSystemStatus()

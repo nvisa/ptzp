@@ -103,7 +103,8 @@ public:
 	static QByteArray transportReady(void *priv);
 	void setTransportInterval(int interval);
 	int getSystemStatus();
-
+	virtual void setHeadName(const QString &name);
+	QString getHeadName() { return headName; }
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();
@@ -122,6 +123,7 @@ protected:
 	RangeMapper rmapper;
 
 	std::vector<int> zoomRatios;
+	QString headName;
 };
 
 #endif // PTZPHEAD_H

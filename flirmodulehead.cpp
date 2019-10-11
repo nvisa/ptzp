@@ -72,6 +72,7 @@ static QStringList createCommandList()
 
 FlirModuleHead::FlirModuleHead()
 {
+	setHeadName("module_head");
 	zoomPos = 0;
 	focusPos = 0;
 	lastGetCommand = C_GET_CAM_MODES;

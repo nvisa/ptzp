@@ -57,6 +57,7 @@ static QStringList createPTZCommandList()
 
 FlirPTHead::FlirPTHead() : PtzpHead()
 {
+	setHeadName("pt_head");
 	ptzCommandList = createPTZCommandList();
 	assert(ptzCommandList.size() == C_COUNT);
 
