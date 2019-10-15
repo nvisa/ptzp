@@ -62,7 +62,7 @@ FlirPTHead::FlirPTHead() : PtzpHead()
 	assert(ptzCommandList.size() == C_COUNT);
 
 	timer = new QTimer(this);
-	timer->start(200);
+	timer->start(100);
 	connect(timer, SIGNAL(timeout()), this, SLOT(sendCommand()));
 
 	setupFlirConfigs();
@@ -297,6 +297,9 @@ int FlirPTHead::dataReady(const unsigned char *bytes, int len)
 
 int FlirPTHead::saveCommand(const QString &key)
 {
+	if (key == ptzCommandList.at(C_STOP)) {
+		cmdList.clear();
+	}
 	cmdList << key;
 	mLog("Command in queue %d '%s'", cmdList.size(), qPrintable(key));
 	return 0;
