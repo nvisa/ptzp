@@ -111,7 +111,7 @@ void KayiDriver::timeout()
 	case SYNC_HEAD_MODULE:
 		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
 			state = NORMAL;
-			//			tp1->enableQueueFreeCallbacks(true);
+			tp1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
 		}
 		break;

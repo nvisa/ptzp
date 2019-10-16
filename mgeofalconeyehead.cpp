@@ -614,10 +614,10 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 QByteArray MgeoFalconEyeHead::transportReady()
 {
 	/* we have nothing to sync atm, zoom reading is buggy */
-	return QByteArray();
-	if (syncTimer.elapsed() > 250) {
+//	return QByteArray();
+	if (syncTimer.elapsed() > 1000) {
 		syncTimer.restart();
-		unsigned char *p = protoBytes[C_GET_ZOOM_POS];
+		unsigned char *p = protoBytes[C_GET_ALL_SYSTEM_VALUES];
 		int len = p[0];
 		p++;
 		p[3] = chksum(p, len - 1);
