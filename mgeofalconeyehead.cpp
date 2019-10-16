@@ -534,6 +534,7 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_DMC_PARAM, bytes[24]);
 		setRegister(R_HEKOS_PARAM, ((bytes[25] * 10) + bytes[26]));
 		setRegister(R_DIGI_ZOOM_POS, bytes[27]);
+		setRegister(R_CAM, bytes[28]);
 		setRegister(R_LASER_STATUS, bytes[29]);
 		setRegister(R_GMT, (bytes[39] * 10));
 	} else if (bytes[2] == 0x96) {
