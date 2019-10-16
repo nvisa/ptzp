@@ -501,6 +501,7 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		return 4; // ack
 	if (bytes[2] == 0x95) {
 		alive = true;
+		pingTimer.restart();
 		return 4; // alive
 	}
 	uchar chk = chksum(bytes, len - 1);
@@ -508,6 +509,8 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		fDebug("Checksum error");
 		return -ENOENT;
 	}
+
+	pingTimer.restart();
 	if (nextSync != C_COUNT) {
 		mInfo("Next sync property: %d", nextSync);
 		if (++nextSync == C_COUNT) {
