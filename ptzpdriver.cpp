@@ -8,6 +8,7 @@
 
 #include "ptzp/ptzphead.h"
 #include "ptzp/ptzptransport.h"
+#include "ptzp/mgeothermalhead.h"
 
 #include <QDir>
 #include <QJsonDocument>
@@ -1191,7 +1192,9 @@ float PtzpDriver::regulateSpeed(float raw, int zoom)
 		return raw;
 	if (sreg.ipol == SpeedRegulation::ARYA) {
 		float zooms[2];
-		zooms[0] = sreg.zoomHead->getZoom();
+		zooms[0] = sreg.zoomHead->getAngle();
+		// Check it: zooms[1] just used on mgeothermal
+		zooms[1] = ((MgeoThermalHead*)defaultModuleHead)->getFovMax();
 		return sreg.interFunc(raw,zooms);
 	}
 	if (sreg.ipol == SpeedRegulation::CUSTOM) {
