@@ -91,9 +91,8 @@ int AryaDriver::connectThermal(const QString &target)
 	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	tcp2->connectTo(QString("%1:4002").arg(target));
 	tcp2->setTimerInterval(thermalInterval);
-	thermal = new MgeoThermalHead;
+	thermal = new MgeoThermalHead(headType);
 	thermal->setTransport(tcp2);
-	thermal->getFovList("arya_tip_select.json", headType);
 	return 0;
 }
 
