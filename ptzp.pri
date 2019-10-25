@@ -29,7 +29,8 @@ HEADERS += \
     ptzp/htrswirpthead.h \
     ptzp/htrswirdriver.h \
     ptzp/htrswirmodulehead.h \
-    ptzp/moxacontrolhead.h
+    ptzp/moxacontrolhead.h \
+    ptzp/flirpttcphead.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -61,7 +62,8 @@ SOURCES += \
     ptzp/htrswirpthead.cpp \
     ptzp/htrswirdriver.cpp \
     ptzp/htrswirmodulehead.cpp \
-    ptzp/moxacontrolhead.cpp
+    ptzp/moxacontrolhead.cpp \
+    ptzp/flirpttcphead.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API
