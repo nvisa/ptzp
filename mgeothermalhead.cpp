@@ -178,9 +178,19 @@ int MgeoThermalHead::stopZoom()
 	return 0;
 }
 
-int MgeoThermalHead::getAngle()
+float MgeoThermalHead::getAngle()
 {
-	return getRegister(R_ANGLE);
+	float angle = (float(getRegister(R_ANGLE)) / 100.0);
+	if (fovValue.min > angle)
+		angle = fovValue.min;
+	else if (fovValue.max < angle)
+		angle = fovValue.max;
+	return angle;
+}
+
+float MgeoThermalHead::getFovMax()
+{
+	return fovValue.max;
 }
 
 int MgeoThermalHead::getZoom()

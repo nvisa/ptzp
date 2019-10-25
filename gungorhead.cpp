@@ -146,6 +146,11 @@ void MgeoGunGorHead::setFocusStepper()
 	sendCommand(C_SET_FOCUS_STEPPER, 0xEA, 0x60);
 }
 
+float MgeoGunGorHead::getAngle()
+{
+	return getZoom();
+}
+
 int MgeoGunGorHead::getHeadStatus()
 {
 	if (nextSync != syncList.size())

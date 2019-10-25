@@ -32,7 +32,10 @@ public:
 		ST_NORMAL,
 		ST_ERROR,
 	};
-
+	struct FovValues {
+		float max;
+		float min;
+	};
 	class RangeMapper
 	{
 	public:
@@ -71,6 +74,7 @@ public:
 	virtual int focusStop();
 	virtual float getPanAngle();
 	virtual float getTiltAngle();
+	virtual float getAngle();
 	virtual int getZoom();
 	virtual int setZoom(uint pos);
 	virtual int getFOV(float &hor, float &ver);
@@ -86,6 +90,7 @@ public:
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();
 	RangeMapper *getRangeMapper() { return &rmapper; }
+	int getFovList(const QString &file, const QString &objName);
 
 	void setZoomRatios(std::vector<int> v) { zoomRatios = v; }
 	int getZoomRatio();
@@ -124,6 +129,7 @@ protected:
 
 	std::vector<int> zoomRatios;
 	QString headName;
+	FovValues fovValue;
 };
 
 #endif // PTZPHEAD_H

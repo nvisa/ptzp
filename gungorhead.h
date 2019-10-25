@@ -38,6 +38,7 @@ public:
 	virtual uint getProperty(uint r);
 	int headSystemChecker();
 	void setFocusStepper();
+	float  getAngle();
 
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);

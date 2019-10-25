@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include <cfloat>
 
 static const char ioErrorStr[][256] = {
 	"None",
@@ -195,6 +196,11 @@ float PtzpHead::getPanAngle()
 float PtzpHead::getTiltAngle()
 {
 	return 0;
+}
+
+float PtzpHead::getAngle()
+{
+	return 0.0;
 }
 
 int PtzpHead::getZoom()
@@ -444,6 +450,24 @@ int PtzpHead::communicationElapsed()
 	 * çözüm getirmeliyiz diye düşünüyorum.
 	 */
 	return pingTimer.elapsed();
+}
+
+int PtzpHead::getFovList(const QString &file, const QString &objName)
+{
+	QFile f(file);
+	if (!f.open(QIODevice::ReadOnly)) {
+		fovValue.max = FLT_MAX;
+		fovValue.min = FLT_MIN;
+		return -1;
+	}
+	QByteArray data = f.readAll();
+	f.close();
+	QJsonDocument doc = QJsonDocument::fromJson(data);
+	QJsonObject obj = doc.object();
+	QJsonObject values = obj.value(objName).toObject();
+	fovValue.max = values.value("max_angle").toDouble();
+	fovValue.min = values.value("min_angle").toDouble();
+	return 0;
 }
 
 int PtzpHead::getZoomRatio()

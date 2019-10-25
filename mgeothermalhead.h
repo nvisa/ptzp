@@ -28,8 +28,9 @@ public:
 	virtual uint getProperty(uint r);
 	virtual int setZoom(uint pos);
 	int headSystemChecker();
-	int getAngle();
+	float getAngle();
 
+	float getFovMax();
 protected:
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);
