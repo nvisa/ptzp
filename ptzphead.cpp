@@ -9,7 +9,6 @@
 
 #include <errno.h>
 #include <unistd.h>
-#include <cfloat>
 
 static const char ioErrorStr[][256] = {
 	"None",
@@ -454,12 +453,11 @@ int PtzpHead::communicationElapsed()
 
 int PtzpHead::getFovList(const QString &file, const QString &objName)
 {
-	QFile f(file);
-	if (!f.open(QIODevice::ReadOnly)) {
-		fovValue.max = FLT_MAX;
-		fovValue.min = FLT_MIN;
+	if (objName.isEmpty())
 		return -1;
-	}
+	QFile f(file);
+	if (!f.open(QIODevice::ReadOnly))
+		return -1;
 	QByteArray data = f.readAll();
 	f.close();
 	QJsonDocument doc = QJsonDocument::fromJson(data);
@@ -467,6 +465,7 @@ int PtzpHead::getFovList(const QString &file, const QString &objName)
 	QJsonObject values = obj.value(objName).toObject();
 	fovValue.max = values.value("max_angle").toDouble();
 	fovValue.min = values.value("min_angle").toDouble();
+	mDebug("Camera using different fov values.");
 	return 0;
 }
 

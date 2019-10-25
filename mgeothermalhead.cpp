@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include <cfloat>
 #include <errno.h>
 
 #define dump(p, len) \
@@ -88,7 +89,7 @@ static uchar chksum(const uchar *buf, int len)
 	return ~sum + 1;
 }
 
-MgeoThermalHead::MgeoThermalHead()
+MgeoThermalHead::MgeoThermalHead(const QString &type)
 {
 	syncList << C_BRIGHTNESS;
 	syncList << C_CONTRAST;
@@ -126,6 +127,10 @@ MgeoThermalHead::MgeoThermalHead()
 		{"brigthness_change", {C_BRIGHTNESS_CHANGE, C_BRIGHTNESS}},
 	};
 #endif
+	if (getFovList("arya_tip_select.json", type) < 0) {
+		fovValue.max = FLT_MAX;
+		fovValue.min = FLT_MIN;
+	}
 }
 
 int MgeoThermalHead::getCapabilities()

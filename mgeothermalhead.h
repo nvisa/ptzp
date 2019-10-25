@@ -9,7 +9,7 @@
 class MgeoThermalHead : public PtzpHead
 {
 public:
-	MgeoThermalHead();
+	MgeoThermalHead(const QString &type = "");
 
 	int getCapabilities();
 
