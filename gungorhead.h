@@ -18,6 +18,10 @@ public:
 		R_CAM_STATUS,		 // manuel set
 		R_AUTO_FOCUS_STATUS, // manuel set
 		R_DIGI_ZOOM_STATUS,	 // manuel set
+		R_FOG_STATUS,
+		R_EXT_STATUS,
+		R_AUTO_FOCUS_MODE,
+		R_FOV_STATUS,
 
 		R_COUNT,
 	};

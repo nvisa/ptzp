@@ -14,8 +14,8 @@
 enum Commands {
 	C_SET_OPEN,
 	C_SET_CLOSE,
-	//	C_SET_ZOOM_TELE,
-	//	C_SET_ZOOM_WIDE,
+	C_SET_ZOOM_TELE,
+	C_SET_ZOOM_WIDE,
 	C_SET_ZOOM_INC_START,
 	C_SET_ZOOM_STOP,
 	C_SET_ZOOM_DEC_START,
@@ -24,7 +24,7 @@ enum Commands {
 	C_SET_FOCUS_STOP,
 	C_SET_FOCUS_DEC_START,
 	C_SET_FOCUS,
-	C_SET_AUTO_FOCUS_ON,
+	C_SET_AUTO_FOCUS_MODE,
 	C_SET_AUTO_FOCUS_OFF,
 	C_SET_DIGI_ZOOM_ON,
 	C_SET_DIGI_ZOOM_OFF,
@@ -36,14 +36,18 @@ enum Commands {
 	C_GET_HARDWARE_VERSION,
 	C_GET_DIGI_ZOOM,
 
+	C_SET_FOG_MODE,
+
+	C_SET_EXTENDER_MODE,
+	C_FOV,
 	C_COUNT
 };
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x05, 0xF1, 0x08, 0x00, 0x00, 0x07},
 	{0x05, 0xF1, 0x09, 0x00, 0x00, 0x06},
-	//	{0x05, 0xF1, 0x0F, 0x00, 0x00, 0xF5},
-	//	{0x05, 0xF1, 0x0E, 0x00, 0x00, 0xF5},
+	{0x05, 0xF1, 0x0F, 0x00, 0x00, 0xF5},
+	{0x05, 0xF1, 0x0E, 0x00, 0x00, 0xF5},
 	{0x05, 0xF1, 0x1A, 0x00, 0x00, 0xF5},
 	{0x05, 0xF1, 0x1B, 0x00, 0x00, 0xF4},
 	{0x05, 0xF1, 0x1C, 0x00, 0x00, 0xF3},
@@ -53,7 +57,7 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x05, 0xF1, 0x2A, 0x00, 0x00, 0xE5},
 	{0x05, 0xF1, 0x4C, 0x00, 0x00, 0xF2},
 	{0x05, 0xF1, 0x74, 0x00, 0x00, 0x9B},
-	{0x05, 0xF1, 0x76, 0x00, 0x00, 0x99},
+	{0x05, 0xF1, 0x74, 0x00, 0x00, 0x99}, //af_off
 	{0x05, 0xF1, 0x78, 0x00, 0x00, 0xEB},
 	{0x05, 0xF1, 0x80, 0x00, 0x00, 0x8F},
 	{0x05, 0xF1, 0x29, 0xEA, 0x60, 0x9C},
@@ -63,6 +67,12 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x05, 0xF1, 0x91, 0x00, 0x00, 0x7E},
 	{0x05, 0xF1, 0x92, 0x00, 0x00, 0x7D},
 	{0x05, 0xF1, 0x82, 0x00, 0x00, 0x8D},
+
+	{0x05, 0xF1, 0x37, 0x00, 0x00, 0xD7}, // data1: 0x01 on,  0x00 off
+
+	{0x05, 0xF1, 0x79, 0x00, 0x00, 0x96}, // 00 00 X1,  01 00 X2
+	{0x05, 0xF1, 0x4A, 0x00, 0x00, 0x19}, // same with set_zoom
+	// x00 back_zoom, x01 tele, x02 wide , x03 random1, x04 random2
 };
 
 static uchar chksum(const uchar *buf, int len)
@@ -85,8 +95,11 @@ MgeoGunGorHead::MgeoGunGorHead()
 		{"chip_version", {NULL, R_CHIP_VERSION}},
 		{"digi_zoom", {NULL, R_DIGI_ZOOM}},
 		{"cam_status", {C_SET_OPEN, R_CAM_STATUS}},
-		{"auto_focus", {C_SET_AUTO_FOCUS_ON, R_AUTO_FOCUS_STATUS}},
+		{"auto_focus_mode", {C_SET_AUTO_FOCUS_MODE, R_AUTO_FOCUS_STATUS}},
 		{"digi_zoom", {C_SET_DIGI_ZOOM_ON, R_DIGI_ZOOM_STATUS}},
+		{"fog_mode", {C_SET_FOG_MODE, R_FOG_STATUS}},
+		{"ext_mode", {C_SET_EXTENDER_MODE, R_EXT_STATUS}},
+		{"fov_mode", {C_FOV, R_FOV_STATUS}},
 	};
 #endif
 }
@@ -106,11 +119,8 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 		setRegister(R_CAM_STATUS, x);
 	} else if (r == C_SET_FOCUS) {
 		sendCommand(r, (x & 0xff00) >> 8, (x & 0x00ff));
-	} else if (r == C_SET_AUTO_FOCUS_ON) {
-		if (x == 1)
-			sendCommand(C_SET_AUTO_FOCUS_ON);
-		else if (x == 0)
-			sendCommand(C_SET_AUTO_FOCUS_OFF);
+	} else if (r == C_SET_AUTO_FOCUS_MODE) {
+		sendCommand(C_SET_AUTO_FOCUS_MODE, x);
 		setRegister(R_AUTO_FOCUS_STATUS, x);
 	} else if (r == C_SET_DIGI_ZOOM_ON) {
 		if (x == 0)
@@ -118,6 +128,23 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 		else
 			sendCommand(C_SET_DIGI_ZOOM_ON, x);
 		setRegister(R_DIGI_ZOOM_STATUS, x);
+	} else if (r == C_SET_FOG_MODE) {
+		sendCommand(r, x);
+		setRegister(R_FOG_STATUS, x);
+	} else if (r == C_SET_EXTENDER_MODE) {
+		sendCommand(r, x);
+		setRegister(R_EXT_STATUS, x);
+	} else if (r == C_FOV) {// 0x00, 0x01, 0x02, 0x03, 0x04
+		if (x == 0x00)
+			sendCommand(r);
+		else if (x == 0x01)
+			sendCommand(C_SET_ZOOM_TELE);
+		else if (x == 0x02)
+			sendCommand(C_SET_ZOOM_WIDE);
+		else if (x == 0x03)
+			sendCommand(r, 0x55, 0x55);
+		else if (x == 0x04)
+			sendCommand(r, 0xAA, 0xAA);
 	}
 }
 
