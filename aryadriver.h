@@ -24,6 +24,7 @@ public:
 	void setOverlayInterval(int ms);
 	void setThermalInterval(int ms);
 	void setGungorInterval(int ms);
+	void setHeadType(QString type);
 	grpc::Status GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
 	grpc::Status SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response);
 protected slots:
@@ -50,7 +51,6 @@ protected:
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
-	QElapsedTimer *checker;
 	QElapsedTimer overlayLaps;
 	PtzpHttpTransport *httpThermal;
 	PtzpHttpTransport *httpDay;
@@ -61,6 +61,7 @@ protected:
 	int thermalInterval;
 	int gungorInterval;
 	bool apiEnable;
+	QString headType;
 };
 
 #endif // ARYADRIVER_H

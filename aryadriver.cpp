@@ -1,26 +1,22 @@
 #include "aryadriver.h"
 #include "aryapthead.h"
 
+#include "debug.h"
 #include "gungorhead.h"
 #include "moxacontrolhead.h"
 #include "mgeothermalhead.h"
 #include "ptzptcptransport.h"
 #include "ptzphttptransport.h"
-#include "debug.h"
 
 #include <QProcess>
 #include <QCoreApplication>
+#include <math.h>
 
 static float speedRegulateThermal(float speed, float zooms[])
 {
-	float stepSize = 1575.0;
 	float zoomVal = zooms[0];
-	float stepAmount = zoomVal / stepSize;
-	float correction = pow((16.8 - stepAmount * 2) / 16.8, 2);
-	float result = speed * correction;
-	if (result < 0.003)
-		result = 0.003;
-	return result;
+	float zoomMax = zooms[1];
+	return speed * (pow(zoomVal / zoomMax, 2));
 }
 
 static float speedRegulateDay(float speed, float zooms[])
@@ -35,15 +31,9 @@ static float speedRegulateDay(float speed, float zooms[])
 	return result;
 }
 
-static float speedRegulateArya(float speed, float zooms[])
-{
-	float speedThermal = speedRegulateThermal(speed, zooms);
-	float speedDay = speedRegulateDay(speed, zooms);
-	return speedThermal < speedDay ? speedThermal : speedDay;
-}
-
 AryaDriver::AryaDriver(QObject *parent) : PtzpDriver(parent)
 {
+	headType = "tip3";
 	apiEnable = false;
 	gungorInterval = 100;
 	thermalInterval = 1000;
@@ -60,14 +50,6 @@ AryaDriver::AryaDriver(QObject *parent) : PtzpDriver(parent)
 	defaultModuleHead = NULL;
 	state = INIT;
 	connectLaps.start();
-
-	/*
-	 * [CR] [yca] Potansiyel memory leak, desctructor icinde free etmek
-	 * gerekebilir ya da bu sinif QObject'tan kalitildigi icin parent/this
-	 * gecmek yeterli olur
-	 */
-	checker = new QElapsedTimer();
-	checker->start();
 
 	overlayLaps.start();
 	overlayInterval = 1000;
@@ -111,6 +93,7 @@ int AryaDriver::connectThermal(const QString &target)
 	tcp2->setTimerInterval(thermalInterval);
 	thermal = new MgeoThermalHead;
 	thermal->setTransport(tcp2);
+	thermal->getFovList("arya_tip_select.json", headType);
 	return 0;
 }
 
@@ -177,6 +160,12 @@ void AryaDriver::setThermalInterval(int ms)
 void AryaDriver::setGungorInterval(int ms)
 {
 	gungorInterval = ms;
+}
+
+void AryaDriver::setHeadType(QString type)
+{
+	if (!type.isEmpty())
+		headType = type;
 }
 
 grpc::Status AryaDriver::GetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
