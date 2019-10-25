@@ -45,7 +45,7 @@ public:
 			buf = buf.mid(off + 1);
 		}
 	}
-
+	void setDelimiter(const QString &key) {delim = key;}
 protected:
 	QString buf;
 	QString delim;
@@ -76,6 +76,11 @@ PtzpTransport::PtzpTransport(PtzpTransport::LineProtocol proto)
 	else if (proto == PROTO_BUFFERED)
 		protocol = new BufferedProto;
 	protocol->transport = this;
+}
+
+void PtzpTransport::setDelimiter(const QString &delim)
+{
+	protocol->setDelimiter(delim);
 }
 
 int PtzpTransport::send(const QByteArray &ba)

@@ -40,8 +40,9 @@ public:
 		PtzpTransport *transport;
 		virtual void dataReady(const QByteArray &ba) = 0;
 		int processNewFrame(const unsigned char *bytes, int len);
+		virtual void setDelimiter(const QString &delim) {Q_UNUSED(delim)}
 	};
-
+	void setDelimiter(const QString &delim);
 protected:
 	QByteArray queueFreeCallback();
 
