@@ -1,16 +1,17 @@
 #include "flirdriver.h"
 
+#include "flirpttcphead.h"
 #include "flirmodulehead.h"
-#include "flirpthead.h"
-
 #include <ecl/ptzp/ptzptransport.h>
+
 FlirDriver::FlirDriver()
 {
-	headDome = new FlirPTHead;
+	headDome = new FlirPTTcpHead;
 	headModule = new FlirModuleHead;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
-	httpTransportDome = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
+
+	httpTransportDome = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	httpTransportModule = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
 }
 
@@ -36,12 +37,10 @@ int FlirDriver::setTarget(const QString &targetUri)
 	headDome->setTransport(httpTransportDome);
 	headModule->setTransport(httpTransportModule);
 
-	httpTransportDome->setContentType(PtzpHttpTransport::AppXFormUrlencoded);
-	ret = httpTransportDome->connectTo(fields[1]);
-	if (ret)
-		return ret;
+	httpTransportDome->connectTo(fields[1]);
 	httpTransportDome->enableQueueFreeCallbacks(true);
 	httpTransportDome->setTimerInterval(2000);
+	httpTransportDome->setDelimiter("*");
 
 	httpTransportModule->setContentType(PtzpHttpTransport::AppJson);
 	ret = httpTransportModule->connectTo(fields[0]);
@@ -50,7 +49,7 @@ int FlirDriver::setTarget(const QString &targetUri)
 	httpTransportModule->enableQueueFreeCallbacks(true);
 	httpTransportModule->setTimerInterval(2000);
 
-	headDome->getFlirConfig();
+	headDome->initialize();
 	return 0;
 }
 
