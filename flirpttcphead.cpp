@@ -34,8 +34,8 @@ static QStringList createPtzCommands()
 	cmdList << QString("PS%1 TS%2");
 	cmdList << QString("PS1200 TS1200 PP%1 TP%2");
 	cmdList << QString("PP TP");
-	cmdList << QString("PS");
-	cmdList << QString("TS");
+	cmdList << QString("PU");
+	cmdList << QString("TU");
 	cmdList << QString("PN PX TN TX");
 	return cmdList;
 }
