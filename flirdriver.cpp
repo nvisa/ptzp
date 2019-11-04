@@ -11,7 +11,7 @@ FlirDriver::FlirDriver()
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
 
-	httpTransportDome = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
+	transportDome = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	httpTransportModule = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
 }
 
@@ -34,13 +34,14 @@ int FlirDriver::setTarget(const QString &targetUri)
 	if (!targetUri.contains(";"))
 		return -ENODATA;
 	QStringList fields = targetUri.split(";");
-	headDome->setTransport(httpTransportDome);
+	headDome->setTransport(transportDome);
 	headModule->setTransport(httpTransportModule);
 
-	httpTransportDome->connectTo(fields[1]);
-	httpTransportDome->enableQueueFreeCallbacks(true);
-	httpTransportDome->setTimerInterval(2000);
-	httpTransportDome->setDelimiter("*");
+
+	transportDome->connectTo(fields[1]);
+	transportDome->enableQueueFreeCallbacks(true);
+	transportDome->setTimerInterval(2000);
+	transportDome->setDelimiter("*");
 
 	httpTransportModule->setContentType(PtzpHttpTransport::AppJson);
 	ret = httpTransportModule->connectTo(fields[0]);

@@ -23,7 +23,7 @@ protected slots:
 protected:
 	FlirPTTcpHead *headDome;
 	FlirModuleHead *headModule;
-	PtzpTcpTransport *httpTransportDome;
+	PtzpTcpTransport *transportDome;
 	PtzpHttpTransport *httpTransportModule;
 };
 
