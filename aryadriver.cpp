@@ -266,7 +266,7 @@ void AryaDriver::timeout()
 		}
 		break;
 	case NORMAL:
-		updateZoomOverlay(thermal->getZoom(), gungor->getZoom());
+		updateZoomOverlay(thermal->getAngle(), gungor->getAngle());
 		manageRegisterSaving();
 		if (doStartupProcess) {
 			doStartupProcess = false;
