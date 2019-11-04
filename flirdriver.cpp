@@ -53,6 +53,18 @@ int FlirDriver::setTarget(const QString &targetUri)
 	return 0;
 }
 
+QJsonObject FlirDriver::doExtraDeviceTests()
+{
+	QJsonObject obj;
+	if (headModule->getLaserTimer() < 10000)
+		return obj;
+	obj.insert("type", QString("control_module"));
+	obj.insert("index", 0);
+	obj.insert("name", QString("laser"));
+	obj.insert("elapsed_since_last_valid", headModule->getLaserTimer());
+	return obj;
+}
+
 /*
  * [CR] [fo] flirmodulehead içerisinde modülün durumuna göre
  * işlem yapılan birkaç özellik var.Bu yüzden buraya sync state'i ve

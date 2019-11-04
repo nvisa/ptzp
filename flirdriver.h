@@ -16,6 +16,7 @@ public:
 
 	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
+	QJsonObject doExtraDeviceTests();
 protected slots:
 	void timeout();
 
