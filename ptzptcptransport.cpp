@@ -42,7 +42,9 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 		if (!sock->bind(flds[3].toUInt()))
 			mDebug("error binding to port %d", flds[3].toInt());
 	}
-	sock->connectToHost(flds[0], flds[1].toInt());
+	serverUrl = flds[0];
+	serverPort = flds[1].toInt();
+	sock->connectToHost(serverUrl, serverPort);
 	connect(sock, SIGNAL(connected()), SLOT(connected()));
 	connect(sock, SIGNAL(disconnected()), SLOT(clientDisconnected()));
 	connect(sock, SIGNAL(readyRead()), SLOT(dataReady()));
@@ -52,6 +54,15 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 		return -1;
 	}
 	return 0;
+}
+
+void PtzpTcpTransport::reConnect()
+{
+	mDebug("Socket dead!!!! Why so serious ?");
+	if (sock->state() != QAbstractSocket::ConnectingState) {
+		mDebug("Trying to connect '%s'", qPrintable(serverUrl));
+		sock->connectToHost(serverUrl, serverPort);
+	}
 }
 
 int PtzpTcpTransport::disconnectFrom()
@@ -118,7 +129,7 @@ void PtzpTcpTransport::dataReady()
 void PtzpTcpTransport::clientDisconnected()
 {
 	ffDebug() << "disconnected";
-	disconnectFrom();
+	devStatus = DEAD;
 }
 /**
  * @brief PtzpTcpTransport::callback

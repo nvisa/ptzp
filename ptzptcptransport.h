@@ -32,6 +32,7 @@ public:
 	int send(const char *bytes, int len);
 	void setFilter(TransportFilterInteface *iface);
 	PtzpTcpTransport::DevStatus getStatus();
+	void reConnect();
 signals:
 	void sendSocketMessage2Main(const QByteArray &ba);
 
@@ -50,6 +51,8 @@ protected:
 	bool isUdp;
 	int sendDstPort;
 	DevStatus devStatus;
+	QString serverUrl;
+	int serverPort;
 };
 
 #endif // PTZPTCPTRANSPORT_H
