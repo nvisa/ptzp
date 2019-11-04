@@ -32,6 +32,7 @@ enum ComandList {
 	C_GET_CAMPOS,
 	C_SET_FOCUS_POS,
 	C_GET_CAM_MODES,
+	C_GET_LASER_STATE,
 	C_COUNT,
 };
 
@@ -67,15 +68,17 @@ static QStringList createCommandList()
 		"/cgi-bin/"
 		"param.cgi?action=update&group=CAMPOS&channel=0&CAMPOS.focuspos=%1");
 	cmdList << QString("/cgi-bin/param.cgi?action=list&group=CAM&channel=0");
+	cmdList << QString("/cgi-bin/control.cgi?action=list&group=LASER&LASER.cmdType=100");
 	return cmdList;
 }
 
 FlirModuleHead::FlirModuleHead()
 {
 	setHeadName("module_head");
+	syncList << C_GET_CAMPOS << C_GET_CAM_MODES << C_GET_LASER_STATE;
+	next = 0;
 	zoomPos = 0;
 	focusPos = 0;
-	lastGetCommand = C_GET_CAM_MODES;
 	settings = {
 		{"focus", {NULL, NULL}},
 		{"focus_pos", {CGI_SET_FOCUS_POS, CGI_GET_FOCUS_POS}},
@@ -83,6 +86,23 @@ FlirModuleHead::FlirModuleHead()
 	};
 	commandList = createCommandList();
 	assert(commandList.size() == C_COUNT);
+	laserTimer.restart();
+	laserCIT = true;
+}
+
+int FlirModuleHead::getLaserState()
+{
+	return sendCommand(commandList.at(C_GET_LASER_STATE));
+}
+
+bool FlirModuleHead::getLaserCIT()
+{
+	return laserCIT;
+}
+
+int FlirModuleHead::getLaserTimer()
+{
+	return laserTimer.elapsed();
 }
 
 int FlirModuleHead::getCapabilities()
@@ -177,50 +197,55 @@ int FlirModuleHead::sendCommand(const QString &key)
 	return transport->send(key.toUtf8());
 }
 
+int FlirModuleHead::getNext()
+{
+	if (next == 0)
+		next = syncList.size();
+	next--;
+	return syncList.at(next);
+}
+
 QByteArray FlirModuleHead::transportReady()
 {
-	if (lastGetCommand == C_GET_CAMPOS)
-		lastGetCommand = C_GET_CAM_MODES;
-	else
-		lastGetCommand = C_GET_CAMPOS;
-	return commandList.at(lastGetCommand).toUtf8();
+	return commandList.at(getNext()).toUtf8();
 }
 
 int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 {
 	pingTimer.restart();
 	QString data = QString::fromUtf8((const char *)bytes, len);
-
 	if (data.contains("root.ERR.no=4") ||
 		data.size() > 1000) // unnecessary message
 		return len;
-
-	if (lastGetCommand == C_GET_CAMPOS) {
-		QStringList lines = data.split("\n");
-		foreach (QString line, lines) {
-			if (line.isEmpty() || !line.contains("CAMPOS") ||
-				line.contains("html"))
-				continue;
-			line.remove("\r");
+	QStringList lines = data.split("\n");
+	foreach (QString line, lines) {
+		if (line.isEmpty())
+			continue;
+		line.remove("\r");
+		if (line.contains("LASER.current")) {
+			line = line.remove(" ");
+			QString value = line.split("=").last();
+			if (value.toInt() == 64) {
+				laserCIT = true;
+				laserTimer.restart();
+				return len;
+			}
+		}
+		if (line.contains("root.CAMPOS.")) {
 			line.remove("root.CAMPOS.");
 			if (line.contains("zoompos"))
 				zoomPos = line.split("=").last().toInt();
 			if (line.contains("focuspos"))
 				focusPos = line.split("=").last().toInt();
 		}
-	} else if (lastGetCommand == C_GET_CAM_MODES) {
-		QStringList lines = data.split("\n");
-		foreach (QString line, lines) {
-			if (line.isEmpty() || !line.contains("CAM") ||
-				line.contains("html"))
-				continue;
-			line.remove("\r");
+		if (line.contains("root.CAM.")) {
 			line.remove("root.CAM.");
 			QString key = line.split("=").first();
 			QString value = line.split("=").last();
 			camModes.insert(key, value);
 		}
 	}
-	mInfo("Zoom position %d, Focus position %d", zoomPos, focusPos);
+	mDebug("Zoom position %d, Focus position %d, Laser timer %d",
+			zoomPos, focusPos,  getLaserTimer());
 	return len;
 }

@@ -23,15 +23,23 @@ public:
 	int setFocusValue(uint x);
 	int getFocusMode();
 	int getFocus();
+	int getLaserState();
 
+	bool getLaserCIT();
+	int getLaserTimer();
 protected:
-	QStringList commandList;
-	int sendCommand(const QString &key);
+	int getNext();
 	QByteArray transportReady();
+	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);
-	int focusPos;
+private:
+	int next;
 	int zoomPos;
-	int lastGetCommand;
+	int focusPos;
+	bool laserCIT;
+	QList<uint> syncList;
+	QStringList commandList;
+	QElapsedTimer laserTimer;
 	QHash<QString, QString> camModes;
 };
 
