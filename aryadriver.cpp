@@ -185,7 +185,8 @@ grpc::Status AryaDriver::GetSettings(grpc::ServerContext *context, const ptzp::S
 
 grpc::Status AryaDriver::SetSettings(grpc::ServerContext *context, const ptzp::Settings *request, ptzp::Settings *response)
 {
-	if (request->json() == "change_head") {
+	QString str = QString::fromStdString(request->json());
+	if (str.contains("change_head")) {
 		apiEnable = true;
 		int headID = request->head_id();
 		if (headID == 1)
