@@ -91,6 +91,7 @@ public:
 	int communicationElapsed();
 	RangeMapper *getRangeMapper() { return &rmapper; }
 	int getFovList(const QString &file, const QString &objName);
+	virtual QJsonObject factorySettings(const QString &file);
 
 	void setZoomRatios(std::vector<int> v) { zoomRatios = v; }
 	int getZoomRatio();

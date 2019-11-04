@@ -195,6 +195,13 @@ grpc::Status AryaDriver::SetSettings(grpc::ServerContext *context, const ptzp::S
 			defaultModuleHead = gungor;
 		setRegulateSettings();
 		return grpc::Status::OK;
+	} else if (str.contains("factory_settings")) {
+		int headID = request->head_id();
+		if (headID == 1)
+			thermal->factorySettings("factory_thermal.json");
+		else if (headID == 2)
+			gungor->factorySettings("factory_gungor.json");
+		return grpc::Status::OK;
 	}
 	return PtzpDriver::SetSettings(context, request, response);
 }

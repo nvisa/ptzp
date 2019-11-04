@@ -43,6 +43,7 @@ public:
 	int headSystemChecker();
 	void setFocusStepper();
 	float  getAngle();
+	QJsonObject factorySettings(const QString &file);
 
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);

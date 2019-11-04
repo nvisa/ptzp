@@ -469,6 +469,21 @@ int PtzpHead::getFovList(const QString &file, const QString &objName)
 	return 0;
 }
 
+QJsonObject PtzpHead::factorySettings(const QString &file)
+{
+	QJsonObject obj;
+	QFile f(file);
+	if (!f.open(QIODevice::ReadOnly)) {
+		qDebug() << "factory file didn't found" << file;
+		return obj;
+	}
+	QString data = f.readAll();
+	QJsonDocument doc = QJsonDocument::fromJson(data.toLatin1());
+	obj = doc.object();
+	f.close();
+	return obj;
+}
+
 int PtzpHead::getZoomRatio()
 {
 	if (zoomRatios.size() == 0)

@@ -29,7 +29,7 @@ public:
 	virtual int setZoom(uint pos);
 	int headSystemChecker();
 	float getAngle();
-
+	QJsonObject factorySettings(const QString &file);
 	float getFovMax();
 protected:
 	int sendCommand(const QString &key);

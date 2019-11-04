@@ -48,7 +48,8 @@ enum Commands {
 	C_COUNT,
 	// missing registers
 	R_ANGLE,
-	R_COOLED_DOWN
+	R_COOLED_DOWN,
+	R_FACTORY
 };
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
@@ -124,7 +125,8 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 		{"image_update_speed", {C_IMAGE_UPDATE_SPEED, C_IMAGE_UPDATE_SPEED}},
 		{"auto_focus", {C_AUTO_FOCUS, C_AUTO_FOCUS}},
 		{"contrast_change", {C_CONTRAST_CHANGE, C_CONTRAST}},
-		{"brigthness_change", {C_BRIGHTNESS_CHANGE, C_BRIGHTNESS}},
+		{"brightness_change", {C_BRIGHTNESS_CHANGE, C_BRIGHTNESS}},
+		{"factory_settings", {R_FACTORY, R_FACTORY}},
 	};
 #endif
 	if (getFovList("arya_tip_select.json", type) < 0) {
@@ -191,6 +193,35 @@ float MgeoThermalHead::getAngle()
 	else if (fovValue.max < angle)
 		angle = fovValue.max;
 	return angle;
+}
+
+QJsonObject MgeoThermalHead::factorySettings(const QString &file)
+{
+	QJsonObject obj = PtzpHead::factorySettings(file);
+	setProperty(C_AGC_SELECT, 1);
+	if (obj.contains("symbology"))
+		setProperty(C_SYMBOLOGY, obj.value("symbology").toInt());
+	if (obj.contains("brightness"))
+		setProperty(C_BRIGHTNESS, obj.value("brightness").toInt());
+	if (obj.contains("contrast"))
+		setProperty(C_CONTRAST, obj.value("contrast").toInt());
+	if (obj.contains("fov"))
+		setProperty(C_FOV, obj.value("fov").toInt());
+	if (obj.contains("polarity"))
+		setProperty(C_POL_CHANGE, obj.value("polarity").toInt());
+	if (obj.contains("reticle"))
+		setProperty(C_RETICLE_ONOFF, obj.value("reticle").toInt());
+	if (obj.contains("digi_zoom"))
+		setProperty(C_DIGITAL_ZOOM, obj.value("digi_zoom").toInt());
+	if (obj.contains("image_freeze"))
+		setProperty(C_FREEZE_IMAGE, obj.value("image_freeze").toInt());
+	if (obj.contains("ipm"))
+		setProperty(C_IPM_CHANGE, obj.value("ipm").toInt());
+	if (obj.contains("hpf_gain"))
+		setProperty(C_HPF_GAIN_CHANGE, obj.value("hpf_gain").toInt());
+	if (obj.contains("hpf_spatial"))
+		setProperty(C_HPF_SPATIAL_CHANGE, obj.value("hpf_spatial").toInt());
+	return obj;
 }
 
 float MgeoThermalHead::getFovMax()

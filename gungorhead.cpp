@@ -40,7 +40,8 @@ enum Commands {
 
 	C_SET_EXTENDER_MODE,
 	C_FOV,
-	C_COUNT
+	C_COUNT,
+	R_FACTORY
 };
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
@@ -100,6 +101,7 @@ MgeoGunGorHead::MgeoGunGorHead()
 		{"fog_mode", {C_SET_FOG_MODE, R_FOG_STATUS}},
 		{"ext_mode", {C_SET_EXTENDER_MODE, R_EXT_STATUS}},
 		{"fov_mode", {C_FOV, R_FOV_STATUS}},
+		{"factory_settings", {R_FACTORY, R_FACTORY}},
 	};
 #endif
 }
@@ -176,6 +178,20 @@ void MgeoGunGorHead::setFocusStepper()
 float MgeoGunGorHead::getAngle()
 {
 	return getZoom();
+}
+
+QJsonObject MgeoGunGorHead::factorySettings(const QString &file)
+{
+	QJsonObject obj = PtzpHead::factorySettings(file);
+	if (obj.contains("fov"))
+		setProperty(C_FOV, obj.value("fov").toInt());
+	if (obj.contains("extender"))
+		setProperty(C_SET_EXTENDER_MODE, obj.value("extender").toInt());
+	if (obj.contains("fog"))
+		setProperty(C_SET_FOG_MODE, obj.value("fog").toInt());
+	if (obj.contains("digi_zoom"))
+		setProperty(C_SET_DIGI_ZOOM_ON, obj.value("digi_zoom").toInt());
+	return obj;
 }
 
 int MgeoGunGorHead::getHeadStatus()
