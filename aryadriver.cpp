@@ -137,6 +137,9 @@ void AryaDriver::updateZoomOverlay(int thermal, int day)
 		mDebug("Moxa Thermal and Day device don't ready!!!");
 		return;
 	}
+	thermal = this->thermal->getFovMax() / thermal;
+	day = this->gungor->getZoom() / 1000.0;
+	day = day ? day : 1; // because getting zero !.
 	if (overlayLaps.elapsed() > overlayInterval) {
 		moxaDay->setZoomShow(day);
 		moxaThermal->setZoomShow(thermal);
