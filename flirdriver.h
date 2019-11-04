@@ -20,11 +20,18 @@ public:
 protected slots:
 	void timeout();
 
+	void finished(QNetworkReply *reply);
+protected:
+	void bumpStart();
 protected:
 	FlirPTTcpHead *headDome;
 	FlirModuleHead *headModule;
 	PtzpTcpTransport *transportDome;
 	PtzpHttpTransport *httpTransportModule;
+	QNetworkRequest req;
+private:
+	QString pturl;
+	bool reinitPT;
 };
 
 #endif // FLIRDRIVER_H

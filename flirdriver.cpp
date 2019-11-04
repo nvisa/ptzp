@@ -4,6 +4,8 @@
 #include "flirmodulehead.h"
 #include <ecl/ptzp/ptzptransport.h>
 
+#include <QNetworkReply>
+
 FlirDriver::FlirDriver()
 {
 	headDome = new FlirPTTcpHead;
@@ -13,6 +15,7 @@ FlirDriver::FlirDriver()
 
 	transportDome = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	httpTransportModule = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED);
+	reinitPT = false;
 }
 
 FlirDriver::~FlirDriver()
@@ -28,6 +31,32 @@ PtzpHead *FlirDriver::getHead(int index)
 	return NULL;
 }
 
+void FlirDriver::bumpStart()
+{
+
+	QNetworkAccessManager *man = new QNetworkAccessManager(this);
+	req.setHeader(QNetworkRequest::ContentTypeHeader,
+				  "application/x-www-form-urlencoded");
+	QUrl url;
+	url.setPort(80);
+	url.setUrl(pturl);
+	req.setUrl(url);
+	connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(finished(QNetworkReply*)));
+	man->post(req, "C=V&PS=-100");
+}
+
+void FlirDriver::finished(QNetworkReply* reply)
+{
+	QString data = reply->readAll();
+	QNetworkAccessManager *man = static_cast<QNetworkAccessManager*>(sender());
+	if (!data.contains("H"))
+		man->post(req, "H");
+	else {
+		man->deleteLater();
+		reply->deleteLater();
+	}
+}
+
 int FlirDriver::setTarget(const QString &targetUri)
 {
 	int ret = 0;
@@ -37,6 +66,8 @@ int FlirDriver::setTarget(const QString &targetUri)
 	headDome->setTransport(transportDome);
 	headModule->setTransport(httpTransportModule);
 
+	pturl = "http://" + fields[1].split(":").first() + "/API/PTCmd";
+	bumpStart();
 
 	transportDome->connectTo(fields[1]);
 	transportDome->enableQueueFreeCallbacks(true);
@@ -73,5 +104,16 @@ QJsonObject FlirDriver::doExtraDeviceTests()
  */
 void FlirDriver::timeout()
 {
+	if (transportDome->getStatus() == PtzpTcpTransport::DEAD) {
+		reinitPT = true;
+		transportDome->reConnect();
+		return;
+	}
+	if (reinitPT) {
+		if (transportDome->getStatus() == PtzpTcpTransport::ALIVE) {
+			bumpStart();
+			reinitPT = false;
+		}
+	}
 	PtzpDriver::timeout();
 }
