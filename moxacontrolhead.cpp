@@ -13,7 +13,7 @@ enum CommandList {
 static QStringList createMoxaCommandList()
 {
 	QStringList list;
-	list << "/moxa-cgi/imageoverlay.cgi?ctoken=osdcfg01&action=setconfig&type=0&display=2&position=0&posx=0&posy=0&bgspan=0&textsize=24&datetimeformat=0&showdate=0&showtime=0&text=ZOOM:%1";
+	list << "/moxa-cgi/imageoverlay.cgi?ctoken=osdcfg01&action=setconfig&type=0&display=2&position=0&posx=0&posy=0&bgspan=0&textsize=24&datetimeformat=0&showdate=0&showtime=0&text=ZOOM:%1X";
 	return list;
 }
 
