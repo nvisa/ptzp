@@ -135,7 +135,9 @@ int FlirPTTcpHead::panTiltAbs(float pan, float tilt)
 
 int FlirPTTcpHead::panTiltGoPos(float ppos, float tpos)
 {
-	return sendCommand(ptzCommandList.at(C_PAN_TILT_GO_POS).arg(ppos).arg(tpos));
+	float pan = (ppos * flirConfig.maxPanPos) / 180.0;
+	float tilt = (tpos * flirConfig.maxTiltPos * 3) / 90.0;
+	return sendCommand(ptzCommandList.at(C_PAN_TILT_GO_POS).arg(pan).arg(tilt));
 }
 
 int FlirPTTcpHead::panTiltStop()
@@ -145,12 +147,12 @@ int FlirPTTcpHead::panTiltStop()
 
 float FlirPTTcpHead::getPanAngle()
 {
-	return flirConfig.panPos * 180.0 / flirConfig.maxPanPos;
+	return (flirConfig.panPos * 180.0) / flirConfig.maxPanPos;
 }
 
 float FlirPTTcpHead::getTiltAngle()
 {
-	return flirConfig.tiltPos * 90.0 / flirConfig.maxTiltPos / 3;
+	return (flirConfig.tiltPos * 90.0) / flirConfig.maxTiltPos / 3;
 }
 
 int FlirPTTcpHead::dataReady(const unsigned char *bytes, int len)
