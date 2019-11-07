@@ -33,6 +33,7 @@ public:
 	void setFilter(TransportFilterInteface *iface);
 	PtzpTcpTransport::DevStatus getStatus();
 	void reConnect();
+	void setAutoReconnect(bool flag);
 signals:
 	void sendSocketMessage2Main(const QByteArray &ba);
 
@@ -43,6 +44,7 @@ protected slots:
 	void callback();
 	void sendSocketMessage(const QByteArray &ba);
 
+	void timeout();
 protected:
 	QAbstractSocket *sock;
 	QTimer *timer;
@@ -53,6 +55,7 @@ protected:
 	DevStatus devStatus;
 	QString serverUrl;
 	int serverPort;
+	bool autoReconnect;
 };
 
 #endif // PTZPTCPTRANSPORT_H

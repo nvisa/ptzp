@@ -16,6 +16,7 @@ PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 	connect(timer, SIGNAL(timeout()), SLOT(callback()));
 	connect(this, SIGNAL(sendSocketMessage2Main(QByteArray)),
 			SLOT(sendSocketMessage(QByteArray)));
+	autoReconnect = false;
 }
 
 int PtzpTcpTransport::connectTo(const QString &targetUri)
@@ -63,6 +64,13 @@ void PtzpTcpTransport::reConnect()
 		mDebug("Trying to connect '%s'", qPrintable(serverUrl));
 		sock->connectToHost(serverUrl, serverPort);
 	}
+}
+
+void PtzpTcpTransport::setAutoReconnect(bool flag)
+{
+	autoReconnect = flag;
+	if (autoReconnect)
+		QTimer::singleShot(100, this, SLOT(timeout()));
 }
 
 int PtzpTcpTransport::disconnectFrom()
@@ -155,4 +163,15 @@ void PtzpTcpTransport::sendSocketMessage(const QByteArray &ba)
 			->writeDatagram(ba, sock->peerAddress(), sendDstPort);
 	else if (sock)
 		sock->write(ba);
+}
+
+void PtzpTcpTransport::timeout()
+{
+	if (autoReconnect) {
+		if (devStatus == DEAD) {
+			this->enableQueueFreeCallbacks(false);
+			reConnect();
+		}
+		QTimer::singleShot(100, this, SLOT(timeout()));
+	}
 }
