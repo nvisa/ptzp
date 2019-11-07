@@ -261,12 +261,18 @@ void PtzpDriver::goToPosition(float p, float t, int z)
 
 float PtzpDriver::getPanAngle()
 {
-	return defaultPTHead->getPanAngle();
+	if (defaultPTHead)
+		return defaultPTHead->getPanAngle();
+	else
+		return 999999.99;
 }
 
 float PtzpDriver::getTiltAngle()
 {
-	return defaultPTHead->getTiltAngle();
+	if (defaultPTHead)
+		return defaultPTHead->getTiltAngle();
+	else
+		return 999999.99;
 }
 
 void PtzpDriver::sendCommand(int c, float par1, float par2)
