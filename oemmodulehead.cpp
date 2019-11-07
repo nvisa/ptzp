@@ -225,6 +225,7 @@ OemModuleHead::OemModuleHead()
 	syncEnabled = true;
 	syncInterval = 40;
 	syncTime.start();
+	registersCache[R_IRCF_STATUS] = 0;
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -519,7 +520,13 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_BLC_STATUS, (p[2] == 0x02) ? true : false);
 	} else if (sendcmd == C_VISCA_GET_IRCF_STATUS) {
 		mInfo("Ircf Status synced");
-		setRegister(R_IRCF_STATUS, (p[2] == 0x02) ? true : false);
+		if (p[2] != 0x02 && p[2] != 0x03) {
+			mDebug("Ircf Status Error. %s", qPrintable(QByteArray((char*)bytes, len).toHex()));
+			return expected;
+		}
+		if (registersCache[R_IRCF_STATUS] == p[2])
+			setRegister(R_IRCF_STATUS, (p[2] == 0x02) ? true : false);
+		registersCache[R_IRCF_STATUS] = p[2];
 	} else if (sendcmd == C_VISCA_GET_AUTO_ICR) {
 		mInfo("Auto Icr synced");
 		setRegister(R_AUTO_ICR, (p[2] == 0x02) ? true : false);
