@@ -48,11 +48,12 @@ AryaDriver::AryaDriver(QObject *parent) : PtzpDriver(parent)
 
 	defaultPTHead = NULL;
 	defaultModuleHead = NULL;
-	state = INIT;
-	connectLaps.start();
 
 	overlayLaps.start();
 	overlayInterval = 1000;
+	reinitPT = true;
+	reinitDay = true;
+	reinitThermal = true;
 }
 
 int AryaDriver::setTarget(const QString &targetUri)
@@ -80,6 +81,7 @@ int AryaDriver::connectPT(const QString &target)
 	tcp1 = new PtzpTcpTransport(PtzpTransport::PROTO_STRING_DELIM);
 	tcp1->connectTo(QString("%1:4001").arg(target));
 	tcp1->enableQueueFreeCallbacks(true);
+	tcp1->setAutoReconnect(true);
 	aryapt = new AryaPTHead;
 	aryapt->setTransport(tcp1);
 	defaultPTHead = aryapt;
@@ -91,6 +93,7 @@ int AryaDriver::connectThermal(const QString &target)
 	tcp2 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	tcp2->connectTo(QString("%1:4002").arg(target));
 	tcp2->setTimerInterval(thermalInterval);
+	tcp2->setAutoReconnect(true);
 	thermal = new MgeoThermalHead(headType);
 	thermal->setTransport(tcp2);
 	return 0;
@@ -101,6 +104,7 @@ int AryaDriver::connectDay(const QString &target)
 	tcp3 = new PtzpTcpTransport(PtzpTransport::PROTO_BUFFERED);
 	tcp3->connectTo(QString("%1:4003").arg(target));
 	tcp3->setTimerInterval(gungorInterval);
+	tcp3->setAutoReconnect(true);
 	gungor = new MgeoGunGorHead;
 	gungor->setTransport(tcp3);
 	defaultModuleHead = gungor;
@@ -235,53 +239,39 @@ PtzpHead *AryaDriver::getHead(int index)
 
 void AryaDriver::timeout()
 {
-	if (thermal->getHeadStatus() != PtzpHead::ST_NORMAL
-		||	gungor->getHeadStatus() != PtzpHead::ST_NORMAL
-		||	aryapt->getHeadStatus() != PtzpHead::ST_NORMAL) {
-		mLog("System heads didn't initialize...System will go to restart;\n"
-			  "Thermal State %d, Gungor State %d, PanTilt State %d.",
-			   thermal->getHeadStatus(), gungor->getHeadStatus(), aryapt->getHeadStatus());
-		if (connectLaps.elapsed() > 30000)
-			reboot();
-	} else
-		connectLaps.restart();
-	mLog("Driver state: %d", state);
-	/*
-	 * [CR] [yca] Bu sinifin state dongusu daha robust
-	 * hale getirilebilir mi? Kafalardan herhangi birisi
-	 * calismasa bile sistem bunu hata olarak belirtip digerlerini
-	 * yonetebilir hale getirilebilir mi?
-	 */
-	switch (state) {
-	case INIT:
-		thermal->syncRegisters();
-		thermal->loadRegisters("head1.json");
-		state = SYNC_THERMAL_MODULES;
-		break;
-	case SYNC_THERMAL_MODULES:
-		if (thermal->getHeadStatus() == PtzpHead::ST_NORMAL) {
-			state = SYNC_GUNGOR_MODULES;
-			gungor->syncRegisters();
-			gungor->loadRegisters("head2.json");
-		}
-		break;
-	case SYNC_GUNGOR_MODULES:
-		if (gungor->getHeadStatus() == PtzpHead::ST_NORMAL) {
-			gungor->setFocusStepper();
-			tcp2->enableQueueFreeCallbacks(true);
-			tcp3->enableQueueFreeCallbacks(true);
-			state = NORMAL;
-		}
-		break;
-	case NORMAL:
-		updateZoomOverlay(thermal->getAngle(), gungor->getAngle());
-		manageRegisterSaving();
-		if (doStartupProcess) {
-			doStartupProcess = false;
-			getStartupProcess();
-		}
-		break;
+	if (tcp1->getStatus() == PtzpTcpTransport::DEAD)
+		reinitPT = true;
+	if (tcp2->getStatus() == PtzpTcpTransport::DEAD)
+		reinitThermal = true;
+	if (tcp3->getStatus() == PtzpTcpTransport::DEAD)
+		reinitDay = true;
+
+	if (reinitPT && tcp1->getStatus() == PtzpTcpTransport::ALIVE) {
+		reinitPT = false;
+		aryapt->panTiltStop();
+		tcp1->enableQueueFreeCallbacks(true);
+		return;
 	}
+
+	if (reinitThermal && tcp2->getStatus() == PtzpTcpTransport::ALIVE) {
+		reinitThermal = false;
+		thermal->initHead();
+		return;
+	}
+
+	if (reinitDay && tcp3->getStatus() == PtzpTcpTransport::ALIVE) {
+		reinitDay = false;
+		gungor->initHead();
+		return;
+	}
+
+	updateZoomOverlay(thermal->getAngle(), gungor->getAngle());
+	manageRegisterSaving();
+	if (doStartupProcess) {
+		doStartupProcess = false;
+		getStartupProcess();
+	}
+
 	PtzpDriver::timeout();
 }
 
