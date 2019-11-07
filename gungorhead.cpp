@@ -3,6 +3,7 @@
 #include "ptzptransport.h"
 
 #include <QFile>
+#include <QTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -155,21 +156,6 @@ uint MgeoGunGorHead::getProperty(uint r)
 	return getRegister(r);
 }
 
-int MgeoGunGorHead::headSystemChecker()
-{
-	if (systemChecker == -1) {
-		int ret = sendCommand(C_GET_ZOOM);
-		mInfo("Gungor HEAD system checker started. %d", ret);
-		systemChecker = 0;
-	} else if (systemChecker == 0) {
-		mInfo("Waiting Response from GunGor CAM");
-	} else if (systemChecker == 1) {
-		mInfo("Completed System Check. Zoom: %f", getRegister(R_ZOOM));
-		systemChecker = 2;
-	}
-	return systemChecker;
-}
-
 void MgeoGunGorHead::setFocusStepper()
 {
 	sendCommand(C_SET_FOCUS_STEPPER, 0xEA, 0x60);
@@ -194,6 +180,26 @@ QJsonObject MgeoGunGorHead::factorySettings(const QString &file)
 	return obj;
 }
 
+void MgeoGunGorHead::initHead()
+{
+	nextSync = 0;
+	QTimer::singleShot(1000, this, SLOT(timeout()));
+}
+
+void MgeoGunGorHead::timeout()
+{
+	if (nextSync != syncList.size()) {
+		syncRegisters();
+		mInfo("Syncing.. '%d'.step, total step '%d'",
+				nextSync, syncList.size());
+		QTimer::singleShot(1000, this, SLOT(timeout()));
+	} else {
+		mDebug("Day register sync completed");
+		loadRegisters("head2.json");
+		transport->enableQueueFreeCallbacks(true);
+	}
+}
+
 int MgeoGunGorHead::getHeadStatus()
 {
 	if (nextSync != syncList.size())
@@ -207,7 +213,6 @@ int MgeoGunGorHead::syncRegisters()
 {
 	if (!transport)
 		return -ENOENT;
-	nextSync = 0;
 	return syncNext();
 }
 
@@ -273,12 +278,9 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 	if (len < 5)
 		return len;
 
-	if (nextSync != syncList.size()) {
-		if (++nextSync == syncList.size()) {
-			fDebug("DayCam register syncing completed, activating auto-sync");
-		} else
-			syncNext();
-	}
+	if (nextSync != syncList.size())
+		nextSync++;
+
 	pingTimer.restart();
 	uchar opcode = bytes[1];
 	const uchar *p = bytes + 2;
@@ -321,6 +323,7 @@ int MgeoGunGorHead::syncNext()
 		return sendCommand(cmd);
 	else if (cmd == C_GET_DIGI_ZOOM)
 		return sendCommand(cmd);
+	return -ENODATA;
 }
 
 QJsonValue MgeoGunGorHead::marshallAllRegisters()
