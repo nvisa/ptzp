@@ -3,6 +3,7 @@
 #include "ptzptransport.h"
 
 #include <QFile>
+#include <QTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -151,7 +152,6 @@ int MgeoThermalHead::syncRegisters()
 {
 	if (!transport)
 		return -ENOENT;
-	nextSync = 0;
 	return syncNext();
 }
 
@@ -229,6 +229,23 @@ QJsonObject MgeoThermalHead::factorySettings(const QString &file)
 float MgeoThermalHead::getFovMax()
 {
 	return fovValue.max;
+}
+
+void MgeoThermalHead::timeout()
+{
+	/* If any class must have a sync process,
+	* The class must do it self
+	*/
+	if (nextSync != syncList.size()) {
+		syncRegisters();
+		mInfo("Syncing.. '%d'.step, total step '%d'",
+				nextSync, syncList.size());
+		QTimer::singleShot(1000, this, SLOT(timeout()));
+	} else {
+		mDebug("Thermal register sync completed");
+		loadRegisters("head1.json");
+		transport->enableQueueFreeCallbacks(true);
+	}
 }
 
 int MgeoThermalHead::getZoom()
@@ -349,23 +366,6 @@ int MgeoThermalHead::setZoom(uint pos)
 	return 0;
 }
 
-int MgeoThermalHead::headSystemChecker()
-{
-	if (systemChecker == -1) {
-		int ret = sendCommand(C_GET_ZOOM_FOCUS);
-		mInfo("ThermalHead system checker started. %d", ret);
-		systemChecker = 0;
-	} else if (systemChecker == 0) {
-		mInfo("Waiting Response from thermal CAM");
-	} else if (systemChecker == 1) {
-		mInfo("Completed System Check. Zoom: %f Focus: %f Angle: %f",
-			  getRegister(C_CONT_ZOOM), getRegister(C_FOCUS),
-			  getRegister(R_ANGLE));
-		systemChecker = 2;
-	}
-	return systemChecker;
-}
-
 int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 {
 	if (bytes[0] != 0xca)
@@ -383,14 +383,9 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		return meslen;
 	}
 
-	/* register sync support */
-	if (nextSync != syncList.size()) {
-		/* we are in sync mode, let's sync next */
-		if (++nextSync == syncList.size()) {
-			mDebug("Thermal register syncing completed, activating auto-sync");
-		} else
-			syncNext();
-	}
+	/* register sync support, we are in sync mode, let's sync next */
+	if (nextSync != syncList.size())
+		nextSync++;
 
 	uchar chk = chksum(bytes, meslen - 1);
 	if (chk != bytes[meslen - 1]) {
@@ -522,6 +517,12 @@ void MgeoThermalHead::unmarshallloadAllRegisters(const QJsonValue &node)
 		mInfo("Loading register: %d: \t %d", ind, v);
 		setProperty(ind, v);
 	}
+}
+
+void MgeoThermalHead::initHead()
+{
+	nextSync = 0;
+	QTimer::singleShot(1000, this, SLOT(timeout()));
 }
 
 QList<int> MgeoThermalHead::loadDefaultRegisterValues()
