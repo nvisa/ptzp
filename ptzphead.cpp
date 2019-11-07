@@ -324,6 +324,11 @@ void PtzpHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	Q_UNUSED(node);
 }
 
+void PtzpHead::initHead()
+{
+	return;
+}
+
 uint PtzpHead::getProperty(uint r)
 {
 	Q_UNUSED(r);
@@ -354,11 +359,6 @@ void PtzpHead::setProperty(const QString &key, const QVariant &value)
 {
 	Q_UNUSED(key);
 	Q_UNUSED(value);
-}
-
-int PtzpHead::headSystemChecker()
-{
-	return 0;
 }
 
 QString PtzpHead::whoAmI()

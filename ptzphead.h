@@ -83,7 +83,6 @@ public:
 	virtual void setProperty(uint r, uint x);
 	virtual QVariant getProperty(const QString &key);
 	virtual void setProperty(const QString &key, const QVariant &value);
-	virtual int headSystemChecker();
 	virtual QString whoAmI();
 	virtual float getMaxPatternSpeed() const;
 	int saveRegisters(const QString &filename);
@@ -119,6 +118,8 @@ protected:
 	uint getRegister(uint reg);
 	virtual QJsonValue marshallAllRegisters();
 	virtual void unmarshallloadAllRegisters(const QJsonValue &node);
+
+	virtual void initHead();
 
 	PtzpTransport *transport;
 	QHash<uint, uint> registers;
