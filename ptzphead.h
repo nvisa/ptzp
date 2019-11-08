@@ -110,6 +110,7 @@ public:
 	int getSystemStatus();
 	virtual void setHeadName(const QString &name);
 	QString getHeadName() { return headName; }
+	virtual void initHead();
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();
@@ -118,8 +119,6 @@ protected:
 	uint getRegister(uint reg);
 	virtual QJsonValue marshallAllRegisters();
 	virtual void unmarshallloadAllRegisters(const QJsonValue &node);
-
-	virtual void initHead();
 
 	PtzpTransport *transport;
 	QHash<uint, uint> registers;
