@@ -290,12 +290,8 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 	pingTimer.restart();
 	uchar opcode = bytes[1];
 	const uchar *p = bytes + 2;
-
-	if (opcode == 0x0a) {
-		if (systemChecker == 0)
-			systemChecker = 1;
+	if (opcode == 0x0a)
 		setRegister(R_ZOOM, ((p[0] & 0xFE) << 8));
-	}
 	else if (opcode == 0x0b)
 		setRegister(R_FOCUS, (p[0] << 8 | p[1]));
 	else if (opcode == 0xa4)
