@@ -3,6 +3,7 @@
 
 #include "debug.h"
 #include "gungorhead.h"
+#include "oemmodulehead.h"
 #include "moxacontrolhead.h"
 #include "mgeothermalhead.h"
 #include "ptzptcptransport.h"
@@ -94,6 +95,7 @@ int AryaDriver::connectThermal(const QString &target)
 	tcp2->connectTo(QString("%1:4002").arg(target));
 	tcp2->setTimerInterval(thermalInterval);
 	tcp2->setAutoReconnect(true);
+
 	thermal = new MgeoThermalHead(headType);
 	thermal->setTransport(tcp2);
 	return 0;
@@ -106,6 +108,8 @@ int AryaDriver::connectDay(const QString &target)
 	tcp3->setTimerInterval(gungorInterval);
 	tcp3->setAutoReconnect(true);
 	gungor = new MgeoGunGorHead;
+	if (headType == "tip3")
+		gungor = new OemModuleHead;
 	gungor->setTransport(tcp3);
 	defaultModuleHead = gungor;
 	return 0;
@@ -129,7 +133,6 @@ int AryaDriver::setMoxaControl(const QString &targetThermal, const QString &targ
 
 	moxaDay = new MoxaControlHead();
 	moxaDay->setTransport(httpDay);
-
 	moxaThermal = new MoxaControlHead();
 	moxaThermal->setTransport(httpThermal);
 	return 0;

@@ -38,7 +38,7 @@ protected:
 protected:
 	MgeoThermalHead *thermal;
 	AryaPTHead *aryapt;
-	MgeoGunGorHead *gungor;
+	PtzpHead *gungor;
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
