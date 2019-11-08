@@ -46,12 +46,16 @@ enum Commands {
 	C_GET_IMAGE_FREEZE,
 	C_AUTO_FOCUS,
 	C_SYMBOLOGY,
+	C_VERSION,
 
 	C_COUNT,
 	// missing registers
 	R_ANGLE,
 	R_COOLED_DOWN,
-	R_FACTORY
+	R_FACTORY,
+	R_FPGA_VERSION,
+	R_SYSTEM_VERSION,
+	R_VERSION
 };
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
@@ -83,6 +87,8 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x35, 0x0a, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xb3, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0x9e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+
+	{0x35, 0x0a, 0xc2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
 };
 
 static uchar chksum(const uchar *buf, int len)
@@ -102,6 +108,7 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 	syncList << C_GET_POLARITY;
 	syncList << C_GET_FOV;
 	syncList << C_GET_IMAGE_FREEZE;
+	syncList << C_VERSION;
 	nextSync = syncList.size();
 	alive = false;
 
@@ -130,6 +137,9 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 		{"contrast_change", {C_CONTRAST_CHANGE, C_CONTRAST}},
 		{"brightness_change", {C_BRIGHTNESS_CHANGE, C_BRIGHTNESS}},
 		{"factory_settings", {R_FACTORY, R_FACTORY}},
+		{"fpga_version", {R_FPGA_VERSION, C_VERSION}},
+		{"system_version", {R_SYSTEM_VERSION, C_VERSION}},
+		{"version", {R_VERSION, C_VERSION}}
 	};
 #endif
 	if (getFovList("arya_tip_select.json", type) < 0) {
@@ -346,6 +356,8 @@ void MgeoThermalHead::setProperty(uint r, uint x)
 		p[3] = 0x02;
 	} else if (r == C_SYMBOLOGY) {
 		p[3] = x;
+	} else if (r == C_VERSION) {
+		p[3] = x;
 	} else
 		return;
 	sendCommand(r, p[3], p[4]);
@@ -462,6 +474,13 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(C_HPF_SPATIAL_CHANGE, p[1]);
 		else if (p[0] == 0xde)
 			setRegister(C_IMAGE_UPDATE_SPEED, p[1]);
+	} else if (opcode == 0xc2) {
+		dump(p, 6);
+		if (p[0] == 0xb4) {
+			setRegister(R_FPGA_VERSION, p[3]);
+			setRegister(R_SYSTEM_VERSION, p[4]);
+			setRegister(R_VERSION, p[5]);
+		}
 	}
 	return meslen;
 }
@@ -492,6 +511,8 @@ int MgeoThermalHead::syncNext()
 	if (cmd == C_GET_FOV)
 		return sendCommand(cmd);
 	if (cmd == C_GET_IMAGE_FREEZE)
+		return sendCommand(cmd);
+	if (cmd == C_VERSION)
 		return sendCommand(cmd);
 
 	return -ENOENT;
