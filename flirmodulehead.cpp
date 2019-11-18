@@ -75,7 +75,7 @@ static QStringList createCommandList()
 FlirModuleHead::FlirModuleHead()
 {
 	setHeadName("module_head");
-	syncList << C_GET_CAMPOS << C_GET_CAM_MODES << C_GET_LASER_STATE;
+	syncList << C_GET_CAMPOS << C_GET_LASER_STATE;
 	next = 0;
 	zoomPos = 0;
 	focusPos = 0;
