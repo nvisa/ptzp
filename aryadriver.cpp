@@ -32,6 +32,18 @@ static float speedRegulateDay(float speed, float zooms[])
 	return result;
 }
 
+static float speedRegulateDayType3(float speed, float zooms[])
+{
+	float stepSize = 1085.0 / 4;
+	float zoomVal = zooms[0];
+	float stepAmount = zoomVal / stepSize;
+	float correction = pow((13.751 - stepAmount * 0.229) / 13.751, 2);
+	float result = speed * correction;
+	if (result < 0.003)
+		result = 0.003;
+	return result;
+}
+
 AryaDriver::AryaDriver(QObject *parent) : PtzpDriver(parent)
 {
 	headType = "tip3";
@@ -108,8 +120,11 @@ int AryaDriver::connectDay(const QString &target)
 	tcp3->setTimerInterval(gungorInterval);
 	tcp3->setAutoReconnect(true);
 	gungor = new MgeoGunGorHead;
-	if (headType == "tip3")
+	if (headType == "tip3") {
 		gungor = new OemModuleHead;
+		((OemModuleHead*)gungor)->addCustomSettings();
+		tcp3->enableQueueFreeCallbacks(true);
+	}
 	gungor->setTransport(tcp3);
 	defaultModuleHead = gungor;
 	return 0;
@@ -220,6 +235,8 @@ void AryaDriver::setRegulateSettings()
 	sreg.ipol = SpeedRegulation::ARYA;
 	if (defaultModuleHead == gungor) {
 		sreg.interFunc = speedRegulateDay;
+		if (headType == "tip3")
+			sreg.interFunc = speedRegulateDayType3;
 		sreg.zoomHead = gungor;
 	}
 	else {
@@ -264,7 +281,7 @@ void AryaDriver::timeout()
 
 	if (reinitDay && tcp3->getStatus() == PtzpTcpTransport::ALIVE) {
 		reinitDay = false;
-		gungor->initHead();
+		gungor->syncRegisters();
 		return;
 	}
 
@@ -274,7 +291,6 @@ void AryaDriver::timeout()
 		doStartupProcess = false;
 		getStartupProcess();
 	}
-
 	PtzpDriver::timeout();
 }
 
