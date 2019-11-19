@@ -219,7 +219,9 @@ int MgeoGunGorHead::syncRegisters()
 {
 	if (!transport)
 		return -ENOENT;
-	return syncNext();
+	nextSync = 0;
+	QTimer::singleShot(1000, this, SLOT(timeout()));
+	return 0;
 }
 
 int MgeoGunGorHead::startZoomIn(int speed)
