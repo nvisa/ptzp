@@ -259,7 +259,8 @@ OemModuleHead::OemModuleHead()
 	setRegister(R_VISCA_MODUL_ID, 0);
 }
 
-int OemModuleHead::addSpecialModulSettings() {
+int OemModuleHead::addSpecialModulSettings()
+{
 	if (getRegister(R_VISCA_MODUL_ID) == SONY_FCB_CV7500) {
 		settings.insert("exp_comp_mode", {C_VISCA_SET_EXP_COMPMODE, R_EXP_COMPMODE});
 		settings.insert("exp_comp_val", {C_VISCA_SET_EXP_COMPVAL, R_EXP_COMPVAL});
@@ -273,7 +274,32 @@ int OemModuleHead::addSpecialModulSettings() {
 		settings.insert("gain_limit_bot", {C_VISCA_SET_GAIN_LIMIT_OEM, R_BOT_GAIN});
 		settings.insert("gain_limit_top", {C_VISCA_SET_GAIN_LIMIT_OEM, R_TOP_GAIN});
 	}
+	return 0;
 }
+
+int OemModuleHead::addCustomSettings()
+{
+	settings.clear();
+	settings = {
+		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
+		{"gain_value", {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
+		{"shutter", {C_VISCA_SET_SHUTTER, R_SHUTTER}},
+		{"wdr_stat", {C_VISCA_SET_WDRSTAT, R_WDRSTAT}},
+		{"awb_mode", {C_VISCA_SET_AWB_MODE, R_AWB_MODE}},
+		{"auto_focus", {C_VISCA_SET_FOCUS_MODE, R_FOCUS_MODE}},
+		{"blc_status", {C_VISCA_SET_BLC_STATUS, R_BLC_STATUS}},
+		{"program_ae_mode", {C_VISCA_SET_PROGRAM_AE_MODE, R_PROGRAM_AE_MODE}},
+		{"flip", {C_VISCA_SET_FLIP_MODE, R_FLIP}},
+		{"mirror", {C_VISCA_SET_MIRROR_MODE, R_MIRROR}},
+		{"one_push_af", {C_VISCA_SET_ONE_PUSH, R_COUNT}},
+		{"display_rotation", {-1, R_DISPLAY_ROT}},
+		{"optic_zoom_pos", {-1, R_OPTIC_ZOOM_POS}},
+		{"focus", {C_VISCA_SET_FOCUS, R_COUNT}},
+		{"cam_model", {-1, R_VISCA_MODUL_ID}}
+	};
+	return settings.size();
+}
+
 
 int OemModuleHead::getCapabilities()
 {
@@ -1056,4 +1082,9 @@ QString OemModuleHead::getGainLimit()
 					  .arg(getProperty(R_TOP_GAIN))
 					  .arg(getProperty(R_BOT_GAIN));
 	return mes;
+}
+
+float OemModuleHead::getAngle()
+{
+	return getZoom();
 }

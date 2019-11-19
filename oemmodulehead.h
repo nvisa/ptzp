@@ -82,6 +82,8 @@ public:
 	int setGainLimit(uchar topLim, uchar botLim);
 	QString getGainLimit();
 
+	int addCustomSettings();
+	float getAngle();
 protected:
 	int syncNext();
 	int dataReady(const unsigned char *bytes, int len);
