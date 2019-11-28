@@ -60,6 +60,59 @@ service PTZService {
 	rpc SetIO(IOCmdPar) returns (IOCmdPar) {}
 }
 
+service AdvancedControlsService {
+	rpc GetExposure(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetExposure(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetWhiteBalance(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetWhiteBalance(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetSaturation(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetSaturation(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetAntiFlicker(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetAntiFlicker(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetGain(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetGain(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetShutterSpeed(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetShitterSpeed(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetIris(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetIris(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetSharpness(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetSharpness(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetBrightness(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetBrightness(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetContrast(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetContrast(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetHue(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetHue(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetDefog(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetDefog(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetVideoRotate(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetVideoRotate(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetBacklight(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetBacklight(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetDayNight(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetDayNight(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc GetFocus(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetFocus(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc RebootSystem(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc PoweroffSystem(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+}
+
+message AdvancedCmdRequest {
+	int32 head_id = 1;
+	float new_value = 2;
+	bool use_raw_value = 3;
+	float raw_value = 4;
+}
+
+message AdvancedCmdResponse {
+	float value = 1;
+	float raw_value = 2;
+	bool enum_field = 3;
+	repeated float supported_values = 4;
+	float min = 5;
+	float max = 6;
+}
+
 message IOState {
 	enum OutputValue {
 		LOW = 0;
@@ -84,10 +137,80 @@ message PtzHeadInfo {
 
 message PtzHead {
 	enum Capability {
+		reserved 3;
 		PAN = 0;
 		TILT = 1;
 		ZOOM = 2;
-		ADVANCED = 3;
+
+		EXPOSURE = 100;
+		WHITE_BALANCE = 101;
+		SHARPNESS = 102;
+		BRIGHTNESS = 103;
+		CONTRAST = 104;
+		HUE = 105;
+		DEFOG = 106;
+		VIDEO_ROTATE = 107;
+		BACKLIGHT = 108;
+		DAY_NIGHT = 109;
+		FOCUS = 110;
+		SATURATION = 111;
+		ANTI_FLICKER = 112;
+		GAIN = 113;
+		IRIS = 114;
+		SHUTTER = 115;
+
+		REBOOT = 201;
+		POWEROFF = 202;
+
+		MOTION_DETECTION = 301;
+		TAMPERING_DETECTION = 302;
+		MANUAL_TRACKING = 303;
+		AUTO_TRACKING = 304;
+		SEMI_AUTO_TRACKING = 305;
+		FACE_DETECTION = 306;
+		FACE_RECOGNITION = 307;
+		PANAROMA_VIEW = 308;
+		SMART_MOTION = 309;
+		PRIVACY_MASKING = 310;
+		VIDEO_STABILIZATION = 311;
+		LINE_CROSSING_DETECTION = 312;
+		STOLEN_OBJECT_DETECTION = 313;
+		STRAY_OBJECT_DETECTION = 314;
+
+		JOYSTICK_CONTROL = 1001;
+		DETECTION = 1002;
+		TRACKING = 1003;
+		SCANNING = 1004;
+		MISSION_EXECUTION = 1005;
+		POLARITY = 1006;
+		MAST = 1007;
+		ROI = 1008;
+		DAY_VIEW = 1009;
+		NIGHT_VIEW = 1010;
+		RANGE = 1011;
+		SENSITIVITY_ADJUSTMENT = 1012;
+		BORESIGHT = 1013;
+		DIGITAL_ZOOM = 1014;
+		MENU_OVER_VIDEO = 1015;
+		LAZER_RANGE_FINDER = 1016;
+		SHOW_HIDE_SYMBOLOGY = 1017;
+		ROLL = 1018;
+		AUTO_TRACK_WINDOW = 1019;
+		VIRTUAL_FENCE = 1020;
+		AUTO_TRACK_DETECTION = 1021;
+		NUC = 1022;
+		LIMIT_YAW_PITCH = 1023;
+		HARD_CALIBRATION = 1024;
+		SOFT_CALIBRATION = 1025;
+		SCENARIO = 1026;
+		FIRE = 1027;
+		HPF_GAIN = 1028;
+		HPF_SPATIAL = 1029;
+		THERMAL_STANDBY_MODES = 1030;
+		CHANGE_DETECTION = 1031;
+		SHOW_RETICLE = 1032;
+		OVERLAY_ON_OFF = 1033;
+		FOV_BASED_PT_SPEED = 1034;
 	}
 	enum Status {
 		SYNCING = 0;
