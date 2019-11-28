@@ -501,6 +501,7 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		return 4; // ack
 	if (bytes[2] == 0x95) {
 		alive = true;
+		pingTimer.restart();
 		return 4; // alive
 	}
 	uchar chk = chksum(bytes, len - 1);
@@ -508,6 +509,8 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		fDebug("Checksum error");
 		return -ENOENT;
 	}
+
+	pingTimer.restart();
 	if (nextSync != C_COUNT) {
 		mInfo("Next sync property: %d", nextSync);
 		if (++nextSync == C_COUNT) {
@@ -534,6 +537,7 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_DMC_PARAM, bytes[24]);
 		setRegister(R_HEKOS_PARAM, ((bytes[25] * 10) + bytes[26]));
 		setRegister(R_DIGI_ZOOM_POS, bytes[27]);
+		setRegister(R_CAM, bytes[28]);
 		setRegister(R_LASER_STATUS, bytes[29]);
 		setRegister(R_GMT, (bytes[39] * 10));
 	} else if (bytes[2] == 0x96) {
@@ -614,10 +618,10 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 QByteArray MgeoFalconEyeHead::transportReady()
 {
 	/* we have nothing to sync atm, zoom reading is buggy */
-	return QByteArray();
-	if (syncTimer.elapsed() > 250) {
+//	return QByteArray();
+	if (syncTimer.elapsed() > 1000) {
 		syncTimer.restart();
-		unsigned char *p = protoBytes[C_GET_ZOOM_POS];
+		unsigned char *p = protoBytes[C_GET_ALL_SYSTEM_VALUES];
 		int len = p[0];
 		p++;
 		p[3] = chksum(p, len - 1);
