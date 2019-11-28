@@ -5,21 +5,37 @@ package ptzp;
 import "google/protobuf/empty.proto";
 
 service PTZService {
+	/// Returns information about current pan/tilt/zoom positions for a given head
 	rpc GetPTZPosInfo (PtzCmdPar) returns (PTZPosInfo) {}
+	/// Moves given head to left
 	rpc PanLeft(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Moves given head to right
 	rpc PanRight(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Stops panning of given head
 	rpc PanStop(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Moves given head in 3D space
 	rpc PanTiltAbs(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Moves given head to an absolute position
 	rpc PanTilt2Pos(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Moves given head to up
 	rpc TiltUp(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Moves given head to down
 	rpc TiltDown(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Stops tilting of given head
 	rpc TiltStop(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Starts zoom-in operation for given head
 	rpc ZoomIn(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Starts zoom-out operation for given head
 	rpc ZoomOut(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Starts any zoom operation for given head
 	rpc ZoomStop(PtzCmdPar) returns (PtzCommandResult) {}
+	/// Moves given head to previously saved preset location
 	rpc PresetGo(PresetCmd) returns (PtzCommandResult) {}
+	/// Saves current positions for given head as a preset location
 	rpc PresetSave(PresetCmd) returns (PtzCommandResult) {}
+	/// Deletes a given preset
 	rpc PresetDelete(PresetCmd) returns (PtzCommandResult) {}
+	/// Retrieves preset list
 	rpc PresetGetList(PresetCmd) returns (PresetList) {}
 	rpc PatrolSave(PatrolCmd) returns (PtzCommandResult) {}
 	rpc PatrolDelete(PatrolCmd) returns (PtzCommandResult) {}
