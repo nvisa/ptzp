@@ -17,7 +17,7 @@ public:
 		R_COUNT
 	};
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	int panLeft(float speed);
 	int panRight(float speed);
 	int tiltUp(float speed);

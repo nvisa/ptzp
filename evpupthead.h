@@ -10,7 +10,7 @@ class EvpuPTHead : public PtzpHead
 public:
 	EvpuPTHead();
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	int getHeadStatus();
 
 	virtual int panLeft(float speed);

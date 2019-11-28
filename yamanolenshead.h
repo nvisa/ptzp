@@ -20,7 +20,7 @@ public:
 		R_COUNT
 	};
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	int syncRegisters();
 	int getHeadStatus();
 

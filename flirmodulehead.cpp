@@ -105,9 +105,9 @@ int FlirModuleHead::getLaserTimer()
 	return laserTimer.elapsed();
 }
 
-int FlirModuleHead::getCapabilities()
+void FlirModuleHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_ZOOM;
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 }
 
 int FlirModuleHead::startZoomIn(int speed)

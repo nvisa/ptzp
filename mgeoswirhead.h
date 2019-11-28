@@ -21,7 +21,7 @@ public:
 		R_COUNT
 	};
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	virtual int syncRegisters();
 	virtual int startZoomIn(int speed);
 	virtual int startZoomOut(int speed);

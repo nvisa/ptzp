@@ -148,9 +148,9 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 	}
 }
 
-int MgeoThermalHead::getCapabilities()
+void MgeoThermalHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_ZOOM;
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 }
 
 bool MgeoThermalHead::isAlive()

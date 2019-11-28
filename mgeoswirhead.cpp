@@ -54,9 +54,9 @@ MgeoSwirHead::MgeoSwirHead()
 	};
 }
 
-int MgeoSwirHead::getCapabilities()
+void MgeoSwirHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_ZOOM;
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 }
 
 int MgeoSwirHead::syncRegisters()

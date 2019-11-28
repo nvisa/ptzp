@@ -9,7 +9,7 @@ public:
 	MoxaControlHead();
 	int setZoomShow(int value);
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	int getHeadStatus();
 protected:
 	int sendCommand(const QString &key);

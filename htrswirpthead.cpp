@@ -33,9 +33,10 @@ HtrSwirPtHead::HtrSwirPtHead()
 {
 }
 
-int HtrSwirPtHead::getCapabilities()
+void HtrSwirPtHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_PAN | CAP_TILT;
+	head->add_capabilities(ptzp::PtzHead_Capability_PAN);
+	head->add_capabilities(ptzp::PtzHead_Capability_TILT);
 }
 
 int HtrSwirPtHead::getHeadStatus()

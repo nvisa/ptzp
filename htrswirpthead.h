@@ -10,7 +10,7 @@ class HtrSwirPtHead : public PtzpHead
 public:
 	HtrSwirPtHead();
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	int getHeadStatus();
 
 	virtual int panLeft(float speed);

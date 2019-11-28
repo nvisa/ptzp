@@ -28,6 +28,7 @@ PtzpHead::PtzpHead()
 	systemChecker = -1;
 	transport = NULL;
 	pingTimer.start();
+	capcache = nullptr;
 }
 
 /**
@@ -490,6 +491,19 @@ int PtzpHead::getZoomRatio()
 	if (lowerp == zoomRatios.size())
 		return lowerp;
 	return lowerp + 1;
+}
+
+bool PtzpHead::hasCapability(ptzp::PtzHead_Capability c)
+{
+	if (!capcache) {
+		capcache = new ptzp::PtzHead;
+		fillCapabilities(capcache);
+	}
+	for (int i = 0; capcache->capabilities_size(); i++) {
+		if (capcache->capabilities(i) == c)
+			return true;
+	}
+	return false;
 }
 
 std::vector<float> PtzpHead::RangeMapper::map(int value)

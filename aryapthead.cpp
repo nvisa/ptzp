@@ -79,9 +79,10 @@ AryaPTHead::AryaPTHead() : PtzpHead()
 	assert(ptzCommandList.size() == C_COUNT);
 }
 
-int AryaPTHead::getCapabilities()
+void AryaPTHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_PAN | CAP_TILT;
+	head->add_capabilities(ptzp::PtzHead_Capability_PAN);
+	head->add_capabilities(ptzp::PtzHead_Capability_TILT);
 }
 
 int AryaPTHead::getHeadStatus()

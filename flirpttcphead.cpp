@@ -55,9 +55,10 @@ void FlirPTTcpHead::initialize()
 	sendCommand(ptzCommandList.at(C_GET_MAX_MIN_POS));
 }
 
-int FlirPTTcpHead::getCapabilities()
+void FlirPTTcpHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_PAN | CAP_TILT;
+	head->add_capabilities(ptzp::PtzHead_Capability_PAN);
+	head->add_capabilities(ptzp::PtzHead_Capability_TILT);
 }
 
 int FlirPTTcpHead::getHeadStatus()

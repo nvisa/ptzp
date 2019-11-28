@@ -37,9 +37,9 @@ HtrSwirModuleHead::HtrSwirModuleHead()
 #endif
 }
 
-int HtrSwirModuleHead::getCapabilities()
+void HtrSwirModuleHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_ZOOM;
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 }
 
 int HtrSwirModuleHead::getHeadStatus()

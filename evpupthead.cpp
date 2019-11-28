@@ -45,9 +45,10 @@ EvpuPTHead::EvpuPTHead()
 {
 }
 
-int EvpuPTHead::getCapabilities()
+void EvpuPTHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_PAN | CAP_TILT;
+	head->add_capabilities(ptzp::PtzHead_Capability_PAN);
+	head->add_capabilities(ptzp::PtzHead_Capability_TILT);
 }
 
 int EvpuPTHead::getHeadStatus()

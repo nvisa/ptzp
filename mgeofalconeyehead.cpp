@@ -281,9 +281,9 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps)
 	nonRegisterSettings << "laser_reflections";
 }
 
-int MgeoFalconEyeHead::getCapabilities()
+void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_ZOOM;
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 }
 
 int MgeoFalconEyeHead::syncRegisters()

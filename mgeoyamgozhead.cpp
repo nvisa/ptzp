@@ -59,9 +59,9 @@ MgeoYamGozHead::MgeoYamGozHead()
 				{"heart_beat", {0, R_HEART_BEAT}}};
 }
 
-int MgeoYamGozHead::getCapabilities()
+void MgeoYamGozHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_ZOOM;
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 }
 
 int MgeoYamGozHead::startZoomIn(int speed)

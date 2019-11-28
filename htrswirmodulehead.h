@@ -19,7 +19,7 @@ public:
 		R_COUNT
 	};
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	virtual int getHeadStatus();
 	virtual int focusIn(int speed);
 	virtual int focusOut(int speed);

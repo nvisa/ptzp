@@ -8,7 +8,7 @@ class FlirModuleHead : public PtzpHead
 public:
 	FlirModuleHead();
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	virtual int startZoomIn(int speed);
 	virtual int startZoomOut(int speed);
 	virtual int stopZoom();

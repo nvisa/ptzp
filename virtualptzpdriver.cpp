@@ -40,7 +40,11 @@ class VirtualPtzpPTHead : public LifeTimeHead
 public:
 	VirtualPtzpPTHead() : LifeTimeHead() {}
 
-	int getCapabilities() { return PtzpHead::CAP_TILT | PtzpHead::CAP_PAN; }
+	void fillCapabilities(ptzp::PtzHead *head)
+	{
+		head->add_capabilities(ptzp::PtzHead_Capability_PAN);
+		head->add_capabilities(ptzp::PtzHead_Capability_TILT);
+	}
 };
 
 class VirtualPtzpZoomHead : public LifeTimeHead
@@ -48,7 +52,10 @@ class VirtualPtzpZoomHead : public LifeTimeHead
 public:
 	VirtualPtzpZoomHead() : LifeTimeHead() {}
 
-	int getCapabilities() { return PtzpHead::CAP_ZOOM; }
+	void fillCapabilities(ptzp::PtzHead *head)
+	{
+		head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
+	}
 };
 
 VirtualPtzpDriver::VirtualPtzpDriver(QObject *parent) : PtzpDriver(parent)

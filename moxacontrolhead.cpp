@@ -29,9 +29,9 @@ int MoxaControlHead::setZoomShow(int value)
 	return sendCommand(moxaCommandList.at(C_ZOOM_SHOW).arg(value));
 }
 
-int MoxaControlHead::getCapabilities()
+void MoxaControlHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return 0;
+	Q_UNUSED(head);
 }
 
 int MoxaControlHead::getHeadStatus()

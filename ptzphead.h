@@ -13,6 +13,10 @@
 #include <algorithm>
 #include <vector>
 
+#ifdef HAVE_PTZP_GRPC_API
+#include <ecl/ptzp/grpc/ptzp.pb.h>
+#endif
+
 class PtzpTransport;
 
 class PtzpHead : public QObject
@@ -21,12 +25,6 @@ public:
 	PtzpHead();
 	~PtzpHead() {}
 
-	enum PtzpCapabilities {
-		CAP_PAN = 0x01,
-		CAP_TILT = 0x02,
-		CAP_ZOOM = 0x04,
-		CAP_ADVANCED = 0x08,
-	};
 	enum HeadStatus {
 		ST_SYNCING,
 		ST_NORMAL,
@@ -54,7 +52,6 @@ public:
 		std::vector<int> lookup;
 	};
 
-	virtual int getCapabilities() = 0;
 	virtual int setTransport(PtzpTransport *tport);
 	virtual int syncRegisters();
 	virtual int getHeadStatus();
@@ -95,10 +92,13 @@ public:
 	void setZoomRatios(std::vector<int> v) { zoomRatios = v; }
 	int getZoomRatio();
 #ifdef HAVE_PTZP_GRPC_API
+	virtual void fillCapabilities(ptzp::PtzHead *head) = 0;
+	virtual bool hasCapability(ptzp::PtzHead_Capability c);
 	virtual QVariantMap getSettings();
 	virtual void setSettings(QVariantMap key);
 	QHash<QString, QPair<int, int>> settings {};
 	QStringList nonRegisterSettings;
+	ptzp::PtzHead *capcache;
 #endif
 	int getErrorCount(uint err);
 	virtual void enableSyncing(bool en);

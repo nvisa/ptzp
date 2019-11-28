@@ -78,9 +78,10 @@ void FlirPTHead::setupFlirConfigs()
 	flir.tiltUpperSpeed = flirConfig.contains("TU") ? flirConfig.value("TU").toFloat() : 650;
 }
 
-int FlirPTHead::getCapabilities()
+void FlirPTHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_PAN | CAP_TILT;
+	head->add_capabilities(ptzp::PtzHead_Capability_PAN);
+	head->add_capabilities(ptzp::PtzHead_Capability_TILT);
 }
 
 int FlirPTHead::getHeadStatus()

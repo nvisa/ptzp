@@ -12,7 +12,7 @@ class MgeoThermalHead : public PtzpHead
 public:
 	MgeoThermalHead(const QString &type = "");
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 
 	bool isAlive();
 

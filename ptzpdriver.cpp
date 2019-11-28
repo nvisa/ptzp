@@ -446,16 +446,7 @@ grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context,
 			(ptzp::PtzHead_Status)
 				head->getHeadStatus()); // TODO: proto is not in sync with code
 
-		int cap = head->getCapabilities();
-		if ((cap & PtzpHead::CAP_PAN) == PtzpHead::CAP_PAN)
-			h->add_capabilities(ptzp::PtzHead_Capability_PAN);
-		if ((cap & PtzpHead::CAP_TILT) == PtzpHead::CAP_TILT)
-			h->add_capabilities(ptzp::PtzHead_Capability_TILT);
-		if ((cap & PtzpHead::CAP_ZOOM) == PtzpHead::CAP_ZOOM)
-			h->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
-		if ((cap & PtzpHead::CAP_ADVANCED) == PtzpHead::CAP_ADVANCED)
-			h->add_capabilities(ptzp::PtzHead_Capability_ADVANCED);
-
+		head->fillCapabilities(h);
 		ptzp::Settings *s = h->mutable_head_settings();
 		s->set_json(mapToJson(head->getSettings()));
 		s->set_head_id(count);
@@ -476,8 +467,7 @@ grpc::Status PtzpDriver::PanLeft(grpc::ServerContext *context,
 	float speed = request->pan_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head == NULL ||
-		((head->getCapabilities() & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_PAN)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -510,8 +500,7 @@ grpc::Status PtzpDriver::PanRight(grpc::ServerContext *context,
 	float speed = request->pan_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head == NULL ||
-		((head->getCapabilities() & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_PAN)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -540,8 +529,7 @@ grpc::Status PtzpDriver::PanStop(grpc::ServerContext *context,
 	int idx = request->head_id();
 
 	PtzpHead *head = getHead(idx);
-	if (head == NULL ||
-		((head->getCapabilities() && PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_PAN)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -565,8 +553,7 @@ grpc::Status PtzpDriver::ZoomIn(grpc::ServerContext *context,
 
 	PtzpHead *head = getHead(idx);
 
-	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_ZOOM) !=
-						 PtzpHead::CAP_ZOOM)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_ZOOM)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -589,8 +576,7 @@ grpc::Status PtzpDriver::ZoomOut(grpc::ServerContext *context,
 
 	PtzpHead *head = getHead(idx);
 
-	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_ZOOM) !=
-						 PtzpHead::CAP_ZOOM)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_ZOOM)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -611,8 +597,7 @@ grpc::Status PtzpDriver::ZoomStop(grpc::ServerContext *context,
 	int idx = request->head_id();
 
 	PtzpHead *head = getHead(idx);
-	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_ZOOM) !=
-						 PtzpHead::CAP_ZOOM)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_ZOOM)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -635,8 +620,7 @@ grpc::Status PtzpDriver::TiltUp(grpc::ServerContext *context,
 	float speed = request->tilt_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_TILT) !=
-						 PtzpHead::CAP_TILT)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_TILT)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -668,8 +652,7 @@ grpc::Status PtzpDriver::TiltDown(grpc::ServerContext *context,
 	float speed = request->tilt_speed();
 
 	PtzpHead *head = getHead(idx);
-	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_TILT) !=
-						 PtzpHead::CAP_TILT)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_TILT)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -700,8 +683,7 @@ grpc::Status PtzpDriver::TiltStop(grpc::ServerContext *context,
 	int idx = request->head_id();
 
 	PtzpHead *head = getHead(idx);
-	if (head == NULL || ((head->getCapabilities() & PtzpHead::CAP_TILT) !=
-						 PtzpHead::CAP_TILT)) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_TILT)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -726,9 +708,8 @@ grpc::Status PtzpDriver::PanTilt2Pos(grpc::ServerContext *context,
 	PtzpHead *head = getHead(idx);
 	if (!head)
 		return grpc::Status::CANCELLED;
-	int cap = head->getCapabilities();
-	if (head == NULL || (((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) ||
-						 ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT))) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_TILT)
+			|| !head->hasCapability(ptzp::PtzHead_Capability_PAN)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -751,9 +732,8 @@ grpc::Status PtzpDriver::PanTiltAbs(grpc::ServerContext *context,
 	float pan = request->pan_abs();
 
 	PtzpHead *head = getHead(idx);
-	int cap = head->getCapabilities();
-	if (head == NULL || (((cap & PtzpHead::CAP_PAN) != PtzpHead::CAP_PAN) ||
-						 ((cap & PtzpHead::CAP_TILT) != PtzpHead::CAP_TILT))) {
+	if (head == NULL || !head->hasCapability(ptzp::PtzHead_Capability_TILT)
+			|| !head->hasCapability(ptzp::PtzHead_Capability_PAN)) {
 		response->set_err(-1);
 		return grpc::Status::CANCELLED;
 	}
@@ -800,16 +780,14 @@ grpc::Status PtzpDriver::GetPTZPosInfo(grpc::ServerContext *context,
 	if (head == NULL)
 		return grpc::Status::CANCELLED;
 
-	int cap = head->getCapabilities();
-
 	response->set_pan_pos(0);
 	response->set_tilt_pos(0);
 	response->set_zoom_pos(0);
-	if ((cap & PtzpHead::CAP_PAN) == PtzpHead::CAP_PAN)
+	if (head->hasCapability(ptzp::PtzHead_Capability_PAN))
 		response->set_pan_pos(head->getPanAngle());
-	if ((cap & PtzpHead::CAP_TILT) == PtzpHead::CAP_TILT)
+	if (head->hasCapability(ptzp::PtzHead_Capability_TILT))
 		response->set_tilt_pos(head->getTiltAngle());
-	if ((cap & PtzpHead::CAP_ZOOM) == PtzpHead::CAP_ZOOM) {
+	if (head->hasCapability(ptzp::PtzHead_Capability_ZOOM)) {
 		response->set_zoom_pos(head->getZoom());
 		float fovh = -1, fovv = -1;
 		head->getFOV(fovh, fovv);

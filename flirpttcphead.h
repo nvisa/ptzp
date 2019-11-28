@@ -21,7 +21,7 @@ public:
 
 	FlirPTTcpHead();
 	int getHeadStatus() override;
-	int getCapabilities() override;
+	void fillCapabilities(ptzp::PtzHead *head) override;
 	int panLeft(float speed) override;
 	int panRight(float speed) override;
 	int tiltUp(float speed) override;

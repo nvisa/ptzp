@@ -12,7 +12,7 @@ class FlirPTHead : public PtzpHead
 public:
 	FlirPTHead();
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	int getHeadStatus();
 	int panLeft(float speed);
 	int panRight(float speed);

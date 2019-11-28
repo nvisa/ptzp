@@ -109,9 +109,9 @@ MgeoGunGorHead::MgeoGunGorHead()
 #endif
 }
 
-int MgeoGunGorHead::getCapabilities()
+void MgeoGunGorHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return CAP_ZOOM;
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 }
 
 void MgeoGunGorHead::setProperty(uint r, uint x)

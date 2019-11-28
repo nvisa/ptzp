@@ -74,9 +74,10 @@ IRDomePTHead::IRDomePTHead()
 	speedTableMapping.push_back(35);
 }
 
-int IRDomePTHead::getCapabilities()
+void IRDomePTHead::fillCapabilities(ptzp::PtzHead *head)
 {
-	return PtzpHead::CAP_PAN | PtzpHead::CAP_TILT;
+	head->add_capabilities(ptzp::PtzHead_Capability_PAN);
+	head->add_capabilities(ptzp::PtzHead_Capability_TILT);
 }
 
 int IRDomePTHead::panLeft(float speed)

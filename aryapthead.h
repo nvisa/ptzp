@@ -10,7 +10,7 @@ class AryaPTHead : public PtzpHead
 public:
 	AryaPTHead();
 
-	int getCapabilities();
+	void fillCapabilities(ptzp::PtzHead *head);
 	int getHeadStatus();
 
 	virtual int panLeft(float speed);
