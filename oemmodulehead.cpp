@@ -424,9 +424,15 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		return 3;
 	} else if (p[1] == 0x61 && len == 4 && p[3] == 0xff) {
 		mLogv("error message: &d", p[2]);
-		pingTimer.restart();
-		hist->takeFirst();
-		syncNext();
+		 /* We can get error message after synced. Maybe,
+		  * we should have restart synchronization. But it
+		  * can be complicated. How to determine it?
+		  */
+		if (sendcmd != C_COUNT) {
+			pingTimer.restart();
+			hist->takeFirst();
+			syncNext();
+		}
 		return 4;
 	} else if (expected == 0x00) {
 		for (int i = 0; i < len; i++) {
