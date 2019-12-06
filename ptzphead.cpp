@@ -486,7 +486,9 @@ int PtzpHead::getZoomRatio()
 	auto lowerp =
 		std::lower_bound(zoomRatios.begin(), zoomRatios.end(), getZoom()) -
 		zoomRatios.begin();
-
+	// when combine zoom is use, ratio is limited with optic zoom size.
+	if (lowerp == zoomRatios.size())
+		return lowerp;
 	return lowerp + 1;
 }
 
