@@ -102,7 +102,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		zrfname = "/etc/smartstreamer/ZoomRatios_sony_value.txt";
 	QFile fz(zrfname);
 	if (fz.open(QIODevice::ReadOnly)) {
-		zoomRatios = QString::fromUtf8(fz.readAll()).split("\n");
+		zoomRatios = QString::fromUtf8(fz.readAll()).split("\n", QString::SkipEmptyParts);
 		fz.close();
 	}
 
