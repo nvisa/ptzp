@@ -3,6 +3,7 @@
 #include "ptzptransport.h"
 
 #include <QFile>
+#include <QTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -94,6 +95,8 @@ MgeoGunGorHead::MgeoGunGorHead()
 	settings = {
 		{"focus", {C_SET_FOCUS_INC_START, R_FOCUS}},
 		{"chip_version", {NULL, R_CHIP_VERSION}},
+		{"software_version", {NULL, R_SOFTWARE_VERSION}},
+		{"hardware_version", {NULL, R_HARDWARE_VERSION}},
 		{"digi_zoom", {NULL, R_DIGI_ZOOM}},
 		{"cam_status", {C_SET_OPEN, R_CAM_STATUS}},
 		{"auto_focus_mode", {C_SET_AUTO_FOCUS_MODE, R_AUTO_FOCUS_STATUS}},
@@ -147,27 +150,16 @@ void MgeoGunGorHead::setProperty(uint r, uint x)
 			sendCommand(r, 0x55, 0x55);
 		else if (x == 0x04)
 			sendCommand(r, 0xAA, 0xAA);
+	} else if (r == C_GET_HARDWARE_VERSION) {
+		sendCommand(r);
+	} else if (r == C_GET_SOFTWARE_VERSION) {
+		sendCommand(r);
 	}
 }
 
 uint MgeoGunGorHead::getProperty(uint r)
 {
 	return getRegister(r);
-}
-
-int MgeoGunGorHead::headSystemChecker()
-{
-	if (systemChecker == -1) {
-		int ret = sendCommand(C_GET_ZOOM);
-		mInfo("Gungor HEAD system checker started. %d", ret);
-		systemChecker = 0;
-	} else if (systemChecker == 0) {
-		mInfo("Waiting Response from GunGor CAM");
-	} else if (systemChecker == 1) {
-		mInfo("Completed System Check. Zoom: %f", getRegister(R_ZOOM));
-		systemChecker = 2;
-	}
-	return systemChecker;
 }
 
 void MgeoGunGorHead::setFocusStepper()
@@ -194,6 +186,26 @@ QJsonObject MgeoGunGorHead::factorySettings(const QString &file)
 	return obj;
 }
 
+void MgeoGunGorHead::initHead()
+{
+	nextSync = 0;
+	QTimer::singleShot(1000, this, SLOT(timeout()));
+}
+
+void MgeoGunGorHead::timeout()
+{
+	if (nextSync != syncList.size()) {
+		syncRegisters();
+		mInfo("Syncing.. '%d'.step, total step '%d'",
+				nextSync, syncList.size());
+		QTimer::singleShot(1000, this, SLOT(timeout()));
+	} else {
+		mDebug("Day register sync completed");
+		loadRegisters("head2.json");
+		transport->enableQueueFreeCallbacks(true);
+	}
+}
+
 int MgeoGunGorHead::getHeadStatus()
 {
 	if (nextSync != syncList.size())
@@ -208,7 +220,8 @@ int MgeoGunGorHead::syncRegisters()
 	if (!transport)
 		return -ENOENT;
 	nextSync = 0;
-	return syncNext();
+	QTimer::singleShot(1000, this, SLOT(timeout()));
+	return 0;
 }
 
 int MgeoGunGorHead::startZoomIn(int speed)
@@ -273,27 +286,24 @@ int MgeoGunGorHead::dataReady(const unsigned char *bytes, int len)
 	if (len < 5)
 		return len;
 
-	if (nextSync != syncList.size()) {
-		if (++nextSync == syncList.size()) {
-			fDebug("DayCam register syncing completed, activating auto-sync");
-		} else
-			syncNext();
-	}
+	if (nextSync != syncList.size())
+		nextSync++;
+
 	pingTimer.restart();
 	uchar opcode = bytes[1];
 	const uchar *p = bytes + 2;
-
-	if (opcode == 0x0a) {
-		if (systemChecker == 0)
-			systemChecker = 1;
+	if (opcode == 0x0a)
 		setRegister(R_ZOOM, ((p[0] & 0xFE) << 8));
-	}
 	else if (opcode == 0x0b)
 		setRegister(R_FOCUS, (p[0] << 8 | p[1]));
 	else if (opcode == 0xa4)
 		setRegister(R_CHIP_VERSION, ((p[0] * 100) + p[1]));
 	else if (opcode == 0x82)
 		setRegister(R_DIGI_ZOOM, p[0]);
+	else if (opcode == 0x91)
+		setRegister(R_SOFTWARE_VERSION, ((p[0] * 100) + p[1]));
+	else if (opcode == 0x92)
+		setRegister(R_HARDWARE_VERSION, ((p[0] * 100) + p[1]));
 	return 5;
 }
 
@@ -321,6 +331,7 @@ int MgeoGunGorHead::syncNext()
 		return sendCommand(cmd);
 	else if (cmd == C_GET_DIGI_ZOOM)
 		return sendCommand(cmd);
+	return -ENODATA;
 }
 
 QJsonValue MgeoGunGorHead::marshallAllRegisters()

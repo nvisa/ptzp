@@ -36,18 +36,9 @@ protected:
 	int connectDay(const QString &target);
 	void setRegulateSettings();
 protected:
-	enum DriverState {
-		INIT,
-		NORMAL,
-		SYNC_THERMAL_MODULES,
-		SYNC_GUNGOR_MODULES,
-		SYSTEM_CHECK
-	};
-
-	DriverState state;
 	MgeoThermalHead *thermal;
 	AryaPTHead *aryapt;
-	MgeoGunGorHead *gungor;
+	PtzpHead *gungor;
 	PtzpTcpTransport *tcp1;
 	PtzpTcpTransport *tcp2;
 	PtzpTcpTransport *tcp3;
@@ -57,11 +48,13 @@ protected:
 	MoxaControlHead *moxaThermal;
 	MoxaControlHead *moxaDay;
 	int overlayInterval;
-	QElapsedTimer connectLaps;
 	int thermalInterval;
 	int gungorInterval;
-	bool apiEnable;
 	QString headType;
+	bool apiEnable;
+	bool reinitPT;
+	bool reinitThermal;
+	bool reinitDay;
 };
 
 #endif // ARYADRIVER_H

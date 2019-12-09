@@ -5,6 +5,7 @@
 
 class MgeoGunGorHead : public PtzpHead
 {
+	Q_OBJECT
 public:
 	MgeoGunGorHead();
 
@@ -40,25 +41,25 @@ public:
 	virtual int getHeadStatus();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
-	int headSystemChecker();
 	void setFocusStepper();
 	float  getAngle();
 	QJsonObject factorySettings(const QString &file);
+	void initHead();
 
 protected:
+	int syncNext();
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();
-	int syncNext();
 	QJsonValue marshallAllRegisters();
 	void unmarshallloadAllRegisters(const QJsonValue &node);
-
+	int sendCommand(uint index, uchar data1 = 0x00, uchar data2 = 0x00);
+protected slots:
+	void timeout();
+private:
 	int nextSync;
+	QList<uint> syncList;
 	QElapsedTimer pingTimer;
 	QElapsedTimer syncTimer;
-	QList<uint> syncList;
-
-private:
-	int sendCommand(uint index, uchar data1 = 0x00, uchar data2 = 0x00);
 };
 
 #endif // GUNGORHEAD_H

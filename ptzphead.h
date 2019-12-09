@@ -83,7 +83,6 @@ public:
 	virtual void setProperty(uint r, uint x);
 	virtual QVariant getProperty(const QString &key);
 	virtual void setProperty(const QString &key, const QVariant &value);
-	virtual int headSystemChecker();
 	virtual QString whoAmI();
 	virtual float getMaxPatternSpeed() const;
 	int saveRegisters(const QString &filename);
@@ -111,6 +110,7 @@ public:
 	int getSystemStatus();
 	virtual void setHeadName(const QString &name);
 	QString getHeadName() { return headName; }
+	virtual void initHead();
 protected:
 	virtual int dataReady(const unsigned char *bytes, int len);
 	virtual QByteArray transportReady();

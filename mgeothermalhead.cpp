@@ -3,6 +3,7 @@
 #include "ptzptransport.h"
 
 #include <QFile>
+#include <QTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -45,12 +46,16 @@ enum Commands {
 	C_GET_IMAGE_FREEZE,
 	C_AUTO_FOCUS,
 	C_SYMBOLOGY,
+	C_VERSION,
 
 	C_COUNT,
 	// missing registers
 	R_ANGLE,
 	R_COOLED_DOWN,
-	R_FACTORY
+	R_FACTORY,
+	R_FPGA_VERSION,
+	R_SYSTEM_VERSION,
+	R_VERSION
 };
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
@@ -82,6 +87,8 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x35, 0x0a, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0xb3, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	{0x35, 0x0a, 0x9e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+
+	{0x35, 0x0a, 0xc2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
 };
 
 static uchar chksum(const uchar *buf, int len)
@@ -101,6 +108,7 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 	syncList << C_GET_POLARITY;
 	syncList << C_GET_FOV;
 	syncList << C_GET_IMAGE_FREEZE;
+	syncList << C_VERSION;
 	nextSync = syncList.size();
 	alive = false;
 
@@ -129,6 +137,9 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 		{"contrast_change", {C_CONTRAST_CHANGE, C_CONTRAST}},
 		{"brightness_change", {C_BRIGHTNESS_CHANGE, C_BRIGHTNESS}},
 		{"factory_settings", {R_FACTORY, R_FACTORY}},
+		{"fpga_version", {R_FPGA_VERSION, C_VERSION}},
+		{"system_version", {R_SYSTEM_VERSION, C_VERSION}},
+		{"version", {R_VERSION, C_VERSION}}
 	};
 #endif
 	if (getFovList("arya_tip_select.json", type) < 0) {
@@ -151,7 +162,6 @@ int MgeoThermalHead::syncRegisters()
 {
 	if (!transport)
 		return -ENOENT;
-	nextSync = 0;
 	return syncNext();
 }
 
@@ -229,6 +239,23 @@ QJsonObject MgeoThermalHead::factorySettings(const QString &file)
 float MgeoThermalHead::getFovMax()
 {
 	return fovValue.max;
+}
+
+void MgeoThermalHead::timeout()
+{
+	/* If any class must have a sync process,
+	* The class must do it self
+	*/
+	if (nextSync != syncList.size()) {
+		syncRegisters();
+		mInfo("Syncing.. '%d'.step, total step '%d'",
+				nextSync, syncList.size());
+		QTimer::singleShot(1000, this, SLOT(timeout()));
+	} else {
+		mDebug("Thermal register sync completed");
+		loadRegisters("head1.json");
+		transport->enableQueueFreeCallbacks(true);
+	}
 }
 
 int MgeoThermalHead::getZoom()
@@ -329,6 +356,8 @@ void MgeoThermalHead::setProperty(uint r, uint x)
 		p[3] = 0x02;
 	} else if (r == C_SYMBOLOGY) {
 		p[3] = x;
+	} else if (r == C_VERSION) {
+		p[3] = x;
 	} else
 		return;
 	sendCommand(r, p[3], p[4]);
@@ -349,23 +378,6 @@ int MgeoThermalHead::setZoom(uint pos)
 	return 0;
 }
 
-int MgeoThermalHead::headSystemChecker()
-{
-	if (systemChecker == -1) {
-		int ret = sendCommand(C_GET_ZOOM_FOCUS);
-		mInfo("ThermalHead system checker started. %d", ret);
-		systemChecker = 0;
-	} else if (systemChecker == 0) {
-		mInfo("Waiting Response from thermal CAM");
-	} else if (systemChecker == 1) {
-		mInfo("Completed System Check. Zoom: %f Focus: %f Angle: %f",
-			  getRegister(C_CONT_ZOOM), getRegister(C_FOCUS),
-			  getRegister(R_ANGLE));
-		systemChecker = 2;
-	}
-	return systemChecker;
-}
-
 int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 {
 	if (bytes[0] != 0xca)
@@ -383,14 +395,9 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 		return meslen;
 	}
 
-	/* register sync support */
-	if (nextSync != syncList.size()) {
-		/* we are in sync mode, let's sync next */
-		if (++nextSync == syncList.size()) {
-			mDebug("Thermal register syncing completed, activating auto-sync");
-		} else
-			syncNext();
-	}
+	/* register sync support, we are in sync mode, let's sync next */
+	if (nextSync != syncList.size())
+		nextSync++;
 
 	uchar chk = chksum(bytes, meslen - 1);
 	if (chk != bytes[meslen - 1]) {
@@ -467,6 +474,13 @@ int MgeoThermalHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(C_HPF_SPATIAL_CHANGE, p[1]);
 		else if (p[0] == 0xde)
 			setRegister(C_IMAGE_UPDATE_SPEED, p[1]);
+	} else if (opcode == 0xc2) {
+		dump(p, 6);
+		if (p[0] == 0xb4) {
+			setRegister(R_FPGA_VERSION, p[3]);
+			setRegister(R_SYSTEM_VERSION, p[4]);
+			setRegister(R_VERSION, p[5]);
+		}
 	}
 	return meslen;
 }
@@ -498,6 +512,8 @@ int MgeoThermalHead::syncNext()
 		return sendCommand(cmd);
 	if (cmd == C_GET_IMAGE_FREEZE)
 		return sendCommand(cmd);
+	if (cmd == C_VERSION)
+		return sendCommand(cmd);
 
 	return -ENOENT;
 }
@@ -522,6 +538,12 @@ void MgeoThermalHead::unmarshallloadAllRegisters(const QJsonValue &node)
 		mInfo("Loading register: %d: \t %d", ind, v);
 		setProperty(ind, v);
 	}
+}
+
+void MgeoThermalHead::initHead()
+{
+	nextSync = 0;
+	QTimer::singleShot(1000, this, SLOT(timeout()));
 }
 
 QList<int> MgeoThermalHead::loadDefaultRegisterValues()

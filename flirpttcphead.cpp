@@ -32,7 +32,7 @@ static QStringList createPtzCommands()
 	cmdList << QString("PS-%1 TS%2");
 	cmdList << QString("PS%1 TS-%2");
 	cmdList << QString("PS%1 TS%2");
-	cmdList << QString("PS1200 TS1200 PP%1 TP%2");
+	cmdList << QString("PS%1 TS%2 PP%3 TP%4");
 	cmdList << QString("PP TP");
 	cmdList << QString("PU");
 	cmdList << QString("TU");
@@ -135,9 +135,21 @@ int FlirPTTcpHead::panTiltAbs(float pan, float tilt)
 
 int FlirPTTcpHead::panTiltGoPos(float ppos, float tpos)
 {
-	float pan = (ppos * flirConfig.maxPanPos) / 180.0;
-	float tilt = (tpos * flirConfig.maxTiltPos * 3) / 90.0;
-	return sendCommand(ptzCommandList.at(C_PAN_TILT_GO_POS).arg(pan).arg(tilt));
+	int  pan;
+	int tilt;
+
+	if (ppos < 0)
+		pan = -1 * (ppos * flirConfig.minPanPos) / 180.0;
+	else
+		pan = (ppos * flirConfig.maxPanPos) / 180.0;
+
+	if (tpos < 0)
+		tilt = -1 * (tpos * flirConfig.minTiltPos) / 90.0;
+	else
+		tilt = (tpos * flirConfig.maxTiltPos) / 30.0;
+	qDebug() << pan << tilt;
+	return sendCommand(ptzCommandList.at(C_PAN_TILT_GO_POS).
+						arg(flirConfig.panSpeed).arg(flirConfig.tiltSpeed).arg(pan).arg(tilt));
 }
 
 int FlirPTTcpHead::panTiltStop()
@@ -157,6 +169,7 @@ float FlirPTTcpHead::getTiltAngle()
 
 int FlirPTTcpHead::dataReady(const unsigned char *bytes, int len)
 {
+	pingTimer.restart();
 	const QString mes = QString::fromUtf8((const char *)bytes, len).split("\r\n").first();
 	if (mes.contains("position")) {
 		int value = parsePositions(mes);

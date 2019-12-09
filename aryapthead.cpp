@@ -186,21 +186,6 @@ int AryaPTHead::panTiltGoPos(float ppos, float tpos)
 		ptzCommandList.at(C_PAN_TILT_POS).arg((int)ppos).arg((int)tpos));
 }
 
-int AryaPTHead::headSystemChecker()
-{
-	if (systemChecker == -1) {
-		int ret = sendCommand(ptzCommandList.at(C_GET_PAN_POS).toLatin1());
-		mInfo("Pan-Tilt HEAD system checker started. %d", ret);
-		systemChecker = 0;
-	} else if (systemChecker == 0) {
-		mInfo("Waiting Response from Pan-Tilt HEAD");
-	} else if (systemChecker == 1) {
-		mInfo("Completed system check. Pan: %f Tilt: %f ", panPos, tiltPos);
-		systemChecker = 2;
-	}
-	return systemChecker;
-}
-
 void AryaPTHead::setMaxSpeed(int value)
 {
 	MaxSpeed = value;

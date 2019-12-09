@@ -8,6 +8,7 @@
 
 class MgeoThermalHead : public PtzpHead
 {
+	Q_OBJECT
 public:
 	MgeoThermalHead(const QString &type = "");
 
@@ -27,26 +28,28 @@ public:
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
 	virtual int setZoom(uint pos);
-	int headSystemChecker();
 	float getAngle();
 	QJsonObject factorySettings(const QString &file);
 	float getFovMax();
+	void initHead();
+protected slots:
+	void timeout();
 protected:
-	int sendCommand(const QString &key);
-	int dataReady(const unsigned char *bytes, int len);
-	QByteArray transportReady();
 	int syncNext();
+	int sendCommand(const QString &key);
+	QList<int> loadDefaultRegisterValues();
+	QByteArray transportReady();
+	int dataReady(const unsigned char *bytes, int len);
 	QJsonValue marshallAllRegisters();
 	void unmarshallloadAllRegisters(const QJsonValue &node);
 
-	QStringList ptzCommandList;
+private:
+	bool alive;
 	int panPos;
 	int tiltPos;
 	int nextSync;
 	QList<uint> syncList;
-	bool alive;
-
-	QList<int> loadDefaultRegisterValues();
+	QStringList ptzCommandList;
 
 private:
 	/* mgeo/thermal API */

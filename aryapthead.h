@@ -23,7 +23,6 @@ public:
 	virtual float getPanAngle();
 	virtual float getTiltAngle();
 	int panTiltGoPos(float ppos, float tpos);
-	int headSystemChecker();
 
 	void setMaxSpeed(int value);
 
