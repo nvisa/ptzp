@@ -96,7 +96,6 @@ YamanoLensHead::YamanoLensHead()
 void YamanoLensHead::fillCapabilities(ptzp::PtzHead *head)
 {
 	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
-	head->add_capabilities(ptzp::PtzHead_Capability_ADVANCED);
 }
 
 int YamanoLensHead::syncRegisters()

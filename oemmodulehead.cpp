@@ -303,7 +303,6 @@ int OemModuleHead::addCustomSettings()
 void OemModuleHead::fillCapabilities(ptzp::PtzHead *head)
 {
 	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
-	head->add_capabilities(ptzp::PtzHead_Capability_ADVANCED);
 }
 
 int OemModuleHead::syncRegisters()
