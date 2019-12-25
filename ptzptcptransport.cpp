@@ -5,6 +5,11 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/tcp.h>
+#include <netinet/ip.h>
+
 PtzpTcpTransport::PtzpTcpTransport(LineProtocol proto, QObject *parent)
 	: QObject(parent), PtzpTransport(proto)
 {
@@ -107,6 +112,18 @@ void PtzpTcpTransport::connected()
 {
 	mInfo("connected");
 	devStatus = ALIVE;
+	int enableKeepAlive = 1;
+	int fd = sock->socketDescriptor();
+	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &enableKeepAlive, sizeof(enableKeepAlive));
+
+	int maxIdle = 10; /* seconds */
+	setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &maxIdle, sizeof(maxIdle));
+
+	int count = 3;  // send up to 3 keepalive packets out, then disconnect if no response
+	setsockopt(fd, SOL_TCP, TCP_KEEPCNT, &count, sizeof(count));
+
+	int interval = 2;   // send a keepalive packet out every 2 seconds (after the 5 second idle period)
+	setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
 }
 
 PtzpTcpTransport::DevStatus PtzpTcpTransport::getStatus()
