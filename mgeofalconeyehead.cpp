@@ -483,6 +483,45 @@ int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
 	return 0;
 }
 
+float *MgeoFalconEyeHead::getFOVAbsgs()
+{
+	/***
+	 * q[0] = day hor
+	 * q[1] = day ver
+	 * q[2] = therm hor
+	 * q[3] = therm ver
+	 */
+	float *q = new float[4];
+	int fov_type = getRegister(R_FOV); // wide: 0, narrow: 2, middle: 1
+	if (fov_type == 0) {//wide
+		q[0] = 11.0;
+		q[1] = 8.25;
+		q[2] = 25.0;
+		q[3] = 20.0;
+	} else if (fov_type == 1) {//midd
+		q[0] = 6.0;
+		q[1] = 4.5;
+		q[2] = 6;
+		q[3] = 4.8;
+	} else if(fov_type == 2){//narrow
+		q[0] = 2.0;
+		q[1] = 1.5;
+		q[2] = 2.0;
+		q[3] = 1.6;
+	} else if(fov_type == 3){//widemidd
+		q[0] = 10.0;
+		q[1] = 7.5;
+		q[2] = 10.0;
+		q[3] = 8.0;
+	}else if(fov_type == 4){//narrowmidd
+		q[0] = 3.5;
+		q[1] = 2.63;
+		q[2] = 3.5;
+		q[3] = 2.8;
+	}
+	return q;
+}
+
 QString MgeoFalconEyeHead::whoAmI()
 {
 	if (getProperty(3))
