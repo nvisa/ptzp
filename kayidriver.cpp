@@ -10,15 +10,16 @@
 #include <errno.h>
 #include <unistd.h>
 
-KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QObject *parent)
+KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QString type, QObject *parent)
 	: PtzpDriver(parent)
 {
-	headModule = new MgeoFalconEyeHead(relayConfig, gps);
+	headModule = new MgeoFalconEyeHead(relayConfig, gps, type);
 	headDome = new AryaPTHead;
 	headDome->setMaxSpeed(888889);
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
+	firmwareType = type;
 }
 
 PtzpHead *KayiDriver::getHead(int index)
@@ -92,12 +93,23 @@ void KayiDriver::timeout()
 	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
-		headModule->setProperty(37, 2);
-		headModule->setProperty(5, 1);
-		headModule->setProperty(37, 1);
-		while (headModule->getProperty(61) != 1) {
-			usleep(1000);
+		if(firmwareType == "absgs") {
+			headModule->setProperty(37, 2);
+			headModule->setProperty(5, 1);
+			headModule->setProperty(37, 2);
+			while (headModule->getProperty(61) != 2) {
+				usleep(1000);
+				headModule->setProperty(37, 1);
+			}
+		}
+		else {
+			headModule->setProperty(37, 2);
+			headModule->setProperty(5, 1);
 			headModule->setProperty(37, 1);
+			while (headModule->getProperty(61) != 1) {
+				usleep(1000);
+				headModule->setProperty(37, 1);
+			}
 		}
 		state = WAIT_ALIVE;
 		break;

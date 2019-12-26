@@ -11,7 +11,7 @@ class KayiDriver : public PtzpDriver
 {
 	Q_OBJECT
 public:
-	explicit KayiDriver(QList<int> relayConfig, bool gps, QObject *parent = 0);
+	explicit KayiDriver(QList<int> relayConfig, bool gps, QString type, QObject *parent = 0);
 
 	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
@@ -34,6 +34,7 @@ protected:
 	DriverState state;
 	PtzpTransport *tp1;
 	PtzpTransport *tp2;
+	QString firmwareType;
 };
 
 #endif // KAYIDRIVER_H

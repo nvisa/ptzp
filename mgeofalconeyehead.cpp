@@ -209,7 +209,7 @@ public:
 	PCA9538Driver *i2c;
 };
 
-MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps)
+MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps, QString type)
 {
 	gpsStatus = gps;
 	dayCamRelay = 4;
@@ -220,6 +220,10 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps)
 		thermalRelay = relayConfig[1];
 		standbyRelay = relayConfig[2];
 	}
+
+	if(type == "absgs")
+		syncEndPoint = C_GET_OPTIMIZATION_PARAM;
+	else syncEndPoint = C_COUNT;
 
 	i2c = new PCA9538Driver;
 	i2c->open();
@@ -234,7 +238,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps)
 
 	syncTimer.start();
 
-	nextSync = C_COUNT;
+	nextSync = syncEndPoint;
 	settings = {
 		{"focus", {C_SET_CONTINUOUS_FOCUS, R_FOCUS}},
 		{"focus_pos_set", {C_SET_FOCUS, R_FOCUS}},
@@ -407,7 +411,7 @@ int MgeoFalconEyeHead::focusStop()
 
 int MgeoFalconEyeHead::getHeadStatus()
 {
-	if (nextSync == C_COUNT)
+	if (nextSync == syncEndPoint)
 		return ST_NORMAL;
 	return ST_SYNCING;
 }
@@ -563,9 +567,9 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 	}
 
 	pingTimer.restart();
-	if (nextSync != C_COUNT) {
+	if (nextSync != syncEndPoint) {
 		mInfo("Next sync property: %d", nextSync);
-		if (++nextSync == C_COUNT) {
+		if (++nextSync == syncEndPoint) {
 			fDebug(
 				"FalconEye register syncing completed, activating auto-sync");
 		} else
