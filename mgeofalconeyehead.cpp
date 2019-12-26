@@ -65,19 +65,24 @@ enum Commands {
 	C_SET_BUTTON_PRESSED,
 	C_SET_BUTTON_RELEASED,
 	C_SET_RELAY_CONTROL,
+	C_EXTRAS_SET_BRIGHTNESS_MODE,
+	C_EXTRAS_SET_CONTRAST_MODE,
+	C_EXTRAS_SET_BRIGHTNESS_CHANGE,
+	C_EXTRAS_SET_CONTRAST_CHANGE,
 
 	C_GET_TARGET_COORDINATES,
 	C_GET_GPS_LOCATION,
 	C_GET_ALL_SYSTEM_VALUES,
 	C_GET_DMC_VALUES,
-	C_GET_OPTIMIZATION_PARAM,
 	C_GET_ZOOM_POS,
 	C_GET_FOCUS_POS,
 	C_GET_GPS_DATE_TIME,
+	C_GET_OPTIMIZATION_PARAM,
 	C_GET_FLASH_PROTECTION,
 	//	C_GET_CURRENT_TIME,
 
-	C_COUNT
+
+	C_COUNT,
 };
 
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
@@ -121,16 +126,20 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x06, 0x1f, 0x02, 0xb0, 0x00, 0x01, 0x00},				// button pressed
 	{0x06, 0x1f, 0x02, 0xb0, 0x00, 0x00, 0x00},				// button released
 	{},														// relay control
+	{0x07, 0x1f, 0x03, 0x21, 0x00, 0x00, 0x00, 0x00},
+	{0x07, 0x1f, 0x03, 0x21, 0x00, 0x00, 0x00, 0x00},
+	{0x07, 0x1f, 0x03, 0x21, 0x00, 0x00, 0x00, 0x00},
+	{0x07, 0x1f, 0x03, 0x21, 0x00, 0x00, 0x00, 0x00},
 
 	{0x04, 0x1f, 0x00, 0xc1, 0x00}, // ask target coordinates
 	{0x04, 0x1f, 0x00, 0xc0, 0x00}, // ask gps location -ok
 	{0x04, 0x1f, 0x00, 0xb6, 0x00}, // get all system values - ok
 	{0x04, 0x1f, 0x00, 0xb9, 0x00}, // ask dmc values - ok
-	{0x04, 0x1f, 0x00, 0xe4, 0x00}, // optimization param -ok
+//	{0x04, 0x1f, 0x00, 0xe4, 0x00}, // optimization param -ok
 	{0x04, 0x1f, 0x00, 0xeb, 0x00}, // zoom pos ok
 	{0x04, 0x1f, 0x00, 0xec, 0x00}, // focus pos - ok
 	{0x04, 0x1f, 0x00, 0xf1, 0x00}, // gps date time ok
-	{0x04, 0x1f, 0x00, 0xa2, 0x00}, // flash protection ok
+//	{0x04, 0x1f, 0x00, 0xa2, 0x00}, // flash protection ok
 	//	{ 0x04, 0x1f, 0x00, 0xa3, 0x00}, // current time ok
 
 };
@@ -277,6 +286,10 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps)
 		{"ibit_system", {0, R_IBIT_SYSTEM}},
 		{"ibit_optic", {0, R_IBIT_OPTIC}},
 		{"ibit_lrf", {0, R_IBIT_LRF}},
+		{"brightness_mode", {C_EXTRAS_SET_BRIGHTNESS_MODE, R_EXTRAS_BRIGHTNESS_MODE}},
+		{"contrast_mode", {C_EXTRAS_SET_CONTRAST_MODE, R_EXTRAS_CONTRAST_MODE}},
+		{"brightness_change", {C_EXTRAS_SET_BRIGHTNESS_CHANGE, 0}},
+		{"contrast_change", {C_EXTRAS_SET_CONTRAST_CHANGE, 0}},
 	};
 	nonRegisterSettings << "laser_reflections";
 }
@@ -961,6 +974,48 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		if (!relth->switch2(x))
 			setRegister(R_RELAY_STATUS, x);
 #endif
+	} else if (r == C_EXTRAS_SET_BRIGHTNESS_MODE){
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[3] = x;
+		p[4] = 0x01;
+		p[5] = 0x00;
+		p[6] = chksum(p, len - 1);
+		setRegister(R_EXTRAS_BRIGHTNESS_MODE, x);
+		sendCommand(p, len);
+	} else if (r == C_EXTRAS_SET_CONTRAST_MODE){
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[3] = x;
+		p[4] = 0x02;
+		p[5] = 0x00;
+		p[6] = chksum(p, len - 1);
+		setRegister(R_EXTRAS_CONTRAST_MODE, x);
+		sendCommand(p, len);
+	} else if (r == C_EXTRAS_SET_BRIGHTNESS_CHANGE){
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		if(getRegister(R_EXTRAS_CONTRAST_MODE) || getRegister(R_EXTRAS_CONTRAST_MODE))
+			p[3] = 0x01;
+		else p[3] = 0x00;
+		p[4] = 0x01;
+		p[5] = x;
+		p[6] = chksum(p, len - 1);
+		sendCommand(p, len);
+	} else if (r == C_EXTRAS_SET_CONTRAST_CHANGE){
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		if(getRegister(R_EXTRAS_CONTRAST_MODE) || getRegister(R_EXTRAS_CONTRAST_MODE))
+			p[3] = 0x01;
+		else p[3] = 0x00;
+		p[4] = 0x02;
+		p[5] = x;
+		p[6] = chksum(p, len - 1);
+		sendCommand(p, len);
 	}
 }
 

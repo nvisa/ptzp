@@ -82,7 +82,10 @@ public:
 		R_DMC_OFFSET_ELEVATION,
 		R_DMC_OFFSET_BANK,
 
-		R_COUNT
+		R_COUNT,
+
+		R_EXTRAS_BRIGHTNESS_MODE,
+		R_EXTRAS_CONTRAST_MODE
 	};
 
 	void fillCapabilities(ptzp::PtzHead *head);
