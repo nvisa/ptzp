@@ -163,11 +163,9 @@ void IRDomeDriver::timeout()
 		if (headModule->getHeadStatus() == PtzpHead::ST_SYNCING)
 			break;
 
-		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
-			if (registerSavingEnabled)
-				headModule->loadRegisters("head0.json");
-			tp->enableQueueFreeCallbacks(true);
-		}
+		if (registerSavingEnabled)
+			headModule->loadRegisters("head0.json");
+		tp->enableQueueFreeCallbacks(true);
 
 		if (ptSupport == true) {
 			state = SYNC_HEAD_DOME;
