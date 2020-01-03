@@ -212,6 +212,7 @@ protected:
 	int readHeadMaps(const QString &filename);
 	int getHeadValueRanges(int head, const QString &key, QJsonObject *val);
 	int normalizeValues(int head, const QVariantMap &map, QVariantMap *resMap);
+	PtzpHead * findHead(ptzp::PtzHead_Capability cap, int id = -1);
 
 protected slots:
 	virtual void timeout();
