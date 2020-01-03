@@ -30,7 +30,9 @@ HEADERS += \
     ptzp/htrswirdriver.h \
     ptzp/htrswirmodulehead.h \
     ptzp/moxacontrolhead.h \
-    ptzp/flirpttcphead.h
+    ptzp/flirpttcphead.h \
+    ptzp/oem4kmodulehead.h \
+    ptzp/oem4kdriver.h
 
 SOURCES += \
     ptzp/irdomepthead.cpp \
@@ -63,7 +65,9 @@ SOURCES += \
     ptzp/htrswirdriver.cpp \
     ptzp/htrswirmodulehead.cpp \
     ptzp/moxacontrolhead.cpp \
-    ptzp/flirpttcphead.cpp
+    ptzp/flirpttcphead.cpp \
+    ptzp/oem4kmodulehead.cpp \
+    ptzp/oem4kdriver.cpp
 
 ptzp-grpc {
     DEFINES += HAVE_PTZP_GRPC_API
