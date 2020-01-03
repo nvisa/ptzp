@@ -58,9 +58,8 @@ service PTZService {
 
 	rpc GetIO(IOCmdPar) returns (IOCmdPar) {}
 	rpc SetIO(IOCmdPar) returns (IOCmdPar) {}
-}
 
-service AdvancedControlsService {
+	/* Advanced controls */
 	rpc GetExposure(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc SetExposure(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc GetWhiteBalance(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
@@ -72,7 +71,7 @@ service AdvancedControlsService {
 	rpc GetGain(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc SetGain(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc GetShutterSpeed(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
-	rpc SetShitterSpeed(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc SetShutterSpeed(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc GetIris(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc SetIris(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc GetSharpness(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
