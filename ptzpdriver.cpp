@@ -1369,6 +1369,55 @@ void PtzpDriver::stopAnyProcess(StopProcess stop)
 	}
 }
 
+static QString getCapString(ptzp::PtzHead_Capability cap)
+{
+	static QHash<int, QString> _map;
+	if (_map.isEmpty()) {
+		_map[ptzp::PtzHead_Capability_BRIGHTNESS] = "brightness";
+	}
+
+	return _map[cap];
+}
+
+grpc::Status PtzpDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	Q_UNUSED(context);
+
+	PtzpHead *head = findHeadNull(cap, request->head_id());
+	if (head == nullptr)
+		return grpc::Status::CANCELLED;
+
+	/* TODO: implement value set */
+	QVariant var = head->getSetting(getCapString(cap));
+	float normalized;
+	int ret = denormalizeValue(request->head_id(), var, normalized);
+	if (ret < 0)
+		return grpc::Status::CANCELLED;
+	response->set_value(normalized);
+
+	return grpc::Status::OK;
+}
+
+grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	Q_UNUSED(context);
+
+	PtzpHead *head = findHeadNull(cap, request->head_id());
+	if (head == nullptr)
+		return grpc::Status::CANCELLED;
+
+	/* handle normalization */
+	QVariant var;
+	int ret = normalizeValue(request->head_id(), request->new_value(), var);
+	if (ret < 0)
+		return grpc::Status::CANCELLED;
+
+	/* TODO: implement value set */
+	head->setSetting(getCapString(cap), var);
+
+	return grpc::Status::OK;
+}
+
 int PtzpDriver::createHeadMaps()
 {
 	if (QFile::exists("headmaps.json"))
@@ -1436,6 +1485,19 @@ int PtzpDriver::getHeadValueRanges(int head, const QString &key, QJsonObject *va
 	return 0;
 }
 
+int PtzpDriver::normalizeValue(int head, const float &value, QVariant &resMap)
+{
+	/* TODO: do normalization */
+	resMap.setValue(5);
+	return 0;
+}
+
+int PtzpDriver::denormalizeValue(int head, const QVariant &value, float &normalized)
+{
+	normalized = 53.0;
+	return 0;
+}
+
 int PtzpDriver::normalizeValues(int head, const QVariantMap &map, QVariantMap *resMap)
 {
 	*resMap = map;
@@ -1487,6 +1549,14 @@ int PtzpDriver::normalizeValues(int head, const QVariantMap &map, QVariantMap *r
 
 PtzpHead *PtzpDriver::findHead(ptzp::PtzHead_Capability cap, int id)
 {
+	auto h = findHeadNull(cap, id);
+	if (h)
+		return h;
+	return getHead(0);
+}
+
+PtzpHead *PtzpDriver::findHeadNull(ptzp::PtzHead_Capability cap, int id)
+{
 	if (id >= 0)
 		return getHead(id);
 
@@ -1496,5 +1566,175 @@ PtzpHead *PtzpDriver::findHead(ptzp::PtzHead_Capability cap, int id)
 			return head;
 	}
 
-	return getHead(0);
+	return nullptr;
+}
+
+grpc::Status PtzpDriver::GetExposure(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_EXPOSURE);
+}
+
+grpc::Status PtzpDriver::SetExposure(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_EXPOSURE);
+}
+
+grpc::Status PtzpDriver::GetWhiteBalance(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_WHITE_BALANCE);
+}
+
+grpc::Status PtzpDriver::SetWhiteBalance(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_WHITE_BALANCE);
+}
+
+grpc::Status PtzpDriver::GetSaturation(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_SATURATION);
+}
+
+grpc::Status PtzpDriver::SetSaturation(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_SATURATION);
+}
+
+grpc::Status PtzpDriver::GetAntiFlicker(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_ANTI_FLICKER);
+}
+
+grpc::Status PtzpDriver::SetAntiFlicker(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_ANTI_FLICKER);
+}
+
+grpc::Status PtzpDriver::GetGain(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_GAIN);
+}
+
+grpc::Status PtzpDriver::SetGain(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_GAIN);
+}
+
+grpc::Status PtzpDriver::GetShutterSpeed(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_SHUTTER);
+}
+
+grpc::Status PtzpDriver::SetShutterSpeed(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_SHUTTER);
+}
+
+grpc::Status PtzpDriver::GetIris(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_IRIS);
+}
+
+grpc::Status PtzpDriver::SetIris(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_IRIS);
+}
+
+grpc::Status PtzpDriver::GetSharpness(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_SHARPNESS);
+}
+
+grpc::Status PtzpDriver::SetSharpness(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_SHARPNESS);
+}
+
+grpc::Status PtzpDriver::GetBrightness(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_BRIGHTNESS);
+}
+
+grpc::Status PtzpDriver::SetBrightness(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_BRIGHTNESS);
+}
+
+grpc::Status PtzpDriver::GetContrast(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_CONTRAST);
+}
+
+grpc::Status PtzpDriver::SetContrast(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_CONTRAST);
+}
+
+grpc::Status PtzpDriver::GetHue(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_HUE);
+}
+
+grpc::Status PtzpDriver::SetHue(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_HUE);
+}
+
+grpc::Status PtzpDriver::GetDefog(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_DEFOG);
+}
+
+grpc::Status PtzpDriver::SetDefog(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_DEFOG);
+}
+
+grpc::Status PtzpDriver::GetVideoRotate(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_VIDEO_ROTATE);
+}
+
+grpc::Status PtzpDriver::SetVideoRotate(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_VIDEO_ROTATE);
+}
+
+grpc::Status PtzpDriver::GetBacklight(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_BACKLIGHT);
+}
+
+grpc::Status PtzpDriver::SetBacklight(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_BACKLIGHT);
+}
+
+grpc::Status PtzpDriver::GetDayNight(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_DAY_NIGHT);
+}
+
+grpc::Status PtzpDriver::SetDayNight(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_DAY_NIGHT);
+}
+
+grpc::Status PtzpDriver::GetFocus(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_FOCUS);
+}
+
+grpc::Status PtzpDriver::SetFocus(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_FOCUS);
+}
+
+grpc::Status PtzpDriver::RebootSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_REBOOT);
+}
+
+grpc::Status PtzpDriver::PoweroffSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_REBOOT);
 }
