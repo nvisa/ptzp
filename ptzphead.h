@@ -94,7 +94,9 @@ public:
 #ifdef HAVE_PTZP_GRPC_API
 	virtual void fillCapabilities(ptzp::PtzHead *head) = 0;
 	virtual bool hasCapability(ptzp::PtzHead_Capability c);
+	virtual QVariant getSetting(const QString &setting);
 	virtual QVariantMap getSettings();
+	virtual void setSetting(QString key, const QVariant &value);
 	virtual void setSettings(QVariantMap key);
 	QHash<QString, QPair<int, int>> settings {};
 	QStringList nonRegisterSettings;

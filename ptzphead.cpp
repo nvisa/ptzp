@@ -506,6 +506,21 @@ bool PtzpHead::hasCapability(ptzp::PtzHead_Capability c)
 	return false;
 }
 
+QVariant PtzpHead::getSetting(const QString &setting)
+{
+	if (settings.contains(setting))
+		return getProperty(settings[setting].second);
+	return getProperty(setting);
+}
+
+void PtzpHead::setSetting(QString key, const QVariant &value)
+{
+	if (settings.contains(key))
+		setProperty((uint)settings[key].first, value.toUInt());
+	else
+		setProperty(key, value);
+}
+
 std::vector<float> PtzpHead::RangeMapper::map(int value)
 {
 	std::vector<float> m;
