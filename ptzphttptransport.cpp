@@ -11,7 +11,7 @@ public:
 	QString password;
 };
 
-PtzpHttpTransport::PtzpHttpTransport(LineProtocol proto, QObject *parent)
+PtzpHttpTransport::PtzpHttpTransport(LineProtocol proto, QObject *parent, bool sendRawMessages)
 	: QObject(parent), PtzpTransport(proto)
 {
 	priv = new PtzpHttpTransportPriv();
@@ -22,6 +22,7 @@ PtzpHttpTransport::PtzpHttpTransport(LineProtocol proto, QObject *parent)
 	timer = new QTimer();
 	timer->start(periodTimer);
 	connect(timer, SIGNAL(timeout()), SLOT(callback()));
+	prepareAppJson = !sendRawMessages;
 }
 
 int PtzpHttpTransport::connectTo(const QString &targetUri)
@@ -84,8 +85,12 @@ int PtzpHttpTransport::send(const char *bytes, int len)
 {
 	switch (contentType) {
 	case AppJson: {
-		QByteArray params = prepareMessage(QByteArray(bytes, len));
-		emit sendPostMessage2Main(params);
+		if(prepareAppJson) {
+			QByteArray params = prepareMessage(QByteArray(bytes, len));
+			emit sendPostMessage2Main(params);
+		}
+		else
+			emit sendGetMessage2Main(QByteArray(bytes, len));
 		break;
 	}
 	case AppXFormUrlencoded:

@@ -16,7 +16,7 @@ class PtzpHttpTransport : public QObject, public PtzpTransport
 public:
 	enum KnownContentTypes { AppJson, AppXFormUrlencoded, TextPlain, Unknown };
 	enum AuthorizationTypes { Basic, Digest };
-	explicit PtzpHttpTransport(LineProtocol proto, QObject *parent = nullptr);
+	explicit PtzpHttpTransport(LineProtocol proto, QObject *parent = nullptr, bool sendRawMessages = true);
 	int connectTo(const QString &targetUri);
 	int send(const char *bytes, int len);
 	void setContentType(KnownContentTypes type);
@@ -40,6 +40,7 @@ private:
 	QTimer *timer;
 	QNetworkRequest request;
 	QNetworkAccessManager *netman;
+	bool prepareAppJson;
 };
 
 #endif // PTZPHTTPTRANSPORT_H
