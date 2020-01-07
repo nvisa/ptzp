@@ -209,10 +209,9 @@ public:
 protected:
 	int createHeadMaps();
 	float regulateSpeed(float raw, int zoom);
-	int readHeadMaps(const QString &filename);
-	int getHeadValueRanges(int head, const QString &key, QJsonObject *val);
-	int normalizeValue(int head, const float &value, QVariant &resMap);
-	int denormalizeValue(int head, const QVariant &value, float &normalized);
+	QJsonObject readHeadMaps();
+	int normalizeValue(int head, const QString &key, const float &value, QVariant &resMap);
+	int denormalizeValue(int head, const QString &key, const QVariant &value, float &normalized);
 	int normalizeValues(int head, const QVariantMap &map, QVariantMap *resMap);
 	PtzpHead * findHead(ptzp::PtzHead_Capability cap, int id = -1);
 	PtzpHead * findHeadNull(ptzp::PtzHead_Capability cap, int id = -1);

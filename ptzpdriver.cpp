@@ -1390,7 +1390,7 @@ grpc::Status PtzpDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 	/* TODO: implement value set */
 	QVariant var = head->getSetting(getCapString(cap));
 	float normalized;
-	int ret = denormalizeValue(request->head_id(), var, normalized);
+	int ret = denormalizeValue(request->head_id(), getCapString(cap), var, normalized);
 	if (ret < 0)
 		return grpc::Status::CANCELLED;
 	response->set_value(normalized);
@@ -1408,7 +1408,7 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 
 	/* handle normalization */
 	QVariant var;
-	int ret = normalizeValue(request->head_id(), request->new_value(), var);
+	int ret = normalizeValue(request->head_id(), getCapString(cap), request->new_value(), var);
 	if (ret < 0)
 		return grpc::Status::CANCELLED;
 
@@ -1418,6 +1418,9 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 	return grpc::Status::OK;
 }
 
+/*
+ * Call that after head initialized...
+ * */
 int PtzpDriver::createHeadMaps()
 {
 	if (QFile::exists("headmaps.json"))
@@ -1425,6 +1428,10 @@ int PtzpDriver::createHeadMaps()
 	QJsonObject mainObj;
 	for (int i = 0; i < getHeadCount(); i++) {
 		PtzpHead *head = getHead(i);
+		if (head == NULL) {
+			mDebug("Head shot !!! Please before initialize heads..");
+			return -2;
+		}
 		QJsonArray arr;
 		foreach (QString key, head->getSettings().keys()) {
 			QJsonObject obj;
@@ -1452,62 +1459,99 @@ int PtzpDriver::createHeadMaps()
 	return 0;
 }
 
-int PtzpDriver::readHeadMaps(const QString &filename)
+QJsonObject PtzpDriver::readHeadMaps()
 {
-	if (!QFile::exists(filename))
+	if (!QFile::exists("headmaps.json"))
 		createHeadMaps();
-	QFile f(filename);
+	QFile f("headmaps.json");
 	if (!f.open(QIODevice::ReadOnly))
-		return -ENODEV;
+		return QJsonObject();
 	QByteArray ba = f.readAll();
 	f.close();
 	QJsonObject obj = QJsonDocument::fromJson(ba).object();
 	if (obj.isEmpty())
-		return -ENODATA;
-	headMaps = obj;
-	return 0;
+		return QJsonObject();
+	return obj;
 }
 
-int PtzpDriver::getHeadValueRanges(int head, const QString &key, QJsonObject *val)
+
+int PtzpDriver::normalizeValue(int head, const QString &key, const float &value, QVariant &resMap)
 {
-	if (key.isEmpty() || headMaps.isEmpty())
-		return -ENOENT;
-	QJsonValue headObj = headMaps.value(QString("head%1").arg(head));
-	if (!headObj.isArray())
-		return -ENOKEY;
-	QJsonArray arr = headObj.toArray();
+	float resp = value;
+	resMap.setValue(resp);
+	QJsonObject obj = readHeadMaps();
+	if (obj.isEmpty())
+		return -1;
+	if (!obj.value("normalize_value").toBool())
+		return -2;
+	float valmin = obj.value("normalize_value_min").toDouble();
+	float valmax = obj.value("normalize_value_max").toDouble();
+	QJsonArray arr = obj.value(QString("head%1").arg(head)).toArray();
+	QJsonObject dobj;
 	for (int i = 0; i < arr.size(); i++) {
 		QJsonObject setsObj = arr[i].toObject();
-		if (setsObj.keys()[0] != key)
-			continue;
-		*val = setsObj.value(key).toObject();
+		if (setsObj.keys()[0] == key) {
+			dobj = setsObj.value(key).toObject();
+			break;
+		}
 	}
+	float dmin = dobj.value("dmin").toDouble();
+	float dmax = dobj.value("dmax").toDouble();
+	if (valmin > valmax)
+		return -3;
+	if (value < valmin)
+		return -4;
+	if (value > valmax)
+		return -5;
+	resp = (resp - valmin) / (valmax - valmin);
+	resp = (dmax - dmin) * resp + dmin;
+	mLog("normalize processing, '%f' to '%f'", value, resp);
+	resMap.setValue(resp);
 	return 0;
 }
 
-int PtzpDriver::normalizeValue(int head, const float &value, QVariant &resMap)
+int PtzpDriver::denormalizeValue(int head, const QString &key, const QVariant &value, float &normalized)
 {
-	/* TODO: do normalization */
-	resMap.setValue(5);
-	return 0;
-}
+	normalized = value.toFloat();
+	QJsonObject obj = readHeadMaps();
+	if (obj.isEmpty())
+		return -1;
+	if (!obj.value("normalize_value").toBool())
+		return -2;
+	float valmin = obj.value("normalize_value_min").toDouble();
+	float valmax = obj.value("normalize_value_max").toDouble();
 
-int PtzpDriver::denormalizeValue(int head, const QVariant &value, float &normalized)
-{
-	normalized = 53.0;
+	QJsonArray arr = obj.value(QString("head%1").arg(head)).toArray();
+	QJsonObject dobj;
+	for (int i = 0; i < arr.size(); i++) {
+		QJsonObject setsObj = arr[i].toObject();
+		if (setsObj.keys()[0] == key) {
+			dobj = setsObj.value(key).toObject();
+			break;
+		}
+	}
+	float dmin = dobj.value("dmin").toDouble();
+	float dmax = dobj.value("dmax").toDouble();
+	if (value.toFloat() < dmin)
+		return -3;
+	if (value.toFloat() > dmax)
+		return -4;
+	if (dmin > dmax)
+		return -5;
+	float resp = value.toFloat() / (dmax - dmin);
+	if (valmin < 0)
+		resp = (valmax + qAbs(valmin)) * resp + valmin;
+	else resp = (valmax - valmin) * resp;
+	mLog("denormalize processing, '%f' to '%f'", value.toFloat(), resp);
+	normalized = resp;
 	return 0;
 }
 
 int PtzpDriver::normalizeValues(int head, const QVariantMap &map, QVariantMap *resMap)
 {
 	*resMap = map;
-	bool normalizeValues = false;
-	if (headMaps.isEmpty()) {
-		if (!readHeadMaps("headmaps.json"))
-			normalizeValues = headMaps.value("normalize_value").toBool();
-	} else
-		normalizeValues = headMaps.value("normalize_value").toBool();
-	if (normalizeValues) {
+	QJsonObject headMaps = readHeadMaps();
+	if (headMaps.value("normalize_value").toBool()) {
 		QMapIterator<QString, QVariant> mi(map);
 		while (mi.hasNext()) {
 			mi.next();
@@ -1515,9 +1559,14 @@ int PtzpDriver::normalizeValues(int head, const QVariantMap &map, QVariantMap *r
 			float valmin = headMaps.value("normalize_value_min").toDouble();
 			float valmax = headMaps.value("normalize_value_max").toDouble();
 			QJsonObject dvalues;
-			int ret = getHeadValueRanges(head, mi.key(), &dvalues);
-			if (ret < 0)
-				return ret;
+			QJsonArray arr = headMaps.value(QString("head%1").arg(head)).toArray();
+			for (int i = 0; i < arr.size(); i++) {
+				QJsonObject setsObj = arr[i].toObject();
+				if (setsObj.keys()[0] == mi.key()) {
+					dvalues = setsObj.value(mi.key()).toObject();
+					break;
+				}
+			}
 			float dmin = dvalues.value("dmin").toDouble();
 			float dmax = dvalues.value("dmax").toDouble();
 			float val = mi.value().toFloat();
