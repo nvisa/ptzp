@@ -55,8 +55,8 @@ service PTZService {
 	rpc GetSettings(Settings) returns (Settings) {}
 	rpc SetSettings(Settings) returns (Settings) {}
 	rpc GetHeads(google.protobuf.Empty) returns (PtzHeadInfo) {}
-	rpc GetCapabilityValues(CapabilityValuesRead) returns (CapabilityValuesRead) {}
-	rpc SetCapabilityValues(CapabilityValuesWrite) returns (CapabilityValuesWrite) {}
+	rpc GetCapabilityValues(CapabilityValuesRead) returns (CapabilityValuesWrite) {}
+	rpc SetCapabilityValues(CapabilityValuesWrite) returns (CapabilityValuesRead) {}
 
 	rpc GetIO(IOCmdPar) returns (IOCmdPar) {}
 	rpc SetIO(IOCmdPar) returns (IOCmdPar) {}
@@ -138,7 +138,6 @@ message PtzHeadInfo {
 
 message CapabilityValuesRead {
 	repeated PtzHead.Capability caps = 1;
-	repeated AdvancedCmdRequest values = 2;
 }
 
 message CapabilityValuesWrite {
