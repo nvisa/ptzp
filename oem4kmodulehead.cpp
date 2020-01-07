@@ -4,6 +4,7 @@
 #include "debug.h"
 
 enum CommandsList {
+
 	C_SET_ZOOM,
 	C_SET_BRIGHTNESS,
 	C_SET_CONTRAST,
@@ -35,7 +36,7 @@ static QStringList createCommandList()
 	cmdList << QString("/cgi-bin/configManager.cgi?action=setConfig&VideoColor[0][0].Contrast=%1");
 	cmdList << QString("/cgi-bin/configManager.cgi?action=setConfig&VideoColor[0][0].Hue=%1");
 	cmdList << QString("/cgi-bin/configManager.cgi?action=setConfig&VideoColor[0][0].Saturation=%1");
-	cmdList << QString("/cgi-bin/configManager.cgi?action=setConfig&VideoColor[0][0].Sharpness=%1");
+	cmdList << QString("/cgi-bin/configManager.cgi?action=setConfig&VideoInSharpness[0][0].Sharpness=%1");
 
 	cmdList << QString("/cgi-bin/ptz.cgi?action=start&channel=0&code=ZoomTele&arg1=0&arg2=0&arg3=0&arg4=0");
 	cmdList << QString("/cgi-bin/ptz.cgi?action=start&channel=0&code=ZoomWide&arg1=0&arg2=0&arg3=0&arg4=0");
@@ -135,22 +136,25 @@ int Oem4kModuleHead::getZoom()
 int Oem4kModuleHead::setZoom(uint pos)
 {
 	sendCommand(commandList.at(C_SET_ZOOM).arg(pos));
+	setRegister(R_ZOOM, pos);
 	return 0;
 }
 
 void Oem4kModuleHead::setProperty(uint r, uint x)
 {
-	sendCommand(commandList.at(r).arg(x));
 	if(r == C_SET_ZOOM)
-	setRegister(R_ZOOM, x);
+		setRegister(R_ZOOM, x);
 	if(r == C_SET_BRIGHTNESS)
-	setRegister(R_BRIGHTNESS, x);
+		setRegister(R_BRIGHTNESS, x);
 	if(r == C_SET_CONTRAST)
-	setRegister(R_CONTRAST, x);
+		setRegister(R_CONTRAST, x);
+	if(r == C_SET_HUE)
+		setRegister(R_HUE, x);
 	if(r == C_SET_SATURATION)
-	setRegister(R_SATURATION, x);
+		setRegister(R_SATURATION, x);
 	if(r == C_SET_SHARPNESS)
-	setRegister(R_SHARPNESS, x);
+		setRegister(R_SHARPNESS, x);
+	sendCommand(commandList.at(r).arg(x));
 }
 
 uint Oem4kModuleHead::getProperty(uint r)
@@ -187,25 +191,29 @@ QByteArray Oem4kModuleHead::transportReady()
 		} else
 			return commandList.at(nextSync).toUtf8();
 	}
-	return QByteArray();
+	return commandList.at(C_GET_ZOOM).toUtf8();
 }
 
 int Oem4kModuleHead::dataReady(const unsigned char *bytes, int len)
 {
 	QString data = QString::fromUtf8((const char *) bytes, len);
 	QStringList lines = data.split("\n");
-
 	/* update registers */
 	foreach (QString line, lines) {
 		line = line.remove("\r");
 		line = line.split(".").last();
 		QString key = line.split("=").first();
-		if(settings.contains(key.toLower()))
-			setRegister(settings[key.toLower()].second, line.split("=").last().toInt());
+		if(settings.contains(key.toLower())) {
+			if (settings[key.toLower()].second == R_ZOOM)
+				setRegister(R_ZOOM, mapZoom(line.split("=").last().toInt()));
+			else
+				setRegister(settings[key.toLower()].second, line.split("=").last().toInt());
+		}
 	}
 	return len;
 }
 
-
-
-
+uint Oem4kModuleHead::mapZoom(uint x)
+{
+	return (x - 10) * 5.12 + 1;
+}

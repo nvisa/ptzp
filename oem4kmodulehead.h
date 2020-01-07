@@ -41,6 +41,7 @@ private:
 	QList<uint> syncList;
 	QStringList commandList;
 	int nextSync;
+	uint mapZoom(uint x);
 };
 
 #endif // OEM4KMODULEHEAD_H
