@@ -51,6 +51,8 @@ int PtzpHttpTransport::connectTo(const QString &targetUri)
 		request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 	else if (contentType == TextPlain)
 		request.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain");
+	else if (contentType == TextHtml)
+		request.setHeader(QNetworkRequest::ContentTypeHeader, "text/html");
 	else {
 		mDebug("unknown content type");
 		return -EPROTO;
@@ -64,7 +66,7 @@ int PtzpHttpTransport::connectTo(const QString &targetUri)
 		if (authType == Basic)
 			request.setRawHeader("Authorization", "Basic "
 								+ QString("%1:%2").arg(priv->username).arg(priv->password).toLatin1().toBase64());
-		else if (authType = Digest) {
+		else if (authType == Digest) {
 			url.setUserName(priv->username);
 			url.setPassword(priv->password);
 		}
@@ -97,6 +99,11 @@ int PtzpHttpTransport::send(const char *bytes, int len)
 		emit sendPostMessage2Main(QByteArray(bytes, len));
 		break;
 	case TextPlain: {
+		QByteArray params = prepareMessage(QByteArray(bytes, len));
+		emit sendPostMessage2Main(params);
+		break;
+	}
+	case TextHtml: {
 		QByteArray params = prepareMessage(QByteArray(bytes, len));
 		emit sendPostMessage2Main(params);
 		break;
@@ -168,6 +175,8 @@ void PtzpHttpTransport::callback()
 		emit sendGetMessage2Main(m);
 	else if (contentType == AppXFormUrlencoded)
 		emit sendPostMessage2Main(m);
+	else if (contentType == TextHtml)
+		emit sendGetMessage2Main(m);
 	timer->setInterval(periodTimer);
 	return;
 }
@@ -181,6 +190,8 @@ QByteArray PtzpHttpTransport::prepareMessage(const QByteArray &ba)
 		l.lock();
 		QUrl url = request.url();
 		url.setPath(path, QUrl::ParsingMode::StrictMode);
+		if (contentType == TextHtml)
+			url.setQuery(params);
 		request.setUrl(url);
 		l.unlock();
 		return params.toLatin1();
