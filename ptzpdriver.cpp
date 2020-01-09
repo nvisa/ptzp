@@ -1387,14 +1387,13 @@ grpc::Status PtzpDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 	if (head == nullptr)
 		return grpc::Status::CANCELLED;
 
-	/* TODO: implement value set */
 	QVariant var = head->getSetting(getCapString(cap));
 	float normalized;
-	int ret = denormalizeValue(request->head_id(), getCapString(cap), var, normalized);
+	int ret = normalizeValue(request->head_id(), getCapString(cap), var, normalized);
 	if (ret < 0)
 		return grpc::Status::CANCELLED;
-	response->set_value(normalized);
 
+	response->set_value(normalized);
 	return grpc::Status::OK;
 }
 
@@ -1406,15 +1405,12 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 	if (head == nullptr)
 		return grpc::Status::CANCELLED;
 
-	/* handle normalization */
 	QVariant var;
-	int ret = normalizeValue(request->head_id(), getCapString(cap), request->new_value(), var);
+	int ret = denormalizeValue(request->head_id(), getCapString(cap), request->new_value(), var);
 	if (ret < 0)
 		return grpc::Status::CANCELLED;
 
-	/* TODO: implement value set */
 	head->setSetting(getCapString(cap), var);
-
 	return grpc::Status::OK;
 }
 
@@ -1475,8 +1471,9 @@ QJsonObject PtzpDriver::readHeadMaps()
 }
 
 
-int PtzpDriver::normalizeValue(int head, const QString &key, const float &value, QVariant &resMap)
+int PtzpDriver::denormalizeValue(int head, const QString &key, const float &value, QVariant &resMap)
 {
+	int headIndex = findHeadIndex(key, head);
 	float resp = value;
 	resMap.setValue(resp);
 	QJsonObject obj = readHeadMaps();
@@ -1486,7 +1483,8 @@ int PtzpDriver::normalizeValue(int head, const QString &key, const float &value,
 		return -2;
 	float valmin = obj.value("normalize_value_min").toDouble();
 	float valmax = obj.value("normalize_value_max").toDouble();
-	QJsonArray arr = obj.value(QString("head%1").arg(head)).toArray();
+
+	QJsonArray arr = obj.value(QString("head%1").arg(headIndex)).toArray();
 	QJsonObject dobj;
 	for (int i = 0; i < arr.size(); i++) {
 		QJsonObject setsObj = arr[i].toObject();
@@ -1505,13 +1503,14 @@ int PtzpDriver::normalizeValue(int head, const QString &key, const float &value,
 		return -5;
 	resp = (resp - valmin) / (valmax - valmin);
 	resp = (dmax - dmin) * resp + dmin;
-	mLog("normalize processing, '%f' to '%f'", value, resp);
+	mLog("denormalize processing, '%f' to '%f'", value, resp);
 	resMap.setValue(resp);
 	return 0;
 }
 
-int PtzpDriver::denormalizeValue(int head, const QString &key, const QVariant &value, float &normalized)
+int PtzpDriver::normalizeValue(int head, const QString &key, const QVariant &value, float &normalized)
 {
+	int headIndex = findHeadIndex(key, head);
 	normalized = value.toFloat();
 	QJsonObject obj = readHeadMaps();
 	if (obj.isEmpty())
@@ -1521,7 +1520,7 @@ int PtzpDriver::denormalizeValue(int head, const QString &key, const QVariant &v
 	float valmin = obj.value("normalize_value_min").toDouble();
 	float valmax = obj.value("normalize_value_max").toDouble();
 
-	QJsonArray arr = obj.value(QString("head%1").arg(head)).toArray();
+	QJsonArray arr = obj.value(QString("head%1").arg(headIndex)).toArray();
 	QJsonObject dobj;
 	for (int i = 0; i < arr.size(); i++) {
 		QJsonObject setsObj = arr[i].toObject();
@@ -1542,7 +1541,7 @@ int PtzpDriver::denormalizeValue(int head, const QString &key, const QVariant &v
 	if (valmin < 0)
 		resp = (valmax + qAbs(valmin)) * resp + valmin;
 	else resp = (valmax - valmin) * resp;
-	mLog("denormalize processing, '%f' to '%f'", value.toFloat(), resp);
+	mLog("normalize processing, '%f' to '%f'", value.toFloat(), resp);
 	normalized = resp;
 	return 0;
 }
@@ -1616,6 +1615,20 @@ PtzpHead *PtzpDriver::findHeadNull(ptzp::PtzHead_Capability cap, int id)
 	}
 
 	return nullptr;
+}
+
+int PtzpDriver::findHeadIndex(QString capstring, int id)
+{
+	if (id >= 0)
+		return id;
+
+	for (int i = 0; i < getHeadCount(); i++) {
+		auto head = getHead(i);
+		if (head->getSettings().contains(capstring))
+			return i;
+	}
+
+	return 0;
 }
 
 grpc::Status PtzpDriver::GetExposure(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)

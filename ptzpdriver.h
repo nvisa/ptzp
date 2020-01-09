@@ -210,11 +210,12 @@ protected:
 	int createHeadMaps();
 	float regulateSpeed(float raw, int zoom);
 	QJsonObject readHeadMaps();
-	int normalizeValue(int head, const QString &key, const float &value, QVariant &resMap);
-	int denormalizeValue(int head, const QString &key, const QVariant &value, float &normalized);
+	int denormalizeValue(int head, const QString &key, const float &value, QVariant &resMap);
+	int normalizeValue(int head, const QString &key, const QVariant &value, float &normalized);
 	int normalizeValues(int head, const QVariantMap &map, QVariantMap *resMap);
 	PtzpHead * findHead(ptzp::PtzHead_Capability cap, int id = -1);
 	PtzpHead * findHeadNull(ptzp::PtzHead_Capability cap, int id = -1);
+	int findHeadIndex(QString capstring, int id = -1);
 
 protected slots:
 	virtual void timeout();
