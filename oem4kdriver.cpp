@@ -53,7 +53,6 @@ void Oem4kDriver::timeout()
 	case SYNC:
 		if (headModule->getHeadStatus() == PtzpHead::ST_SYNCING)
 			break;
-		httpTransportModule->enableQueueFreeCallbacks(false);
 		state = NORMAL;
 		break;
 	case NORMAL:

@@ -69,7 +69,7 @@ Oem4kModuleHead::Oem4kModuleHead()
 		{"hue", {C_SET_HUE,R_HUE}},
 		{"saturation", {C_SET_SATURATION,R_SATURATION}},
 		{"sharpness", {C_SET_SHARPNESS,R_SHARPNESS}},
-		{"zoomvalue", {C_SET_ZOOM,R_ZOOM}},
+		{"zoom_pos_level", {C_SET_ZOOM,R_ZOOM}},
 		{"focus", {NULL, NULL}}
 	};
 	nextSync = 0;
@@ -191,6 +191,7 @@ QByteArray Oem4kModuleHead::transportReady()
 		} else
 			return commandList.at(nextSync).toUtf8();
 	}
+
 	return commandList.at(C_GET_ZOOM).toUtf8();
 }
 
@@ -198,22 +199,23 @@ int Oem4kModuleHead::dataReady(const unsigned char *bytes, int len)
 {
 	QString data = QString::fromUtf8((const char *) bytes, len);
 	QStringList lines = data.split("\n");
+
 	/* update registers */
 	foreach (QString line, lines) {
 		line = line.remove("\r");
 		line = line.split(".").last();
 		QString key = line.split("=").first();
-		if(settings.contains(key.toLower())) {
-			if (settings[key.toLower()].second == R_ZOOM)
-				setRegister(R_ZOOM, mapZoom(line.split("=").last().toInt()));
-			else
-				setRegister(settings[key.toLower()].second, line.split("=").last().toInt());
-		}
+		if(key == "ZoomValue")
+			setRegister(R_ZOOM, mapZoom(line.split("=").last().toInt()));
+		else if(settings.contains(key.toLower()))
+			setRegister(settings[key.toLower()].second, line.split("=").last().toInt());
 	}
+
 	return len;
 }
 
 uint Oem4kModuleHead::mapZoom(uint x)
 {
-	return (x - 10) * 5.12 + 1;
+	uint z = (x - 10) * 6.4;
+	return z > 128 ? 128 : z;
 }

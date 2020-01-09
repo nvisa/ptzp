@@ -280,6 +280,11 @@ public:
 	grpc::Status SetFocus(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
 	grpc::Status RebootSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
 	grpc::Status PoweroffSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
+
+	// Service interface
+public:
+	grpc::Status GetCapabilityValues(grpc::ServerContext *context, const ptzp::CapabilityValuesReq *request, ptzp::CapabilityValuesResponse *response) override;
+	grpc::Status SetCapabilityValues(grpc::ServerContext *context, const ptzp::CapabilityValuesReq *request, ptzp::CapabilityValuesResponse *response) override;
 };
 
 #endif // PTZPDRIVER_H

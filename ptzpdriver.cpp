@@ -1374,6 +1374,11 @@ static QString getCapString(ptzp::PtzHead_Capability cap)
 	static QHash<int, QString> _map;
 	if (_map.isEmpty()) {
 		_map[ptzp::PtzHead_Capability_BRIGHTNESS] = "brightness";
+		_map[ptzp::PtzHead_Capability_CONTRAST] = "contrast";
+		_map[ptzp::PtzHead_Capability_HUE] = "hue";
+		_map[ptzp::PtzHead_Capability_SATURATION] = "saturation";
+		_map[ptzp::PtzHead_Capability_SHARPNESS] = "sharpness";
+		_map[ptzp::PtzHead_Capability_ZOOM] = "zoom_pos_level";
 	}
 
 	return _map[cap];
@@ -1799,4 +1804,22 @@ grpc::Status PtzpDriver::RebootSystem(grpc::ServerContext *context, const ptzp::
 grpc::Status PtzpDriver::PoweroffSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
 {
 	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_REBOOT);
+}
+
+grpc::Status PtzpDriver::GetCapabilityValues(grpc::ServerContext *context, const ptzp::CapabilityValuesReq *request, ptzp::CapabilityValuesResponse *response)
+{
+	auto cap = request->caps(0);
+	auto req = request->reqs(0);
+	response->add_caps(cap);
+	auto resp = response->add_values();
+	return GetAdvancedControl(context, &req, resp, cap);
+}
+
+grpc::Status PtzpDriver::SetCapabilityValues(grpc::ServerContext *context, const ptzp::CapabilityValuesReq *request, ptzp::CapabilityValuesResponse *response)
+{
+	auto cap = request->caps(0);
+	auto req = request->reqs(0);
+	response->add_caps(cap);
+	auto resp = response->add_values();
+	return SetAdvancedControl(context, &req, resp, cap);
 }
