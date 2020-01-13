@@ -38,7 +38,6 @@ protected:
 	QByteArray transportReady();
 	int dataReady(const unsigned char *bytes, int len);
 private:
-	QList<uint> syncList;
 	QStringList commandList;
 	int nextSync;
 	uint mapZoom(uint x);

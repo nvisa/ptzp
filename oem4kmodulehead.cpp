@@ -56,12 +56,6 @@ static QStringList createCommandList()
 
 Oem4kModuleHead::Oem4kModuleHead()
 {
-	syncList << C_GET_ZOOM
-			 << C_GET_BRIGHTNESS
-			 << C_GET_CONTRAST
-			 << C_GET_HUE
-			 << C_GET_SATURATION
-			 << C_GET_SHARPNESS;
 	commandList = createCommandList();
 	settings = {
 		{"brightness", {C_SET_BRIGHTNESS,R_BRIGHTNESS}},
