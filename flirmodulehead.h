@@ -27,6 +27,7 @@ public:
 
 	bool getLaserCIT();
 	int getLaserTimer();
+	int setIRCState(int type);
 protected:
 	int getNext();
 	QByteArray transportReady();
