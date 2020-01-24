@@ -170,8 +170,10 @@ void FlirModuleHead::setProperty(uint r, uint x)
 		setFocusValue(x);
 	else if (r == R_GET_FOCUS_MODE)
 		setFocusMode(x);
-	else if (r == C_IRC_STATE)
+	else if (r == C_IRC_STATE) {
 		setIRCState(x);
+		setRegister(C_GET_IRC_STATUS, x);
+	}
 }
 
 int FlirModuleHead::setIRCState(int type)
@@ -185,11 +187,12 @@ uint FlirModuleHead::getProperty(uint r)
 {
 	if (r == C_GET_CAMPOS)
 		return focusPos;
-	else if (r == R_GET_FOCUS_MODE)
+	else if (r == R_GET_FOCUS_MODE) {
 		if (camModes.contains("focusMode"))
 			return camModes.value("focusMode").toUInt();
+	}
 	else if (r == C_GET_IRC_STATUS)
-			return getRegister(C_GET_IRC_STATUS);
+		return getRegister(C_GET_IRC_STATUS);
 	return -1;
 }
 
