@@ -5,6 +5,7 @@
 #include <ecl/ptzp/ptzptransport.h>
 
 #include <QNetworkReply>
+#include "debug.h"
 
 FlirDriver::FlirDriver()
 {
@@ -33,7 +34,6 @@ PtzpHead *FlirDriver::getHead(int index)
 
 void FlirDriver::bumpStart()
 {
-
 	QNetworkAccessManager *man = new QNetworkAccessManager(this);
 	req.setHeader(QNetworkRequest::ContentTypeHeader,
 				  "application/x-www-form-urlencoded");
@@ -43,11 +43,21 @@ void FlirDriver::bumpStart()
 	req.setUrl(url);
 	connect(man, SIGNAL(finished(QNetworkReply*)), SLOT(finished(QNetworkReply*)));
 	man->post(req, "C=V&PS=-100");
+	qDebug() << "sending bump start command";
 }
 
 void FlirDriver::finished(QNetworkReply* reply)
 {
+	if (reply->error() != QNetworkReply::NoError) {
+		mDebug("Bump start command failed %d %s ", reply->error(), qPrintable(reply->errorString()));
+		reinitPT = true;
+		return;
+	}
 	QString data = reply->readAll();
+	if (data.isEmpty()) {
+		reinitPT = true;
+		return;
+	}
 	QNetworkAccessManager *man = static_cast<QNetworkAccessManager*>(sender());
 	if (!data.contains("H"))
 		man->post(req, "H");
