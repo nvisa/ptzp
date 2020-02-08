@@ -1,7 +1,7 @@
 #ifndef MGEOFALCONEYEHEAD_H
 #define MGEOFALCONEYEHEAD_H
 
-#include <drivers/i2cdevice.h>
+#include <ecl/drivers/i2cdevice.h>
 #include <ecl/ptzp/ptzphead.h>
 
 #include <QElapsedTimer>
