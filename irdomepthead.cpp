@@ -78,6 +78,8 @@ void IRDomePTHead::fillCapabilities(ptzp::PtzHead *head)
 {
 	head->add_capabilities(ptzp::PtzHead_Capability_PAN);
 	head->add_capabilities(ptzp::PtzHead_Capability_TILT);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_PT);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_JOYSTICK_CONTROL);
 }
 
 int IRDomePTHead::panLeft(float speed)

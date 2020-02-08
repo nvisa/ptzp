@@ -78,7 +78,16 @@ void Oem4kModuleHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_HUE);
 	head->add_capabilities(ptzp::PtzHead_Capability_SATURATION);
 	head->add_capabilities(ptzp::PtzHead_Capability_SHARPNESS);
-	head->add_capabilities(ptzp::PtzHead_Capability_REBOOT);
+	head->add_capabilities(ptzp::PtzHead_Capability_DAY_NIGHT);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_HUE);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SATURATION);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHARPNESS);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW);
+	//head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW);
 }
 
 int Oem4kModuleHead::focusIn(int speed)
