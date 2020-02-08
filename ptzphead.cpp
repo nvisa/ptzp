@@ -499,7 +499,7 @@ bool PtzpHead::hasCapability(ptzp::PtzHead_Capability c)
 		capcache = new ptzp::PtzHead;
 		fillCapabilities(capcache);
 	}
-	for (int i = 0; capcache->capabilities_size(); i++) {
+	for (int i = 0; i < capcache->capabilities_size(); i++) {
 		if (capcache->capabilities(i) == c)
 			return true;
 	}
