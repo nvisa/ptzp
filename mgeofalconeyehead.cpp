@@ -968,6 +968,10 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		setRegister(R_LASER_STATUS, 1);
 		sendCommand(p, len);
 	} else if (r == C_SET_LASER_FIRE) {
+		if(x < 0){
+			setPropertyInt(C_SET_LASER_UP, x);
+			return;
+		}
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
