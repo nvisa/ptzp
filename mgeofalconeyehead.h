@@ -139,6 +139,7 @@ private:
 	};
 	QList<LaserReflection> reflections;
 	int syncEndPoint;
+	QString firmwareType;
 };
 
 #endif // MGEOFALCONEYEHEAD_H

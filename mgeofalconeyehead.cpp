@@ -220,7 +220,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps, QString t
 		thermalRelay = relayConfig[1];
 		standbyRelay = relayConfig[2];
 	}
-
+	firmwareType = type;
 	if(type == "absgs")
 		syncEndPoint = C_GET_OPTIMIZATION_PARAM;
 	else syncEndPoint = C_COUNT;
