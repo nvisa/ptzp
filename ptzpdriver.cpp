@@ -1379,6 +1379,20 @@ static QString getCapString(ptzp::PtzHead_Capability cap)
 		_map[ptzp::PtzHead_Capability_SATURATION] = "saturation";
 		_map[ptzp::PtzHead_Capability_SHARPNESS] = "sharpness";
 		_map[ptzp::PtzHead_Capability_ZOOM] = "zoom_pos_level";
+		_map[ptzp::PtzHead_Capability_DAY_NIGHT] = "choose_cam";
+		_map[ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW] = "choose_cam";
+		_map[ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW] = "choose_cam";
+		_map[ptzp::PtzHead_Capability_KARDELEN_MENU_OVER_VIDEO] = "button_press";
+		_map[ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER] = "laser_fire";
+		_map[ptzp::PtzHead_Capability_KARDELEN_SHOW_HIDE_SYMBOLOGY] = "symbology";
+		_map[ptzp::PtzHead_Capability_KARDELEN_NUC] = "one_point_nuc";
+		_map[ptzp::PtzHead_Capability_KARDELEN_DIGITAL_ZOOM] = "digital_zoom";
+		_map[ptzp::PtzHead_Capability_KARDELEN_POLARITY] = "polarity";
+		_map[ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES] = "relay_control";
+		_map[ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE] = "reticle_mode";
+		_map[ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS] = "brightness_change";
+		_map[ptzp::PtzHead_Capability_KARDELEN_CONTRAST] = "contrast_change";
+
 	}
 
 	return _map[cap];
