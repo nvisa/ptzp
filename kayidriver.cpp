@@ -20,6 +20,7 @@ KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QString type, QObject *
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
 	firmwareType = type;
+	fovResp = new ::ptzp::AdvancedCmdResponse;
 }
 
 PtzpHead *KayiDriver::getHead(int index)
@@ -86,6 +87,40 @@ bool KayiDriver::isReady()
 	if (state == NORMAL)
 		return true;
 	return false;
+}
+
+grpc::Status KayiDriver::GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	response->set_value(headModule->getProperty(MgeoFalconEyeHead::R_FOV));
+	return grpc::Status::OK;
+}
+
+grpc::Status KayiDriver::SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	if (fovResp->enum_field() == false) {
+		fovResp->set_enum_field(true);
+		fovResp->add_supported_values(0);
+		fovResp->add_supported_values(1);
+		fovResp->add_supported_values(2);
+		fovResp->add_supported_values(3);
+		fovResp->add_supported_values(4);
+	}
+
+	if (request->new_value() == 0)
+		headModule->setProperty(1, request->new_value());
+	else if (request->new_value() == 1)
+		headModule->setProperty(1, request->new_value());
+	else if (request->new_value() == 2)
+		headModule->setProperty(1, request->new_value());
+	else if (request->new_value() == 3)
+		headModule->setProperty(1, request->new_value());
+	else if (request->new_value() == 4)
+		headModule->setProperty(1, request->new_value());
+	else
+		return grpc::Status::CANCELLED;
+
+
+	return grpc::Status::OK;
 }
 
 void KayiDriver::timeout()

@@ -18,6 +18,9 @@ public:
 	int set(const QString &key, const QVariant &value);
 	bool isReady();
 
+	virtual grpc::Status GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
+	virtual grpc::Status SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
+
 protected slots:
 	void timeout();
 
@@ -35,6 +38,7 @@ protected:
 	PtzpTransport *tp1;
 	PtzpTransport *tp2;
 	QString firmwareType;
+	::ptzp::AdvancedCmdResponse *fovResp;
 };
 
 #endif // KAYIDRIVER_H
