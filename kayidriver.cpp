@@ -91,6 +91,11 @@ bool KayiDriver::isReady()
 
 grpc::Status KayiDriver::GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
 {
+	if (firmwareType == "absgs")
+		response->set_max(5);
+	else
+		response->set_max(3);
+
 	response->set_value(headModule->getProperty(MgeoFalconEyeHead::R_FOV));
 	return grpc::Status::OK;
 }
@@ -107,18 +112,17 @@ grpc::Status KayiDriver::SetZoom(grpc::ServerContext *context, const ptzp::Advan
 	}
 
 	if (request->new_value() == 0)
-		headModule->setProperty(1, request->new_value());
+		headModule->setProperty(4, request->new_value());
 	else if (request->new_value() == 1)
-		headModule->setProperty(1, request->new_value());
+		headModule->setProperty(4, request->new_value());
 	else if (request->new_value() == 2)
-		headModule->setProperty(1, request->new_value());
+		headModule->setProperty(4, request->new_value());
 	else if (request->new_value() == 3)
-		headModule->setProperty(1, request->new_value());
+		headModule->setProperty(4, request->new_value());
 	else if (request->new_value() == 4)
-		headModule->setProperty(1, request->new_value());
+		headModule->setProperty(4, request->new_value());
 	else
 		return grpc::Status::CANCELLED;
-
 
 	return grpc::Status::OK;
 }
