@@ -94,6 +94,8 @@ service PTZService {
 	rpc SetDayNight(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc GetFocus(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc SetFocus(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+        rpc GetZoom(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+        rpc SetZoom(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc RebootSystem(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc PoweroffSystem(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 }
