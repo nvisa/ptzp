@@ -20,7 +20,8 @@ public:
 
 	grpc::Status GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response);
 	grpc::Status SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response);
-
+	grpc::Status GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap);
+	grpc::Status SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap);
 
 protected slots:
 	void timeout();
@@ -32,6 +33,13 @@ protected:
 		SYNC_HEAD_MODULE,
 		NORMAL,
 	};
+
+	enum Modes {
+		MANUAL,
+		AUTO
+	};
+
+	Modes brightnessMode, contrastMode; // brightness and contrast modes respectively.
 
 	MgeoFalconEyeHead *headModule;
 	AryaPTHead *headDome;

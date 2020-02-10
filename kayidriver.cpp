@@ -21,6 +21,8 @@ KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QString type, QObject *
 	defaultModuleHead = headModule;
 	firmwareType = type;
 	fovResp = new ::ptzp::AdvancedCmdResponse;
+	brightnessMode = MANUAL;
+	contrastMode = MANUAL;
 }
 
 PtzpHead *KayiDriver::getHead(int index)
@@ -125,6 +127,50 @@ grpc::Status KayiDriver::SetZoom(grpc::ServerContext *context, const ptzp::Advan
 		return grpc::Status::CANCELLED;
 
 	return grpc::Status::OK;
+}
+
+grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS) {
+		response->set_enum_field(true); // means we got auto/manual brightness for the kardelen dudes.
+		response->set_raw_value(brightnessMode);
+	}
+
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST) {
+		response->set_enum_field(true); // means we got auto/manual contrast for the kardelen dudes.
+		response->set_raw_value(contrastMode);
+	}
+
+	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
+}
+
+grpc::Status KayiDriver::SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS) {
+		if (request->raw_value() == true) {
+			headModule->setProperty(40, 1);
+			brightnessMode = AUTO;
+			return grpc::Status::OK;
+		}
+		else {
+			headModule->setProperty(40,0);
+			brightnessMode = MANUAL;
+		}
+	}
+
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST) {
+		if (request->raw_value() == true) {
+			headModule->setProperty(39, 1);
+			contrastMode = AUTO;
+			return grpc::Status::OK;
+		}
+		else {
+			headModule->setProperty(39,0);
+			contrastMode = MANUAL;
+		}
+	}
+
+	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
 }
 
 void KayiDriver::timeout()
