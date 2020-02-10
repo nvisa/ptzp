@@ -1810,6 +1810,26 @@ grpc::Status PtzpDriver::SetFocus(grpc::ServerContext *context, const ptzp::Adva
 	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_FOCUS);
 }
 
+grpc::Status PtzpDriver::GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	PtzpHead *head = findHeadNull(ptzp::PtzHead_Capability_ZOOM , request->head_id());
+	if (head == nullptr)
+		return grpc::Status::CANCELLED;
+	float var = head->getZoom();
+	response->set_value(var);
+	return grpc::Status::OK;
+}
+
+grpc::Status PtzpDriver::SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	PtzpHead *head = findHeadNull(ptzp::PtzHead_Capability_ZOOM, request->head_id());
+	if (head == nullptr)
+		return grpc::Status::CANCELLED;
+	QVariant var = head->setZoom(request->new_value());
+	return grpc::Status::OK;
+
+}
+
 grpc::Status PtzpDriver::RebootSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
 {
 	return GetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_REBOOT);
