@@ -47,7 +47,7 @@ protected:
 	PtzpTransport *tp1;
 	PtzpTransport *tp2;
 	QString firmwareType;
-	::ptzp::AdvancedCmdResponse *fovResp;
+	QVector<float> fovValues;
 };
 
 #endif // KAYIDRIVER_H

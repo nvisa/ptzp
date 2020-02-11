@@ -20,8 +20,8 @@ KayiDriver::KayiDriver(QList<int> relayConfig, bool gps, QString type, QObject *
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
 	firmwareType = type;
-	fovResp = new ::ptzp::AdvancedCmdResponse;
 	brightnessMode = MANUAL;
+	fovValues = {0 ,1 ,2 ,3 ,4};
 }
 
 PtzpHead *KayiDriver::getHead(int index)
@@ -92,6 +92,9 @@ bool KayiDriver::isReady()
 
 grpc::Status KayiDriver::GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
 {
+	Q_UNUSED(request);
+	Q_UNUSED(context);
+
 	if (firmwareType == "absgs")
 		response->set_max(5);
 	else
@@ -103,25 +106,12 @@ grpc::Status KayiDriver::GetZoom(grpc::ServerContext *context, const ptzp::Advan
 
 grpc::Status KayiDriver::SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
 {
-	if (fovResp->enum_field() == false) {
-		fovResp->set_enum_field(true);
-		fovResp->add_supported_values(0);
-		fovResp->add_supported_values(1);
-		fovResp->add_supported_values(2);
-		fovResp->add_supported_values(3);
-		fovResp->add_supported_values(4);
-	}
+	Q_UNUSED(response);
+	Q_UNUSED(context);
+	float value = request->new_value();
 
-	if (request->new_value() == 0)
-		headModule->setProperty(4, request->new_value());
-	else if (request->new_value() == 1)
-		headModule->setProperty(4, request->new_value());
-	else if (request->new_value() == 2)
-		headModule->setProperty(4, request->new_value());
-	else if (request->new_value() == 3)
-		headModule->setProperty(4, request->new_value());
-	else if (request->new_value() == 4)
-		headModule->setProperty(4, request->new_value());
+	if (fovValues.contains(value))
+		headModule->setProperty(4, value);
 	else
 		return grpc::Status::CANCELLED;
 
@@ -131,12 +121,12 @@ grpc::Status KayiDriver::SetZoom(grpc::ServerContext *context, const ptzp::Advan
 grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
 {
 	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS) {
-		response->set_enum_field(true); // means we got auto/manual brightness for the kardelen dudes.
+		response->set_enum_field(true); // means we got auto-manual brightness for the kardelen dudes.
 		response->set_raw_value(brightnessMode);
 	}
 
 	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST) {
-		response->set_enum_field(true); // means we got auto/manual contrast for the kardelen dudes.
+		response->set_enum_field(true); // means we got auto-manual contrast for the kardelen dudes.
 		response->set_raw_value(brightnessMode);
 	}
 
