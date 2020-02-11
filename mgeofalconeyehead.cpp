@@ -1060,28 +1060,29 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		p[4] = 0x02;
 		p[5] = 0x00;
 		p[6] = chksum(p, len - 1);
-		setRegister(R_EXTRAS_CONTRAST_MODE, x);
+		setRegister(R_EXTRAS_BRIGHTNESS_MODE, x);
 		sendCommand(p, len);
 	} else if (r == C_EXTRAS_SET_BRIGHTNESS_CHANGE){
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		if(getRegister(R_EXTRAS_CONTRAST_MODE) || getRegister(R_EXTRAS_CONTRAST_MODE))
-			p[3] = 0x01;
-		else p[3] = 0x00;
+		p[3] = getRegister(R_EXTRAS_BRIGHTNESS_MODE);
 		p[4] = 0x01;
-		p[5] = x;
+		if(x > 0)
+			p[5] = 0x01;
+		else if (x < 0)
+			p[5] = 0x02;
 		p[6] = chksum(p, len - 1);
 		sendCommand(p, len);
 	} else if (r == C_EXTRAS_SET_CONTRAST_CHANGE){
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		if(getRegister(R_EXTRAS_CONTRAST_MODE) || getRegister(R_EXTRAS_CONTRAST_MODE))
-			p[3] = 0x01;
-		else p[3] = 0x00;
+		p[3] = getRegister(R_EXTRAS_BRIGHTNESS_MODE);
 		p[4] = 0x02;
-		p[5] = x;
+		if(x > 0)
+			p[5] = 0x01;
+		else if (x < 0) p[5] = 0x02;
 		p[6] = chksum(p, len - 1);
 		sendCommand(p, len);
 	}

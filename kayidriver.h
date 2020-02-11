@@ -39,7 +39,7 @@ protected:
 		AUTO
 	};
 
-	Modes brightnessMode, contrastMode; // brightness and contrast modes respectively.
+	Modes brightnessMode; // brightness and contrast modes respectively.
 
 	MgeoFalconEyeHead *headModule;
 	AryaPTHead *headDome;
