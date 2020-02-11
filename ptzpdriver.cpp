@@ -1498,8 +1498,10 @@ int PtzpDriver::denormalizeValue(int head, const QString &key, const float &valu
 	QJsonObject obj = readHeadMaps();
 	if (obj.isEmpty())
 		return -1;
-	if (!obj.value("normalize_value").toBool())
-		return -2;
+	if (!obj.value("normalize_value").toBool()){
+		mLog("Normalization options disabled!!!");
+		return 0;
+	}
 	float valmin = obj.value("normalize_value_min").toDouble();
 	float valmax = obj.value("normalize_value_max").toDouble();
 
@@ -1534,8 +1536,10 @@ int PtzpDriver::normalizeValue(int head, const QString &key, const QVariant &val
 	QJsonObject obj = readHeadMaps();
 	if (obj.isEmpty())
 		return -1;
-	if (!obj.value("normalize_value").toBool())
-		return -2;
+	if (!obj.value("normalize_value").toBool()){
+		mLog("Normalization options disabled!!!");
+		return 0;
+	}
 	float valmin = obj.value("normalize_value_min").toDouble();
 	float valmax = obj.value("normalize_value_max").toDouble();
 
