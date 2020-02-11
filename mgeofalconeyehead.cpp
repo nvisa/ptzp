@@ -559,6 +559,91 @@ bool MgeoFalconEyeHead::isAlive()
 	return alive;
 }
 
+void MgeoFalconEyeHead::buttonClick(int b, int action){
+	if (action == 1)
+		setPropertyInt(35, b);
+	else if (action == -1)
+		setPropertyInt(36, b);
+}
+
+void MgeoFalconEyeHead::screenClick(int x, int y, int action)
+{
+	ffDebug() << "Screen Click x: " << x << " y: " << y;
+	double BUTTON_HEIGHT 	= 0.108; //0.112
+	double BUTTON_WIDTH 	= 0.158; //0.158
+	double FIRST_BUTTON_UP_LEFT_X = 0.026; //0.026
+	double FIRST_BUTTON_UP_LEFT_Y = 0.246; //0.246
+	double SECOND_BUTTON_UP_LEFT_X = 0.026; //0.026
+	double SECOND_BUTTON_UP_LEFT_Y = 0.424; //0.555
+	double THIRD_BUTTON_UP_LEFT_X = 0.026; //0.026
+	double THIRD_BUTTON_UP_LEFT_Y = 0.602; //0.710
+	double FOURTH_BUTTON_UP_LEFT_X = 0.793; //0.793
+	double FOURTH_BUTTON_UP_LEFT_Y = 0.246; //0.246
+	double FIFTH_BUTTON_UP_LEFT_X = 0.793; //0.793
+	double FIFTH_BUTTON_UP_LEFT_Y = 0.424;//0.555
+	double SIXTH_BUTTON_UP_LEFT_X = 0.793; //0.793
+	double SIXTH_BUTTON_UP_LEFT_Y = 0.602; //0.710
+
+	double ROUTING_LEFT_X1 = 0.794; //0.794
+	double ROUTING_LEFT_X2 = 0.825; //0.825
+	double ROUTING_RIGHT_X1 = 0.845; //0.845
+	double ROUTING_RIGHT_X2 = 0.872; //0.872
+	double ROUTING_RIGHT_LEFT_Y1 = 0.850;  //0.850
+	double ROUTING_RIGHT_LEFT_Y2 = 0.875;  //0.875
+	double ROUTING_UP_DOWN_X1 = 0.82; //0.82
+	double ROUTING_UP_DOWN_X2 = 0.857; //0.857
+	double ROUTING_UP_Y1 = 0.84; //0.84
+	double ROUTING_UP_Y2 = 0.82; //0.82
+	double ROUTING_DOWN_Y1 = 0.90; //0.90
+	double ROUTING_DOWN_Y2 = 0.88; //0.88
+
+	double ROUTING_AREA_TOP 	= 0.82; //0.82
+	double ROUTING_AREA_BOTTOM = 0.90; //0.90
+	int L0 = 0;
+	int L1 = 1;
+	int L2 = 2;
+	int R0 = 3;
+	int R1 = 4;
+	int R2 = 5;
+	int UP = 6;
+	int DOWN = 7;
+	int LEFT = 8;
+	int RIGHT = 9;
+
+	double ratioX = x / 720.0;
+	double ratioY = y / 576.0;
+
+	if(ratioY >= FIRST_BUTTON_UP_LEFT_Y && ratioY <= (FIRST_BUTTON_UP_LEFT_Y + BUTTON_HEIGHT)) {
+		if(ratioX >= FIRST_BUTTON_UP_LEFT_X && ratioX <= (FIRST_BUTTON_UP_LEFT_X + BUTTON_WIDTH)){
+			buttonClick(L0, action);
+		} else if(ratioX >= FOURTH_BUTTON_UP_LEFT_X && ratioX <= (FOURTH_BUTTON_UP_LEFT_X + BUTTON_WIDTH)) {
+			buttonClick(R0, action);
+		}
+	} else if(ratioY >= SECOND_BUTTON_UP_LEFT_Y && ratioY <= (SECOND_BUTTON_UP_LEFT_Y + BUTTON_HEIGHT)) {
+		if(ratioX >= SECOND_BUTTON_UP_LEFT_X && ratioX <= (SECOND_BUTTON_UP_LEFT_X + BUTTON_WIDTH)){
+			buttonClick(L1, action);
+		} else if(ratioX >= FIFTH_BUTTON_UP_LEFT_X && ratioX <= (FIFTH_BUTTON_UP_LEFT_X + BUTTON_WIDTH)) {
+			buttonClick(R1, action);
+		}
+	} else if(ratioY >= THIRD_BUTTON_UP_LEFT_Y && ratioY <= (THIRD_BUTTON_UP_LEFT_Y + BUTTON_HEIGHT)) {
+		if(ratioX >= THIRD_BUTTON_UP_LEFT_X && ratioX <= (THIRD_BUTTON_UP_LEFT_X + BUTTON_WIDTH)){
+			buttonClick(L2, action);
+		} else if(ratioX >= SIXTH_BUTTON_UP_LEFT_X && ratioX <= (SIXTH_BUTTON_UP_LEFT_X + BUTTON_WIDTH)) {
+			buttonClick(R2, action);
+		}
+	} else if(ratioY >= ROUTING_AREA_TOP && ratioY <= ROUTING_AREA_BOTTOM){
+		if(ratioX >= ROUTING_LEFT_X1 && ratioX <= ROUTING_LEFT_X2 && ratioY >= ROUTING_RIGHT_LEFT_Y1 && ratioY<= ROUTING_RIGHT_LEFT_Y2) {
+			buttonClick(LEFT, action);
+		} else if(ratioX >= ROUTING_RIGHT_X1 && ratioX <= ROUTING_RIGHT_X2 && ratioY >= ROUTING_RIGHT_LEFT_Y1 && ratioY<= ROUTING_RIGHT_LEFT_Y2) {
+			buttonClick(RIGHT, action);
+		} else if(ratioY >= ROUTING_DOWN_Y2 && ratioY <= ROUTING_DOWN_Y1 && ratioX >= ROUTING_UP_DOWN_X1 && ratioX <= ROUTING_UP_DOWN_X2) {
+			buttonClick(DOWN, action);
+		} else if(ratioY >= ROUTING_UP_Y2 && ratioY <= ROUTING_UP_Y1 && ratioX >= ROUTING_UP_DOWN_X1 && ratioX <= ROUTING_UP_DOWN_X2) {
+			buttonClick(UP, action);
+		}
+	}
+}
+
 int MgeoFalconEyeHead::syncNext()
 {
 	unsigned char *p = protoBytes[nextSync];
@@ -1003,6 +1088,10 @@ void MgeoFalconEyeHead::setPropertyInt(uint r, int x)
 		setRegister(R_GMT, x);
 		sendCommand(p, len);
 	} else if (r == C_SET_BUTTON_PRESSED) {
+		if(x < 0){
+			setPropertyInt(C_SET_BUTTON_RELEASED, (-1 * x));
+			return;
+		}
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;

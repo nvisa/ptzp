@@ -82,6 +82,7 @@ public:
 	virtual void setProperty(const QString &key, const QVariant &value);
 	virtual QString whoAmI();
 	virtual float getMaxPatternSpeed() const;
+	virtual void screenClick(int x, int y, int action);
 	int saveRegisters(const QString &filename);
 	int loadRegisters(const QString &filename);
 	int communicationElapsed();

@@ -107,6 +107,8 @@ public:
 	float *getFOVAbsgs();
 	virtual QString whoAmI();
 	bool isAlive();
+	void screenClick(int x, int y, int action);
+	void buttonClick(int b, int action);
 
 protected:
 	int syncNext();

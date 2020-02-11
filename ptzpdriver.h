@@ -282,7 +282,7 @@ public:
 	grpc::Status SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
 	grpc::Status RebootSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
 	grpc::Status PoweroffSystem(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response) override;
-
+	grpc::Status ScreenClick(grpc::ServerContext *context, const ptzp::ClickParameter *request, google::protobuf::Empty *response) override;
 	// Service interface
 public:
 	grpc::Status GetCapabilityValues(grpc::ServerContext *context, const ptzp::CapabilityValuesReq *request, ptzp::CapabilityValuesResponse *response) override;

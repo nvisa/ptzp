@@ -372,6 +372,11 @@ float PtzpHead::getMaxPatternSpeed() const
 	return 1.0;
 }
 
+void PtzpHead::screenClick(int x, int y, int action)
+{
+	return;
+}
+
 void PtzpHead::setHeadName(const QString &name)
 {
 	headName = name;

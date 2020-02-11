@@ -1840,6 +1840,12 @@ grpc::Status PtzpDriver::PoweroffSystem(grpc::ServerContext *context, const ptzp
 	return SetAdvancedControl(context, request, response, ptzp::PtzHead_Capability_REBOOT);
 }
 
+grpc::Status PtzpDriver::ScreenClick(grpc::ServerContext *context, const ptzp::ClickParameter *request, google::protobuf::Empty *response)
+{
+	defaultModuleHead-> screenClick(request->pt().x(), request->pt().y(), request->value());
+	return grpc::Status::OK;
+}
+
 grpc::Status PtzpDriver::GetCapabilityValues(grpc::ServerContext *context, const ptzp::CapabilityValuesReq *request, ptzp::CapabilityValuesResponse *response)
 {
 	auto cap = request->caps(0);

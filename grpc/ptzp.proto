@@ -98,6 +98,7 @@ service PTZService {
 	rpc SetZoom(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc RebootSystem(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc PoweroffSystem(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
+	rpc ScreenClick(ClickParameter) returns (google.protobuf.Empty) {}
 }
 
 message AdvancedCmdRequest {
@@ -303,4 +304,14 @@ message PTZPosInfo {
 message PatrolDefinition {
 	repeated string presets = 1;
 	repeated int32 intervals = 2;
+}
+
+message ClickParameter {
+	Point pt = 1;
+	int32 value =2;
+}
+
+message Point {
+	float x = 1;
+	float y = 2;
 }
