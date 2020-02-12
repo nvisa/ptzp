@@ -462,6 +462,7 @@ QVariant MgeoFalconEyeHead::getProperty(const QString &key)
 						 .arg(r.lonminute)
 						 .arg(r.lonsecond);
 		}
+		reflections.clear();
 		return lines.join(";");
 	}
 
