@@ -130,6 +130,13 @@ grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 		response->set_raw_value(brightnessMode);
 	}
 
+	if ( cap == ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER){
+		QVariant range = defaultModuleHead->getProperty("laser_reflections");
+		QStringList rangeStr = range.toString().split(",");
+		response->set_value(rangeStr.first().toFloat());
+		return grpc::Status::OK;
+	}
+
 	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
 }
 
