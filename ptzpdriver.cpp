@@ -1647,7 +1647,7 @@ int PtzpDriver::findHeadIndex(QString capstring, int id)
 
 	for (int i = 0; i < getHeadCount(); i++) {
 		auto head = getHead(i);
-		if (head->getSettings().contains(capstring))
+		if (head->settings.contains(capstring))
 			return i;
 	}
 
