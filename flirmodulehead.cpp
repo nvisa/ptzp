@@ -257,7 +257,7 @@ int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 			line.remove("root.ICRSTATUS=");
 			setRegister(C_GET_IRC_STATUS, line.toInt());
 		}
-		if (line.contains("root.DAYNIGHT")) {
+		if (line.contains("root.DAYNIGHT.filterType")) {
 			line.remove("root.DAYNIGHT.filterType=");
 			setRegister(C_GET_IRC_MODE, line.toInt());
 		}
