@@ -123,6 +123,7 @@ void FlirDriver::timeout()
 		if (transportDome->getStatus() == PtzpTcpTransport::ALIVE) {
 			bumpStart();
 			reinitPT = false;
+			headDome->initialize();
 		}
 	}
 	PtzpDriver::timeout();
