@@ -54,18 +54,21 @@ void SwirDriver::timeout()
 		break;
 	case SYNC_HEAD_MODULE:
 		if (headModule->getHeadStatus() == PtzpHead::ST_NORMAL) {
+			headModule->setProperty(4,0);
 			if (registerSavingEnabled)
 				state = LOAD_MODULE_REGISTERS;
-			else
+			else{
 				state = NORMAL;
-			//			tp1->enableQueueFreeCallbacks(true);
-			tp2->enableQueueFreeCallbacks(true);
+				tp2->enableQueueFreeCallbacks(true);
+			}
+			tp1->enableQueueFreeCallbacks(true);
 			timer->setInterval(1000);
 		}
 		break;
 	case LOAD_MODULE_REGISTERS:
 		headModule->loadRegisters("head0.json");
 		state = NORMAL;
+		tp2->enableQueueFreeCallbacks(true);
 		break;
 	case NORMAL:
 		manageRegisterSaving();

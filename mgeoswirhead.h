@@ -43,6 +43,8 @@ protected:
 	QJsonValue marshallAllRegisters();
 	void unmarshallloadAllRegisters(const QJsonValue &node);
 	virtual int dataReady(const unsigned char *bytes, int len);
+private:
+	QElapsedTimer syncTimer;
 };
 
 #endif // MGEOSWIRHEAD_H
