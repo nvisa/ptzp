@@ -493,6 +493,8 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		return -EAGAIN;
 	}
 
+	hist->takeFirst();
+
 	if (sptr[2] != 0x81) {
 		setIOError(IOE_VISCA_INVALID_ADDR);
 		return expected;
@@ -512,7 +514,6 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		} else
 			syncNext();
 	}
-	hist->takeFirst();
 
 	if (sendcmd == C_VISCA_GET_EXPOSURE) {
 		uint exVal = ((p[4] << 4) | p[5]);
