@@ -495,18 +495,30 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 
 	hist->takeFirst();
 
+	/* messages errors */
+	IOErr err = IOE_NONE;
+	int rtnlen = 0;
 	if (sptr[2] != 0x81) {
-		setIOError(IOE_VISCA_INVALID_ADDR);
-		return expected;
+		// Handle commands that not visca
+		err = IOE_VISCA_INVALID_ADDR;
+		rtnlen = expected;
+	} else if (p[expected - 1] != 0xff) {
+		if (getHeadStatus() == ST_SYNCING) {
+			// Last command should resend while syncing.
+			syncNext();
+		}
+		err = IOE_VISCA_LAST;
+		rtnlen = -ENOENT;
 	}
-	if (p[expected - 1] != 0xff) {
-		setIOError(IOE_VISCA_LAST);
-		return expected;
+
+	if (err) {
+		setIOError(err);
+		return rtnlen;
 	}
 
 	pingTimer.restart();
 	/* register sync support */
-	if (nextSync != C_COUNT) {
+	if (getHeadStatus() == ST_SYNCING) {
 		/* we are in sync mode, let's sync next */
 		mInfo("Next sync property: %d", nextSync);
 		if (++nextSync == C_COUNT) {
