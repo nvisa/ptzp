@@ -263,24 +263,36 @@ float IRDomePTHead::getTiltAngle()
 
 int IRDomePTHead::dataReady(const unsigned char *bytes, int len)
 {
-	for (int i = 0; i < len; i++)
-		mLogv("%d", bytes[i]);
+	mLogv("%s %d", qPrintable(QByteArray((char*)bytes, len).toHex()), len);
+
 	const unsigned char *p = bytes;
+
+	/* If content is not match with our format,
+	 * you should return ENOENT. So other drivers can use it.
+	 * We cannot make sure there is a wrong message.
+	 * If message have been useless for all driver,
+	 * ptzptransport will drop the first byte.
+	 */
 	if (p[0] != 0x3a)
-		return -1;
+		return -ENOENT;
 	if (len < 9)
-		return -1;
-	/* custom messages */
-	if (p[2] != 0x82) {
-		setIOError(IOE_UNSUPP_SPECIAL);
-		return 9;
+		return -EAGAIN;
+
+	/* messages errors */
+	IOErr err = IOE_NONE;
+	if (p[1] != 0xff || p[2] != 0x82) {
+		err = IOE_UNSUPP_SPECIAL;
+	} else if (p[7] != checksum(p, 7)) {
+		err = IOE_SPECIAL_CHKSUM;
+	} else if (p[8] != 0x5c) {
+		err = IOE_SPECIAL_LAST;
 	}
-	if (p[7] != checksum(p, 7)) {
-		setIOError(IOE_SPECIAL_CHKSUM);
-		return 9;
+
+	if (err != IOE_NONE) {
+		setIOError(err);
+		return -ENOENT;
 	}
-	if (p[8] != 0x5c)
-		setIOError(IOE_SPECIAL_LAST);
+
 	setRegister(R_PAN_ANGLE, (p[3] << 8) + p[4]);
 	setRegister(R_TILT_ANGLE, (p[5] << 8) + p[6]);
 	pingTimer.restart();
