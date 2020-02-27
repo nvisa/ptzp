@@ -129,6 +129,7 @@ private:
 	int thermalRelay;
 	int dayCamRelay;
 	int standbyRelay;
+	bool lInfo;
 	struct LaserReflection {
 		int range;
 		int height;

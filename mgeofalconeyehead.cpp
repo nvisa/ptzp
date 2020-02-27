@@ -215,6 +215,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps, QString t
 	dayCamRelay = 4;
 	thermalRelay = 5;
 	standbyRelay = 6;
+	lInfo = true;
 	if (relayConfig.size() == 3) {
 		dayCamRelay = relayConfig[0];
 		thermalRelay = relayConfig[1];
@@ -757,12 +758,19 @@ int MgeoFalconEyeHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_GPS_DATE_AND_TIME_MIN, bytes[8]);
 	} else if (bytes[2] == 0x98) {
 		int refcnt = bytes[2 + 1];
+
 		mDebug("%d reflections found", refcnt);
 		reflections.clear();
 		for (int i = 0; i < refcnt; i++) {
 			LaserReflection r;
 			int off = 2 + 4 + i * 12;
-			r.range = bytes[off] + bytes[off + 1] * 256;
+			if(lInfo){
+				r.range = bytes[off] + bytes[off + 1] * 256;
+				lInfo =false;
+			} else {
+				r.range = -1 * (bytes[off] + bytes[off + 1] * 256);
+				lInfo = true;
+			}
 			r.latdegree = bytes[off + 2];
 			r.latminute = bytes[off + 3];
 			r.latsecond = bytes[off + 4];
