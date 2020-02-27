@@ -46,6 +46,7 @@ static QStringList commandList = {
 
 MgeoSwirHead::MgeoSwirHead()
 {
+	syncTimer.start();
 	settings = {
 		{"focus", {NULL, NULL}},
 		{"gain", {C_SET_GAIN, R_GAIN}},
@@ -84,7 +85,6 @@ int MgeoSwirHead::startZoomOut(int speed)
 int MgeoSwirHead::stopZoom()
 {
 	sendCommand(commandList.at(C_SET_ZOOM).arg("STOP"));
-	sendCommand(commandList.at(C_GET_ZOOM_POS));
 	return 0;
 }
 
@@ -108,7 +108,6 @@ int MgeoSwirHead::focusOut(int speed)
 int MgeoSwirHead::focusStop()
 {
 	sendCommand(commandList.at(C_SET_FOCUS).arg("STOP"));
-	return sendCommand(commandList.at(C_GET_FOCUS_POS));
 }
 
 int MgeoSwirHead::getHeadStatus()
@@ -152,7 +151,11 @@ int MgeoSwirHead::syncNext()
 
 QByteArray MgeoSwirHead::transportReady()
 {
-	return createSwirCommand(commandList.at(C_GET_ZOOM_POS)).toLatin1();
+	if(syncTimer.elapsed() > 700){
+		syncTimer.restart();
+		return createSwirCommand(commandList.at(C_GET_ZOOM_POS)).toLatin1();
+	}
+	return QByteArray();
 }
 
 QJsonValue MgeoSwirHead::marshallAllRegisters()
@@ -191,8 +194,10 @@ int MgeoSwirHead::dataReady(const unsigned char *bytes, int len)
 	}
 
 	const QString data = QString::fromUtf8((const char *)bytes, len);
-	if (data.contains("RET,ZMENC"))
+	if (data.contains("RET,ZMENC")){
 		setRegister(R_ZOOM_POS, data.split("~").at(1).toInt());
+		pingTimer.restart();
+	}
 	if (data.contains("RET,FCSENC"))
 		setRegister(R_FOCUS_POS, data.split("~").at(1).toInt());
 	if (data.contains("RET,GAIN")) {
@@ -214,7 +219,6 @@ int MgeoSwirHead::dataReady(const unsigned char *bytes, int len)
 		if (res.split("~").first() == "ON")
 			setRegister(R_SYMBOLOGY, 1);
 	}
-
 	return data.length();
 }
 
