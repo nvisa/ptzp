@@ -451,34 +451,48 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 	const unsigned char *sptr = protoBytes[sendcmd];
 	int expected = sptr[1];
 
-	// fDebug("%s %d %d", qPrintable(QByteArray((char*)bytes, len).toHex()),
-	// len, expected);
+	if (len < expected || len < 3)
+		return -EAGAIN;
 
-	if (p[1] == 0x41 || p[1] == 0x51) {
+	if ((p[1] == 0x41 || p[1] == 0x51) && p[2] == 0xFF) {
 		mLogv("acknowledge");
 		return 3;
-	} else if (p[1] == 0x61 && len == 4 && p[3] == 0xff) {
-		mLogv("error message: &d", p[2]);
-		 /* We can get error message after synced. Maybe,
-		  * we should have restart synchronization. But it
-		  * can be complicated. How to determine it?
-		  */
-		if (sendcmd != C_COUNT) {
-			pingTimer.restart();
+	} else if ((p[1] & 0x60) == 0x60) {
+		// Visca error messages
+		QByteArray ba = "Unknow";
+		int errlen = 0;
+		if (p[1] == 0x60 && p[2] == 0xff) {
+			if (p[2] == 0x02)
+				ba = "Syntax Error";
+			if (p[2] == 0x03)
+				ba = "Command buffer full";
+			errlen = 3;
+		} else if (p[1] == 0x61 && len < 4) {
+			return -EAGAIN;
+		} else if (p[1] == 0x61 && p[3] == 0xff) {
+			if (p[2] == 0x04)
+				ba = "Command Canceled";
+			else if (p[2] == 0x05)
+				ba = "No Socket";
+			else if (p[2] == 0x41)
+				ba = "Command not Excutable";
+			errlen = 4;
+		}
+
+		if (errlen) {
+			mDebug("Visca Error: %s [err: 0x%x]", qPrintable(ba), p[2]);
 			hist->takeFirst();
-			syncNext();
+			if (getHeadStatus() == ST_SYNCING) {
+				// Last command should resend while syncing.
+				syncNext();
+			}
+			return errlen;
 		}
-		return 4;
 	} else if (expected == 0x00) {
-		for (int i = 0; i < len; i++) {
-			mInfo("%s: %d: 0x%x", __func__, i, bytes[i]);
-			if (bytes[i] == 0xff)
-				return i + 1;
-		}
-		return len;
-	}
-	if (len < expected)
+		hist->takeFirst();
 		return -EAGAIN;
+	}
+
 	if (sptr[2] != 0x81) {
 		setIOError(IOE_VISCA_INVALID_ADDR);
 		return expected;
@@ -575,7 +589,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		mInfo("Program AE Mode synced");
 		setRegister(R_PROGRAM_AE_MODE, p[2]);
 	} else if (sendcmd == C_VISCA_GET_ZOOM) {
-		if (p[1] != 0x50 || p[6] != 0xFF) {
+		if (p[1] != 0x50 || 0 != (p[2] & p[3] & p[4] & p[2] & 0xF0)) {
 			mInfo("Zoom response err: wrong mesg[%s]",
 				  QByteArray((char *)p, len).toHex().data());
 			return expected;
