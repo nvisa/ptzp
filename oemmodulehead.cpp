@@ -260,6 +260,7 @@ OemModuleHead::OemModuleHead()
 
 int OemModuleHead::addSpecialModulSettings()
 {
+#ifdef HAVE_PTZP_GRPC_API
 	if (getRegister(R_VISCA_MODUL_ID) == SONY_FCB_CV7500) {
 		settings.insert("exp_comp_mode", {C_VISCA_SET_EXP_COMPMODE, R_EXP_COMPMODE});
 		settings.insert("exp_comp_val", {C_VISCA_SET_EXP_COMPVAL, R_EXP_COMPVAL});
@@ -273,11 +274,13 @@ int OemModuleHead::addSpecialModulSettings()
 		settings.insert("gain_limit_bot", {C_VISCA_SET_GAIN_LIMIT_OEM, R_BOT_GAIN});
 		settings.insert("gain_limit_top", {C_VISCA_SET_GAIN_LIMIT_OEM, R_TOP_GAIN});
 	}
+#endif
 	return 0;
 }
 
 int OemModuleHead::addCustomSettings()
 {
+#ifdef HAVE_PTZP_GRPC_API
 	settings.clear();
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -297,6 +300,9 @@ int OemModuleHead::addCustomSettings()
 		{"cam_model", {-1, R_VISCA_MODUL_ID}}
 	};
 	return settings.size();
+#else
+	return 0;
+#endif
 }
 
 void OemModuleHead::fillCapabilities(ptzp::PtzHead *head)
