@@ -573,10 +573,10 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_DIGI_ZOOM_STAT, (p[2] == 0x02) ? true : false);
 	} else if (sendcmd == C_VISCA_GET_ZOOM_TYPE) {
 		mInfo("Zoom Type synced");
-		setRegister(R_ZOOM_TYPE, p[2]);
+		setRegister(R_ZOOM_TYPE, (p[2] == 0x0));
 	} else if (sendcmd == C_VISCA_GET_FOCUS_MODE) {
 		mInfo("Focus mode synced");
-		setRegister(R_FOCUS_MODE, p[2]);
+		setRegister(R_FOCUS_MODE, (p[2] == 0x03));
 	} else if (sendcmd == C_VISCA_GET_ZOOM_TRIGGER) {
 		mInfo("Zoom Trigger synced");
 		if (p[2] == 0x02)
