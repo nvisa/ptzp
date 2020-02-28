@@ -717,42 +717,55 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	 * response from module, in this case ordinary sleep should work here
 	 */
 	int sleepDur = 1000 * 100;
-	setProperty(C_VISCA_SET_IRCF_STATUS,
-				root.value(key.arg(R_IRCF_STATUS)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_NOISE_REDUCT,
-				root.value(key.arg(R_NOISE_REDUCT)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_WDRSTAT, root.value(key.arg(R_WDRSTAT)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_AWB_MODE, root.value(key.arg(R_AWB_MODE)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_GAMMA, root.value(key.arg(R_GAMMA)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_BLC_STATUS,
-				root.value(key.arg(R_BLC_STATUS)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_DEFOG_MODE,
-				root.value(key.arg(R_DEFOG_MODE)).toInt());
+	int value = 0;
+	value = (root.value(key.arg(R_IRCF_STATUS)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_IRCF_STATUS, value);
 	usleep(sleepDur);
 
-	setProperty(C_VISCA_SET_ZOOM_TYPE,
-				root.value(key.arg(R_ZOOM_TYPE)).toInt());
+	value =	root.value(key.arg(R_NOISE_REDUCT)).toInt();
+	setProperty(C_VISCA_SET_NOISE_REDUCT, value);
 	usleep(sleepDur);
-	setProperty(C_VISCA_SET_DIGI_ZOOM_STAT,
-				root.value(key.arg(R_DIGI_ZOOM_STAT)).toInt());
+
+	value = (root.value(key.arg(R_WDRSTAT)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_WDRSTAT, value);
+	usleep(sleepDur);
+
+	value = root.value(key.arg(R_AWB_MODE)).toInt();
+	setProperty(C_VISCA_SET_AWB_MODE, value);
+	usleep(sleepDur);
+
+	value = root.value(key.arg(R_GAMMA)).toInt();
+	setProperty(C_VISCA_SET_GAMMA, value);
+	usleep(sleepDur);
+
+	value = (root.value(key.arg(R_BLC_STATUS)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_BLC_STATUS, value);
+	usleep(sleepDur);
+
+	value = (root.value(key.arg(R_DEFOG_MODE)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_DEFOG_MODE, value);
+	usleep(sleepDur);
+
+	value = (root.value(key.arg(R_ZOOM_TYPE)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_ZOOM_TYPE, value);
+	usleep(sleepDur);
+
+	value = (root.value(key.arg(R_DIGI_ZOOM_STAT)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_DIGI_ZOOM_STAT, value);
 	usleep(sleepDur);
 
 	if (getRegister(R_VISCA_MODUL_ID) == SONY_FCB_CV7500) {
 		// SONY Limits
-		setProperty(C_VISCA_SET_GAIN_LIM,
-					root.value(key.arg(R_GAIN_LIM)).toInt());
+		value = root.value(key.arg(R_GAIN_LIM)).toInt();
+		setProperty(C_VISCA_SET_GAIN_LIM, value);
 		usleep(sleepDur);
-		setProperty(C_VISCA_SET_EXP_COMPMODE,
-					root.value(key.arg(R_EXP_COMPMODE)).toInt());
+
+		value = (root.value(key.arg(R_EXP_COMPMODE)).toInt() > 0) ? 1:0;
+		setProperty(C_VISCA_SET_EXP_COMPMODE, value);
 		usleep(sleepDur);
-		setProperty(C_VISCA_SET_EXP_COMPVAL,
-					root.value(key.arg(R_EXP_COMPVAL)).toInt());
+
+		value = root.value(key.arg(R_EXP_COMPVAL)).toInt();
+		setProperty(C_VISCA_SET_EXP_COMPVAL, value);
 		usleep(sleepDur);
 	} else if (getRegister(R_VISCA_MODUL_ID) == OEM) {
 		// OEM Limits
@@ -792,42 +805,49 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 
 	if (ae_mode == 0x0a) {
 		// Shutter priority
-		setProperty(C_VISCA_SET_SHUTTER,
-					root.value(key.arg(R_SHUTTER)).toInt());
+		value = root.value(key.arg(R_SHUTTER)).toInt();
+		setProperty(C_VISCA_SET_SHUTTER, value);
 		usleep(sleepDur);
 	} else if (ae_mode == 0x0b) {
 		// Iris priority
-		setProperty(C_VISCA_SET_EXPOSURE,
-					root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
+		value = root.value(key.arg(R_EXPOSURE_VALUE)).toInt();
+		setProperty(C_VISCA_SET_EXPOSURE, value);
 		usleep(sleepDur);
 	} else if (ae_mode == 0x03) {
 		// Manuel
-		setProperty(C_VISCA_SET_SHUTTER,
-					root.value(key.arg(R_SHUTTER)).toInt());
+		value = root.value(key.arg(R_SHUTTER)).toInt();
+		setProperty(C_VISCA_SET_SHUTTER, value);
 		usleep(sleepDur);
-		setProperty(C_VISCA_SET_EXPOSURE,
-					root.value(key.arg(R_EXPOSURE_VALUE)).toInt());
+
+		value = root.value(key.arg(R_EXPOSURE_VALUE)).toInt();
+		setProperty(C_VISCA_SET_EXPOSURE, value);
 		usleep(sleepDur);
-		setProperty(C_VISCA_SET_GAIN,
-					root.value(key.arg(R_GAIN_VALUE)).toInt());
+
+		value = root.value(key.arg(R_GAIN_VALUE)).toInt();
+		setProperty(C_VISCA_SET_GAIN, value);
 		usleep(sleepDur);
 	}
 
-	setProperty(C_VISCA_SET_AUTO_ICR, root.value(key.arg(R_AUTO_ICR)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_FOCUS_MODE,
-				root.value(key.arg(R_FOCUS_MODE)).toInt());
-	usleep(sleepDur);
-	setProperty(C_VISCA_SET_ZOOM_TRIGGER,
-				root.value(key.arg(R_ZOOM_TRIGGER)).toInt());
+	value = (root.value(key.arg(R_AUTO_ICR)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_AUTO_ICR, value);
 	usleep(sleepDur);
 
-	setProperty(C_VISCA_SET_ZOOM_TRIGGER,
-				root.value(key.arg(R_ZOOM_TRIGGER)).toInt());
+	value = (root.value(key.arg(R_FOCUS_MODE)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_FOCUS_MODE, value);
 	usleep(sleepDur);
-	setProperty(C_VISCA_SET_FLIP_MODE, root.value(key.arg(R_FLIP)).toInt());
+
+	value = (root.value(key.arg(R_ZOOM_TRIGGER)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_ZOOM_TRIGGER, value);
 	usleep(sleepDur);
-	setProperty(C_VISCA_SET_MIRROR_MODE, root.value(key.arg(R_MIRROR)).toInt());
+	setProperty(C_VISCA_SET_ZOOM_TRIGGER, value);
+	usleep(sleepDur);
+
+	value = (root.value(key.arg(R_FLIP)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_FLIP_MODE, value);
+	usleep(sleepDur);
+
+	value = (root.value(key.arg(R_MIRROR)).toInt() > 0) ? 1:0;
+	setProperty(C_VISCA_SET_MIRROR_MODE, value);
 	usleep(sleepDur);
 
 	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
@@ -839,6 +859,8 @@ void OemModuleHead::setProperty(uint r, uint x)
 {
 	mInfo("Set Property %d , value: %d", r, x);
 	if (r == C_VISCA_SET_EXPOSURE) {
+		if (x > 13)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE];
 		uint val;
 		/***
@@ -858,49 +880,67 @@ void OemModuleHead::setProperty(uint r, uint x)
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXPOSURE_VALUE, (int)x);
 	} else if (r == C_VISCA_SET_NOISE_REDUCT) {
+		if (x > 5)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_NOISE_REDUCT];
 		p[4 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_NOISE_REDUCT, (int)x);
 	} else if (r == C_VISCA_SET_GAIN) {
+		if (x > 0x0F)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_GAIN];
 		p[6 + 2] = (x & 0xf0) >> 4;
 		p[7 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_GAIN_VALUE, (int)x);
 	} else if (r == C_VISCA_SET_EXP_COMPMODE) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_EXP_COMPMODE];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXP_COMPMODE, (int)x);
 	} else if (r == C_VISCA_SET_EXP_COMPVAL) {
+		if (x > 0xE)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_EXP_COMPVAL];
 		p[6 + 2] = (x & 0xf0) >> 4;
 		p[7 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_EXP_COMPVAL, (int)x);
 	} else if (r == C_VISCA_SET_GAIN_LIM) {
+		if (x > 0xB)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_GAIN_LIM];
 		p[4 + 2] = (x + 4) & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_GAIN_LIM, (int)x);
 	} else if (r == C_VISCA_SET_SHUTTER) {
+		if (x > 0x15)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_SHUTTER];
 		p[6 + 2] = x >> 4;
 		p[7 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_SHUTTER, (int)x);
 	} else if (r == C_VISCA_SET_WDRSTAT) {
+		if (x > 0x1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_WDRSTAT];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_WDRSTAT, (int)x);
 	} else if (r == C_VISCA_SET_GAMMA) {
+		if (x > 0x5)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_GAMMA];
 		p[4 + 2] = x & 0x0f;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_GAMMA, (int)x);
 	} else if (r == C_VISCA_SET_AWB_MODE) {
+		if (x > 0x09)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_AWB_MODE];
 		if (x < 0x04)
 			p[4 + 2] = x;
@@ -909,56 +949,78 @@ void OemModuleHead::setProperty(uint r, uint x)
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_AWB_MODE, (int)x);
 	} else if (r == C_VISCA_SET_DEFOG_MODE) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_DEFOG_MODE];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_DEFOG_MODE, (int)x);
 	} else if (r == C_VISCA_SET_FOCUS_MODE) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_FOCUS_MODE];
 		p[4 + 2] = x ? 0x03 : 0x02;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_FOCUS_MODE, (int)x);
 	} else if (r == C_VISCA_SET_ZOOM_TRIGGER) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_ZOOM_TRIGGER];
 		p[4 + 2] = x ? 0x02 : 0x01;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_ZOOM_TRIGGER, (int)x);
 	} else if (r == C_VISCA_SET_BLC_STATUS) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_BLC_STATUS];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_BLC_STATUS, (int)x);
 	} else if (r == C_VISCA_SET_IRCF_STATUS) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_IRCF_STATUS];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_IRCF_STATUS, (int)x);
 	} else if (r == C_VISCA_SET_AUTO_ICR) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_AUTO_ICR];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_AUTO_ICR, (int)x);
 	} else if (r == C_VISCA_SET_PROGRAM_AE_MODE) {
+		if (x != 3 && (x < 10 || x > 13))
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_PROGRAM_AE_MODE];
 		p[4 + 2] = x;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_PROGRAM_AE_MODE, (int)x);
 	} else if (r == C_VISCA_SET_FLIP_MODE) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_FLIP_MODE];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_FLIP, (int)x);
 	} else if (r == C_VISCA_SET_MIRROR_MODE) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_MIRROR_MODE];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_MIRROR, (int)x);
 	} else if (r == C_VISCA_SET_DIGI_ZOOM_STAT) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_DIGI_ZOOM_STAT];
 		p[4 + 2] = x ? 0x02 : 0x03;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_DIGI_ZOOM_STAT, (int)x);
 	} else if (r == C_VISCA_SET_ZOOM_TYPE) {
+		if (x > 1)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_ZOOM_TYPE];
 		p[4 + 2] = x ? 0x00 : 0x01;
 		transport->send((const char *)p + 2, p[0]);
@@ -968,6 +1030,8 @@ void OemModuleHead::setProperty(uint r, uint x)
 		p[4 + 2] = 0x01;
 		transport->send((const char *)p + 2, p[0]);
 	} else if (r == C_VISCA_SET_EXPOSURE_TARGET) {
+		if (x > 0xFF)
+			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_EXPOSURE_TARGET];
 		p[5 + 2] = (x & 0xf0) >> 4;
 		p[6 + 2] = x & 0x0f;
