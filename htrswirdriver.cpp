@@ -37,9 +37,11 @@ int HtrSwirDriver::setTarget(const QString &targetUri)
 
 void HtrSwirDriver::timeout()
 {
+	if(tp->getStatus() == PtzpTcpTransport::DEAD){
+		tp->reConnect();
+	}
 	switch (state) {
 	case INIT:
-		headModule->syncRegisters();
 		state = HEAD_MODULE;
 		break;
 	case HEAD_MODULE:
