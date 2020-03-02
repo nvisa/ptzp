@@ -30,7 +30,7 @@ protected:
 	HtrSwirModuleHead *headModule;
 	HtrSwirPtHead *headDome;
 	DriverState state;
-	PtzpTransport *tp;
+	PtzpTcpTransport *tp;
 };
 
 #endif // HTRSWIRDRIVER_H

@@ -37,9 +37,11 @@ int HtrSwirDriver::setTarget(const QString &targetUri)
 
 void HtrSwirDriver::timeout()
 {
+	if(tp->getStatus() == PtzpTcpTransport::DEAD){
+		tp->reConnect();
+	}
 	switch (state) {
 	case INIT:
-		headModule->syncRegisters();
 		state = HEAD_MODULE;
 		break;
 	case HEAD_MODULE:
@@ -47,6 +49,7 @@ void HtrSwirDriver::timeout()
 			state = LOAD_MODULE_REGISTERS;
 		else
 			state = NORMAL;
+		tp->enableQueueFreeCallbacks(true);
 		break;
 	case LOAD_MODULE_REGISTERS:
 		headModule->loadRegisters("head1.json");

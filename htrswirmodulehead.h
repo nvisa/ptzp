@@ -35,7 +35,7 @@ public:
 //	virtual int stopZoom();
 //	virtual int getZoom();
 
-//protected:
+protected:
 	int sendCommand(const QString &key);
 	QJsonValue marshallAllRegisters();
 	void unmarshallloadAllRegisters(const QJsonValue &node);
@@ -44,8 +44,9 @@ public:
 	 */
 //	uint nextSync;
 //	int syncNext();
-//	QByteArray transportReady();
-//	virtual int dataReady(const unsigned char *bytes, int len);
+	QElapsedTimer syncTimer;
+	QByteArray transportReady();
+	virtual int dataReady(const unsigned char *bytes, int len);
 };
 
 #endif // HTRSWIRMODULEHEAD_H
