@@ -14,6 +14,8 @@ enum Commands {
 	C_SET_DGAIN,
 	C_SET_AUTO_GAIN,
 
+	C_GET_CIT,
+
 	C_COUNT,
 };
 
@@ -22,11 +24,13 @@ static QStringList commandList = {
 	"$aux_cmd=tt:Focus|%1",
 	"$aux_cmd=tt:IB|DGain|%1",
 	"$aux_cmd=tt:IB|AG|%1",
+
+	"$cit",
 };
 
 HtrSwirModuleHead::HtrSwirModuleHead()
 {
-
+	syncTimer.start();
 #ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"focus", {NULL, R_COUNT}},
@@ -107,4 +111,25 @@ void HtrSwirModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	usleep(sleepDur);
 	setProperty(C_SET_AUTO_GAIN, root.value(key.arg(R_AUTO_GAIN)).toInt());
 	usleep(sleepDur);
+}
+
+QByteArray HtrSwirModuleHead::transportReady()
+{
+	if(syncTimer.elapsed() > 1000){
+		syncTimer.restart();
+		return commandList.at(C_GET_CIT).toUtf8();
+	}
+	return QByteArray();
+}
+
+int HtrSwirModuleHead::dataReady(const unsigned char *bytes, int len)
+{
+	const QString data = QString::fromUtf8((const char *)bytes, len);
+	if(!data.startsWith("!<cit>"))
+		return -ENOENT;
+	if(data.contains("<cit>")){
+		if(data.contains("True"))
+			pingTimer.restart();
+	}
+	return len;
 }

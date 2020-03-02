@@ -23,9 +23,9 @@ public:
 	 * NOTE: useless because device not support.
 	 */
 //	virtual int panTiltDegree(float pan, float tilt);
-//	virtual float getPanAngle();
-//	virtual float getTiltAngle();
-//	int panTiltGoPos(float ppos, float tpos);
+	virtual float getPanAngle();
+	virtual float getTiltAngle();
+	int panTiltGoPos(float ppos, float tpos);
 
 protected:
 
@@ -33,11 +33,12 @@ protected:
 	/*
 	 * NOTE: useless because device not support.
 	 */
-//	int panPos;
-//	int tiltPos;
+	QElapsedTimer syncTimer;
+	int panPos;
+	int tiltPos;
 //	int syncFlag;
-//	int dataReady(const unsigned char *bytes, int len);
-//	QByteArray transportReady();
+	int dataReady(const unsigned char *bytes, int len);
+	QByteArray transportReady();
 };
 
 #endif // HTRSWIRPTHEAD_H

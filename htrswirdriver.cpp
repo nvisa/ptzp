@@ -47,6 +47,7 @@ void HtrSwirDriver::timeout()
 			state = LOAD_MODULE_REGISTERS;
 		else
 			state = NORMAL;
+		tp->enableQueueFreeCallbacks(true);
 		break;
 	case LOAD_MODULE_REGISTERS:
 		headModule->loadRegisters("head1.json");
