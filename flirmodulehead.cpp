@@ -4,22 +4,6 @@
 #include <assert.h>
 #include <ecl/ptzp/ptzptransport.h>
 
-/*
- * [CR] [fo] Hangi enum kullanılacak?
- */
-enum Commands {
-	CGI_SET_FOCUS_INC,
-	CGI_SET_FOCUS_DEC,
-	CGI_SET_FOCUS_POS,
-	CGI_SET_FOCUS_STOP,
-	CGI_SET_FOCUS_MODE,
-
-	CGI_GET_FOCUS_MODE,
-	CGI_GET_FOCUS_POS,
-
-	CGI_COUNT
-};
-
 enum ComandList {
 	C_ZOOM_STOP,
 	C_ZOOM_IN,
@@ -29,11 +13,15 @@ enum ComandList {
 	C_FOCUS_INC,
 	C_FOCUS_DEC,
 	C_FOCUS_STOP,
+	C_IRC_STATE,
 	C_GET_CAMPOS,
 	C_SET_FOCUS_POS,
 	C_GET_CAM_MODES,
 	C_GET_LASER_STATE,
+	C_GET_IRC_STATUS,
+	C_GET_IRC_MODE,
 	C_COUNT,
+	R_GET_FOCUS_MODE
 };
 
 static QStringList createCommandList()
@@ -63,26 +51,31 @@ static QStringList createCommandList()
 	cmdList << QString("/cgi-bin/"
 					   "control.cgi?action=update&group=PTZCTRL&channel=0&"
 					   "PTZCTRL.action=41&PTZCTRL.speed=%1&nRanId=341425");
+	cmdList << QString("/cgi-bin/param.cgi?action=update&group=DAYNIGHT&channel=0&DAYNIGHT.filterType=%1");
 	cmdList << QString("/cgi-bin/param.cgi?action=list&group=CAMPOS&channel=0");
 	cmdList << QString(
 		"/cgi-bin/"
 		"param.cgi?action=update&group=CAMPOS&channel=0&CAMPOS.focuspos=%1");
 	cmdList << QString("/cgi-bin/param.cgi?action=list&group=CAM&channel=0");
 	cmdList << QString("/cgi-bin/control.cgi?action=list&group=LASER&LASER.cmdType=100");
+	cmdList << QString("/cgi-bin/param.cgi?action=list&group=ICRSTATUS&channel=0");
+	cmdList << QString("/cgi-bin/param.cgi?action=list&group=DAYNIGHT");
 	return cmdList;
 }
 
 FlirModuleHead::FlirModuleHead()
 {
 	setHeadName("module_head");
-	syncList << C_GET_CAMPOS << C_GET_LASER_STATE;
+	syncList << C_GET_CAMPOS << C_GET_LASER_STATE << C_GET_IRC_STATUS << C_GET_IRC_MODE;
 	next = 0;
 	zoomPos = 0;
 	focusPos = 0;
 	settings = {
 		{"focus", {NULL, NULL}},
-		{"focus_pos", {CGI_SET_FOCUS_POS, CGI_GET_FOCUS_POS}},
-		{"focus_mode", {CGI_SET_FOCUS_MODE, CGI_GET_FOCUS_MODE}},
+		{"focus_pos", {C_SET_FOCUS_POS, C_GET_CAMPOS}},
+		{"focus_mode", {R_GET_FOCUS_MODE, R_GET_FOCUS_MODE}},
+		{"ir_state", {C_IRC_STATE, C_GET_IRC_STATUS}},
+		{"ir_mode", {C_GET_IRC_MODE, C_GET_IRC_MODE}},
 	};
 	commandList = createCommandList();
 	assert(commandList.size() == C_COUNT);
@@ -176,19 +169,35 @@ int FlirModuleHead::getFocusMode()
 
 void FlirModuleHead::setProperty(uint r, uint x)
 {
-	if (r == CGI_SET_FOCUS_POS)
+	if (r == C_SET_FOCUS_POS)
 		setFocusValue(x);
-	else if (r == CGI_SET_FOCUS_MODE)
+	else if (r == R_GET_FOCUS_MODE)
 		setFocusMode(x);
+	else if (r == C_IRC_STATE) {
+		setIRCState(x);
+		setRegister(C_GET_IRC_STATUS, x);
+	}
+}
+
+int FlirModuleHead::setIRCState(int type)
+{
+	if (type > 5)
+		type = 0;
+	return sendCommand(commandList.at(C_IRC_STATE).arg(type));
 }
 
 uint FlirModuleHead::getProperty(uint r)
 {
-	if (r == CGI_GET_FOCUS_POS)
+	if (r == C_GET_CAMPOS)
 		return focusPos;
-	else if (r == CGI_GET_FOCUS_MODE)
+	else if (r == R_GET_FOCUS_MODE) {
 		if (camModes.contains("focusMode"))
 			return camModes.value("focusMode").toUInt();
+	}
+	else if (r == C_GET_IRC_STATUS)
+		return getRegister(C_GET_IRC_STATUS);
+	else if (r == C_GET_IRC_MODE)
+		return getRegister(C_GET_IRC_MODE);
 	return -1;
 }
 
@@ -243,6 +252,14 @@ int FlirModuleHead::dataReady(const unsigned char *bytes, int len)
 			QString key = line.split("=").first();
 			QString value = line.split("=").last();
 			camModes.insert(key, value);
+		}
+		if (line.contains("root.ICRSTATUS")) {
+			line.remove("root.ICRSTATUS=");
+			setRegister(C_GET_IRC_STATUS, line.toInt());
+		}
+		if (line.contains("root.DAYNIGHT.filterType")) {
+			line.remove("root.DAYNIGHT.filterType=");
+			setRegister(C_GET_IRC_MODE, line.toInt());
 		}
 	}
 	mDebug("Zoom position %d, Focus position %d, Laser timer %d",
