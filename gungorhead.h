@@ -1,7 +1,7 @@
 #ifndef GUNGORHEAD_H
 #define GUNGORHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 class MgeoGunGorHead : public PtzpHead
 {

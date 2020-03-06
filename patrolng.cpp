@@ -1,6 +1,6 @@
 #include "patrolng.h"
 
-#include "ecl/debug.h"
+#include "debug.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -8,7 +8,7 @@
 #include <QMutexLocker>
 
 #include <errno.h>
-#include <ecl/drivers/presetng.h>
+#include <presetng.h>
 
 PatrolNg::PatrolNg()
 {

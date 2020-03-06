@@ -1,7 +1,7 @@
 #ifndef FLIRMODULEHEAD_H
 #define FLIRMODULEHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 class FlirModuleHead : public PtzpHead
 {

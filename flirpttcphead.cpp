@@ -1,6 +1,6 @@
 #include "flirpttcphead.h"
 #include "debug.h"
-#include <ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 
 enum CommandList {
 	C_STOP,

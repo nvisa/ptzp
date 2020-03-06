@@ -1,7 +1,7 @@
 #ifndef EVPUPTHEAD_H
 #define EVPUPTHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include <QElapsedTimer>
 

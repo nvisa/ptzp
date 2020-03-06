@@ -1,7 +1,7 @@
 #ifndef VIRTUALPTZPDRIVER_H
 #define VIRTUALPTZPDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
+#include <ptzpdriver.h>
 
 class LifeTimeHead;
 

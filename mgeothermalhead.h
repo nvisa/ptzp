@@ -1,7 +1,7 @@
 #ifndef MGEOTHERMALHEAD_H
 #define MGEOTHERMALHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include <QElapsedTimer>
 #include <QStringList>

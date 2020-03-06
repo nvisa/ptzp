@@ -1,7 +1,7 @@
 #ifndef OEM4KMODULEHEAD_H
 #define OEM4KMODULEHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 class Oem4kModuleHead : public PtzpHead
 {

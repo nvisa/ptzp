@@ -11,7 +11,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 
-#include <drivers/hardwareoperations.h>
+#include <hardwareoperations.h>
 
 #include <errno.h>
 #include <unistd.h>
@@ -226,7 +226,6 @@ OemModuleHead::OemModuleHead()
 	syncInterval = 40;
 	syncTime.start();
 	registersCache[R_IRCF_STATUS] = 0;
-#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
 		{"gain_value", {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
@@ -255,7 +254,6 @@ OemModuleHead::OemModuleHead()
 		{"focus", {C_VISCA_SET_FOCUS, R_COUNT}},
 		{"cam_model", {-1, R_VISCA_MODUL_ID}}
 	};
-#endif
 	setRegister(R_VISCA_MODUL_ID, 0);
 }
 

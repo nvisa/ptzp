@@ -1,7 +1,7 @@
 #ifndef PTZPHEAD_H
 #define PTZPHEAD_H
 
-#include <ecl/ptzp/ioerrors.h>
+#include <ioerrors.h>
 
 #include <QByteArray>
 #include <QElapsedTimer>
@@ -13,9 +13,7 @@
 #include <algorithm>
 #include <vector>
 
-#ifdef HAVE_PTZP_GRPC_API
-#include <ecl/ptzp/grpc/ptzp.pb.h>
-#endif
+#include <grpc/ptzp.pb.h>
 
 class PtzpTransport;
 
@@ -92,7 +90,6 @@ public:
 
 	void setZoomRatios(std::vector<int> v) { zoomRatios = v; }
 	int getZoomRatio();
-#ifdef HAVE_PTZP_GRPC_API
 	virtual void fillCapabilities(ptzp::PtzHead *head) = 0;
 	virtual bool hasCapability(ptzp::PtzHead_Capability c);
 	virtual QVariant getSetting(const QString &setting);
@@ -102,7 +99,6 @@ public:
 	QHash<QString, QPair<int, int>> settings {};
 	QStringList nonRegisterSettings;
 	ptzp::PtzHead *capcache;
-#endif
 	int getErrorCount(uint err);
 	virtual void enableSyncing(bool en);
 	virtual void setSyncInterval(int interval);

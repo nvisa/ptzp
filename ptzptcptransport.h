@@ -1,7 +1,7 @@
 #ifndef PTZPTCPTRANSPORT_H
 #define PTZPTCPTRANSPORT_H
 
-#include <ecl/ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 
 #include <QMutex>
 #include <QObject>

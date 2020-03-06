@@ -1,9 +1,9 @@
 #ifndef FLIRDRIVER_H
 #define FLIRDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
-#include <ecl/ptzp/ptzphttptransport.h>
-#include <ecl/ptzp/ptzptcptransport.h>
+#include <ptzpdriver.h>
+#include <ptzphttptransport.h>
+#include <ptzptcptransport.h>
 
 class FlirModuleHead;
 class FlirPTTcpHead;

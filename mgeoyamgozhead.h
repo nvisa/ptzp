@@ -1,7 +1,7 @@
 #ifndef MGEOYAMGOZHEAD_H
 #define MGEOYAMGOZHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include <QElapsedTimer>
 #include <QStringList>

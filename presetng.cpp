@@ -1,7 +1,7 @@
 #include "presetng.h"
 
-#include "ecl/debug.h"
-#include "ecl/drivers/patrolng.h"
+#include "debug.h"
+#include "patrolng.h"
 
 #include <QPair>
 #include <QFile>

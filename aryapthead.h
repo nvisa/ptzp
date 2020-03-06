@@ -1,7 +1,7 @@
 #ifndef ARYAPTHEAD_H
 #define ARYAPTHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include "QStringList"
 

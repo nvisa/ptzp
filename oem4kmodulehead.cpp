@@ -1,6 +1,6 @@
 #include "oem4kmodulehead.h"
 
-#include <ecl/ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 #include "debug.h"
 
 enum CommandsList {

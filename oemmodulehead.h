@@ -1,7 +1,7 @@
 #ifndef OEMMODULEHEAD_H
 #define OEMMODULEHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include <QElapsedTimer>
 

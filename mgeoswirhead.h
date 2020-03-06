@@ -1,7 +1,7 @@
 #ifndef MGEOSWIRHEAD_H
 #define MGEOSWIRHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include <QElapsedTimer>
 #include <QStringList>

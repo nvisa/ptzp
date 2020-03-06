@@ -1,7 +1,7 @@
 #ifndef PTZPSERIALTRANSPORT_H
 #define PTZPSERIALTRANSPORT_H
 
-#include <ecl/ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 
 class ExarConfig;
 class ReadThread;

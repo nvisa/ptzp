@@ -1,6 +1,6 @@
 #include "thermalmoduledriver.h"
 
-#include <drivers/qextserialport/qextserialport.h>
+#include <qextserialport/qextserialport.h>
 
 #include <errno.h>
 

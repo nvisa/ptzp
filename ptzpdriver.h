@@ -7,14 +7,12 @@
 #include <QObject>
 #include <QVector>
 
-#include <ecl/interfaces/keyvalueinterface.h>
-#include <ecl/interfaces/ptzcontrolinterface.h>
+#include <keyvalueinterface.h>
+#include <ptzcontrolinterface.h>
 
-#ifdef HAVE_PTZP_GRPC_API
-#include <ecl/drivers/gpiocontroller.h>
-#include <ecl/ptzp/grpc/ptzp.grpc.pb.h>
-#include <ecl/ptzp/grpc/ptzp.pb.h>
-#endif
+#include <gpiocontroller.h>
+#include <grpc/ptzp.grpc.pb.h>
+#include <grpc/ptzp.pb.h>
 
 class QTimer;
 class QElapsedTimer;
@@ -22,16 +20,10 @@ class PtzpHead;
 class PatrolNg;
 class PatternNg;
 class PtzpTransport;
-#ifdef HAVE_PTZP_GRPC_API
 class PtzpDriver : public QObject,
-				   public KeyValueInterface,
 				   public PtzControlInterface,
 				   public ptzp::PTZService::Service
-#else
-class PtzpDriver : public QObject,
-				   public KeyValueInterface,
-				   public PtzControlInterface
-#endif
+
 {
 	Q_OBJECT
 public:
@@ -58,8 +50,6 @@ public:
 
 	void startSocketApi(quint16 port);
 	int startGrpcApi(quint16 port);
-	virtual QVariant get(const QString &key);
-	virtual int set(const QString &key, const QVariant &value);
 	float getPanAngle();
 	float getTiltAngle();
 	void goToPosition(float p, float t, int z);
@@ -81,7 +71,6 @@ public:
 	bool getChangeOverlayState();
 	virtual bool isReady();
 
-#ifdef HAVE_PTZP_GRPC_API
 public:
 	static QStringList commaToList(const QString &comma);
 	static QString listToComma(const QStringList &list);
@@ -204,7 +193,6 @@ public:
 					   const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response);
 	grpc::Status SetIO(grpc::ServerContext *context,
 					   const ptzp::IOCmdPar *request, ptzp::IOCmdPar *response);
-#endif
 
 protected:
 	int createHeadMaps();

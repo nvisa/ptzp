@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <debug.h>
 
-#include <ecl/ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 
 enum CommandList {
 	C_ZOOM_SHOW,

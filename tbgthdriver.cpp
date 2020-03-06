@@ -1,6 +1,6 @@
 #include "tbgthdriver.h"
 #include "debug.h"
-#include "drivers/gpiocontroller.h"
+#include "gpiocontroller.h"
 #include "evpupthead.h"
 #include "mgeothermalhead.h"
 #include "ptzpserialtransport.h"
@@ -198,63 +198,6 @@ int TbgthDriver::setTarget(const QString &targetUri)
 	}
 
 	return 0;
-}
-
-QVariant TbgthDriver::get(const QString &key)
-{
-	if (key == "ptz.get_zoom_pos")
-		return QString("%1").arg(headLens->getZoom());
-	else if (key == "ptz.get_focus_pos")
-		return QString("%1").arg(headLens->getProperty(1));
-	else if (key == "ptz.get_iris_pos")
-		return QString("%1").arg(headLens->getProperty(1));
-	else if (key == "ptz.get_version")
-		return QString("%1").arg(headLens->getProperty(1));
-	else if (key == "ptz.get_filter_pos")
-		return QString("%1").arg(headLens->getProperty(1));
-	else if (key == "ptz.get_focus_mode")
-		return QString("%1").arg(headLens->getProperty(1));
-	else if (key == "ptz.get_iris_mod")
-		return QString("%1").arg(headLens->getProperty(1));
-	else
-		return PtzpDriver::get(key);
-	return "almost_there";
-}
-
-int TbgthDriver::set(const QString &key, const QVariant &value)
-{
-	if (key == "ptz.cmd.focus_in")
-		headLens->setProperty(4, value.toUInt());
-	else if (key == "ptz.cmd.focus_out")
-		headLens->setProperty(5, value.toUInt());
-	else if (key == "ptz.cmd.focus_stop")
-		headLens->setProperty(6, value.toUInt());
-	else if (key == "ptz.cmd.focus_set")
-		headLens->setProperty(7, value.toUInt());
-	else if (key == "ptz.cmd.iris_open")
-		headLens->setProperty(8, value.toUInt());
-	else if (key == "ptz.cmd.iris_close")
-		headLens->setProperty(9, value.toUInt());
-	else if (key == "ptz.cmd.iris_stop")
-		headLens->setProperty(10, value.toUInt());
-	else if (key == "ptz.cmd.iris_set")
-		headLens->setProperty(11, value.toUInt());
-	else if (key == "ptz.cmd.ir_filter_in")
-		headLens->setProperty(12, value.toUInt());
-	else if (key == "ptz.cmd.ir_filter_out")
-		headLens->setProperty(13, value.toUInt());
-	else if (key == "ptz.cmd.ir_filter_stop")
-		headLens->setProperty(14, value.toUInt());
-	else if (key == "ptz.cmd.filter_pos")
-		headLens->setProperty(15, value.toUInt());
-	else if (key == "ptz.cmd.auto_focus")
-		headLens->setProperty(16, value.toUInt());
-	else if (key == "ptz.cmd.auto_iris")
-		headLens->setProperty(17, value.toUInt());
-	else if (key == "ptz.cmd.zoom_set")
-		headLens->setZoom(value.toUInt());
-
-	return PtzpDriver::set(key, value);
 }
 
 QByteArray TbgthDriver::sendFilter(const char *bytes, int len)

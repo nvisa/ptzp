@@ -3,7 +3,7 @@
 
 #include <assert.h>
 
-#include <ecl/ptzp/ptzphttptransport.h>
+#include <ptzphttptransport.h>
 
 enum CommandList {
 	C_STOP,

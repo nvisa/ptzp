@@ -1,6 +1,6 @@
 #include "remoteconnection.h"
 
-#include <ecl/debug.h>
+#include <debug.h>
 
 #include <QTimer>
 

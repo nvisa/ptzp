@@ -2,7 +2,7 @@
 
 #include "debug.h"
 #include <assert.h>
-#include <ecl/ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 
 enum ComandList {
 	C_ZOOM_STOP,

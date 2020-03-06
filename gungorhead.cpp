@@ -91,7 +91,6 @@ MgeoGunGorHead::MgeoGunGorHead()
 		syncList << i;
 	nextSync = syncList.size();
 	syncTimer.start();
-#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"focus", {C_SET_FOCUS_INC_START, R_FOCUS}},
 		{"chip_version", {NULL, R_CHIP_VERSION}},
@@ -106,7 +105,6 @@ MgeoGunGorHead::MgeoGunGorHead()
 		{"fov_mode", {C_FOV, R_FOV_STATUS}},
 		{"factory_settings", {R_FACTORY, R_FACTORY}},
 	};
-#endif
 }
 
 void MgeoGunGorHead::fillCapabilities(ptzp::PtzHead *head)

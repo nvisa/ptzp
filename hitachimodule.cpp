@@ -1,5 +1,5 @@
 #include "hitachimodule.h"
-#include "drivers/qextserialport/qextserialport.h"
+#include "qextserialport/qextserialport.h"
 
 #include <math.h>
 #include <errno.h>

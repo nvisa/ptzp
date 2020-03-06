@@ -1,7 +1,7 @@
 #ifndef YAMANOLENSHEAD_H
 #define YAMANOLENSHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 class YamanoLensHead : public PtzpHead
 {

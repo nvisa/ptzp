@@ -74,7 +74,6 @@ YamanoLensHead::YamanoLensHead()
 	syncEnabled = true;
 	syncInterval = 40;
 	syncTime.start();
-#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"focus", {C_FOCUS_IN, R_FOCUS_POS}},
 		{"focus_set", {C_FOCUS_SET, R_FOCUS_POS}},
@@ -90,7 +89,6 @@ YamanoLensHead::YamanoLensHead()
 		{"auto_iris", {C_AUTO_IRIS, R_IRIS_MODE}},
 		{"version", {NULL, R_VERSION}},
 	};
-#endif
 }
 
 void YamanoLensHead::fillCapabilities(ptzp::PtzHead *head)

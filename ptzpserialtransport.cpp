@@ -1,7 +1,7 @@
 #include "ptzpserialtransport.h"
 #include "debug.h"
-#include "drivers/exarconfig.h"
-#include "drivers/qextserialport/qextserialport.h"
+#include "exarconfig.h"
+#include "qextserialport/qextserialport.h"
 
 #include <QMutex>
 #include <QThread>

@@ -1,5 +1,5 @@
 #include "ptz365driver.h"
-#include "drivers/qextserialport/qextserialport.h"
+#include "qextserialport/qextserialport.h"
 #include "debug.h"
 
 #include <QTimer>

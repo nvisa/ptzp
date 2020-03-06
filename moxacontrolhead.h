@@ -1,7 +1,7 @@
 #ifndef MOXACONTROLHEAD_H
 #define MOXACONTROLHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 class MoxaControlHead : public PtzpHead
 {

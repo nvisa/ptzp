@@ -97,7 +97,7 @@ QextSerialEnumeratorPrivate::~QextSerialEnumeratorPrivate()
     Windows implementation is based on Zach Gorman's work from
     \l {http://www.codeproject.com}{The Code Project} (\l http://www.codeproject.com/system/setupdi.asp).
   
-    OS X implementation, see \l http://developer.apple.com/documentation/DeviceDrivers/Conceptual/AccessingHardware/AH_Finding_Devices/chapter_4_section_2.html
+    OS X implementation, see \l http://developer.apple.com/documentation/DeviceConceptual/AccessingHardware/AH_Finding_Devices/chapter_4_section_2.html
   
     \bold author Michal Policht, Liam Staskawicz
 */

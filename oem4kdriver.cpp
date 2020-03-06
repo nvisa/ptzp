@@ -3,7 +3,7 @@
 #include "oem4kmodulehead.h"
 #include "debug.h"
 
-#include <ecl/ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 #include <QNetworkReply>
 
 Oem4kDriver::Oem4kDriver()

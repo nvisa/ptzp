@@ -1,5 +1,5 @@
 #include "virtualptzpdriver.h"
-#include "ptzp/ptzphead.h"
+#include "ptzphead.h"
 
 #include <QDebug>
 #include <QElapsedTimer>

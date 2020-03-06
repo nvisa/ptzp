@@ -1,7 +1,7 @@
 #ifndef FLIRPTTCPHEAD_H
 #define FLIRPTTCPHEAD_H
 
-#include "ecl/ptzp/ptzphead.h"
+#include "ptzphead.h"
 
 class FlirPTTcpHead : public PtzpHead
 {

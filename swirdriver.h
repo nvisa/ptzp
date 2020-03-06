@@ -1,7 +1,7 @@
 #ifndef SWIRDRIVER_H
 #define SWIRDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
+#include <ptzpdriver.h>
 
 class MgeoSwirHead;
 class AryaPTHead;

@@ -31,14 +31,12 @@ static QStringList commandList = {
 HtrSwirModuleHead::HtrSwirModuleHead()
 {
 	syncTimer.start();
-#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"focus", {NULL, R_COUNT}},
 		{"zoom_level", {C_SET_ZOOM_LEVEL, R_ZOOM_LEVEL}},
 		{"digital_gain", {C_SET_DGAIN, R_DGAIN}},
 		{"auto_gain", {C_SET_AUTO_GAIN, R_AUTO_GAIN}},
 	};
-#endif
 }
 
 void HtrSwirModuleHead::fillCapabilities(ptzp::PtzHead *head)

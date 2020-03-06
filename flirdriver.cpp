@@ -2,7 +2,7 @@
 
 #include "flirpttcphead.h"
 #include "flirmodulehead.h"
-#include <ecl/ptzp/ptzptransport.h>
+#include <ptzptransport.h>
 
 #include <QNetworkReply>
 #include "debug.h"

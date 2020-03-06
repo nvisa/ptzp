@@ -1,6 +1,6 @@
 #include "simplehttpserver.h"
 
-#include <ecl/debug.h>
+#include <debug.h>
 
 #include <QUrl>
 #include <QFile>

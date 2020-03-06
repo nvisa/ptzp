@@ -1,7 +1,7 @@
 #ifndef YAMGOZDRIVER_H
 #define YAMGOZDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
+#include <ptzpdriver.h>
 
 class MgeoYamGozHead;
 class PtzpTcpTransport;

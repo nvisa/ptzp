@@ -112,7 +112,6 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 	nextSync = syncList.size();
 	alive = false;
 
-#ifdef HAVE_PTZP_GRPC_API
 	settings = {
 		{"brightness", {C_BRIGHTNESS, C_BRIGHTNESS}},
 		{"contrast", {C_CONTRAST, C_CONTRAST}},
@@ -141,7 +140,6 @@ MgeoThermalHead::MgeoThermalHead(const QString &type)
 		{"system_version", {R_SYSTEM_VERSION, C_VERSION}},
 		{"version", {R_VERSION, C_VERSION}}
 	};
-#endif
 	if (getFovList("arya_tip_select.json", type) < 0) {
 		fovValue.max = FLT_MAX;
 		fovValue.min = FLT_MIN;

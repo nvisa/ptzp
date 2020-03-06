@@ -1,14 +1,13 @@
 #include "ptzpdriver.h"
 #include "debug.h"
-#include "net/remotecontrol.h"
 
-#include "drivers/patrolng.h"
-#include "drivers/patternng.h"
-#include "drivers/presetng.h"
+#include "patrolng.h"
+#include "patternng.h"
+#include "presetng.h"
 
-#include "ptzp/ptzphead.h"
-#include "ptzp/ptzptransport.h"
-#include "ptzp/mgeothermalhead.h"
+#include "ptzphead.h"
+#include "ptzptransport.h"
+#include "mgeothermalhead.h"
 
 #include <QDir>
 #include <QJsonDocument>
@@ -17,7 +16,6 @@
 #include <QTimer>
 #include <errno.h>
 
-#ifdef HAVE_PTZP_GRPC_API
 #include <grpc++/channel.h>
 #include <grpc++/client_context.h>
 #include <grpc++/create_channel.h>
@@ -59,7 +57,6 @@ public:
 	QString ep;
 	PtzpDriver *service;
 };
-#endif
 
 PtzpDriver::PtzpDriver(QObject *parent)
 	: QObject(parent), gpiocont(new GpioController)
@@ -88,166 +85,10 @@ int PtzpDriver::getHeadCount()
 	return count - 1;
 }
 
-/**
- * @brief PtzpDriver::startSocketApi
- * Kamerada soket bağlantısı için kullanılacak port numarasının
- * bildirildiği metod.Bu projede bağlantı için genel olarak "8945"
- * numaralı port kullanılmaktadır.
- * @param port
- */
-
-void PtzpDriver::startSocketApi(quint16 port)
-{
-	RemoteControl *rcon = new RemoteControl(this, this);
-	rcon->listen(QHostAddress::Any, port);
-}
-
 int PtzpDriver::startGrpcApi(quint16 port)
 {
-#ifdef HAVE_PTZP_GRPC_API
 	GRpcThread *thr = new GRpcThread(port, this);
 	thr->start();
-	return 0;
-#else
-	return -ENOENT;
-#endif
-}
-
-/*
- * [CR] [fo] Artık bu api'ları kullanmadığımız için kaldırılabilir.
- */
-QVariant PtzpDriver::get(const QString &key)
-{
-	mInfo("Get func: %s", qPrintable(key));
-	if (defaultPTHead == NULL || defaultModuleHead == NULL)
-		return QVariant();
-
-	if (key == "ptz.all_pos")
-		return QString("%1,%2,%3")
-			.arg(defaultPTHead->getPanAngle())
-			.arg(defaultPTHead->getTiltAngle())
-			.arg(defaultModuleHead->getZoom());
-	else if (key == "ptz.head.count")
-		return getHeadCount();
-	/*
-	 * head status kullanımı;
-	 * ptz.head.head_index(0,1,2 etc.).status
-	 */
-	else if (key.startsWith("ptz.head.")) {
-		QStringList fields = key.split(".");
-		if (fields.size() <= 2)
-			return -EINVAL;
-		int index = fields[2].toInt();
-		fields.removeFirst();
-		fields.removeFirst();
-		fields.removeFirst();
-		if (index < 0 || index >= getHeadCount())
-			return -ENONET;
-		return headInfo(fields.join("."), getHead(index));
-	} else if (key == "preset_list")
-		return PresetNg::getInstance()->getList();
-	else if (key == "patrol_list")
-		return PatrolNg::getInstance()->getList();
-	else if (key == "pattern_list")
-		return ptrn->getList();
-	return "almost_there";
-	return QVariant();
-}
-
-/*
- * [CR] [fo] Artık bu api'ları kullanmadığımız için kaldırılabilir.
- */
-int PtzpDriver::set(const QString &key, const QVariant &value)
-{
-	PatrolNg *ptrl = PatrolNg::getInstance();
-	PresetNg *prst = PresetNg::getInstance();
-	mInfo("Set func: %s %d", qPrintable(key), value.toInt());
-	if (defaultPTHead == NULL || defaultModuleHead == NULL)
-		return -ENODEV;
-
-	if (key == "ptz.cmd.pan_left") {
-		commandUpdate(PtzControlInterface::C_PAN_LEFT, value.toFloat(), 0);
-		defaultPTHead->panLeft(value.toFloat());
-	} else if (key == "ptz.cmd.pan_right") {
-		commandUpdate(PtzControlInterface::C_PAN_RIGHT, value.toFloat(), 0);
-		defaultPTHead->panRight(value.toFloat());
-	} else if (key == "ptz.cmd.tilt_down") {
-		commandUpdate(PtzControlInterface::C_TILT_DOWN, value.toFloat(), 0);
-		defaultPTHead->tiltDown(value.toFloat());
-	} else if (key == "ptz.cmd.tilt_up") {
-		commandUpdate(PtzControlInterface::C_TILT_UP, value.toFloat(), 0);
-		defaultPTHead->tiltUp(value.toFloat());
-	} else if (key == "ptz.cmd.pan_stop") {
-		commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, value.toInt(), 0);
-		defaultPTHead->panTiltAbs(0, 0);
-	} else if (key == "ptz.cmd.pan_tilt_abs") {
-		const QStringList &vals = value.toString().split(";");
-		if (vals.size() < 2)
-			return -EINVAL;
-		float pan = vals[0].toFloat();
-		float tilt = vals[1].toFloat();
-		defaultPTHead->panTiltAbs(pan, tilt);
-	} else if (key == "ptz.cmd.zoom_in") {
-		commandUpdate(PtzControlInterface::C_ZOOM_IN, value.toFloat(), 0);
-		defaultModuleHead->startZoomIn(value.toInt());
-	} else if (key == "ptz.cmd.zoom_out") {
-		commandUpdate(PtzControlInterface::C_ZOOM_OUT, value.toFloat(), 0);
-		defaultModuleHead->startZoomOut(value.toInt());
-	} else if (key == "ptz.cmd.zoom_stop") {
-		commandUpdate(PtzControlInterface::C_ZOOM_STOP, value.toFloat(), 0);
-		defaultModuleHead->stopZoom();
-	} else if (key == "pattern_start")
-		ptrn->start(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-					defaultModuleHead->getZoom());
-	else if (key == "pattern_stop")
-		ptrn->stop(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
-				   defaultModuleHead->getZoom());
-	else if (key == "pattern_save")
-		ptrn->save(value.toString());
-	else if (key == "pattern_load")
-		ptrn->load(value.toString());
-	else if (key == "pattern_replay")
-		ptrn->replay();
-	else if (key == "pattern_delete")
-		ptrn->deletePattern(value.toString());
-	else if (key == "preset_save")
-		prst->addPreset(value.toString(), defaultPTHead->getPanAngle(),
-						defaultPTHead->getTiltAngle(),
-						defaultModuleHead->getZoom());
-	else if (key == "preset_delete")
-		prst->deletePreset(value.toString());
-	else if (key == "preset_goto") {
-		QStringList pos = prst->getPreset(value.toString());
-		if (!pos.isEmpty())
-			goToPosition(pos.at(0).toFloat(), pos.at(1).toFloat(),
-						 pos.at(2).toInt());
-		else
-			return -EINVAL;
-	} else if (key == "patrol_list") { // kerim@p1,p2,p3
-		QString presets = value.toString();
-		if (presets.contains("@")) {
-			QString name = presets.split("@").first().remove(" ");
-			presets.remove(QString("%1@").arg(name));
-			if (presets.contains(","))
-				ptrl->addPatrol(name, presets.split(","));
-		}
-	} else if (key == "patrol_interval") {
-		QString intervals = value.toString();
-		if (intervals.contains("@")) {
-			QString name = intervals.split("@").first().remove(" ");
-			intervals.remove(QString("%1@").arg(name));
-			if (intervals.contains(","))
-				ptrl->addInterval(name, intervals.split(","));
-		}
-	} else if (key == "patrol_delete") {
-		ptrl->deletePatrol(value.toString());
-	} else if (key == "patrol_state_run") {
-		ptrl->setPatrolStateRun(value.toString());
-	} else if (key == "patrol_state_stop") {
-		ptrl->setPatrolStateStop(value.toString());
-	} else
-		return -ENOENT;
-
 	return 0;
 }
 
@@ -429,7 +270,6 @@ void PtzpDriver::removeStartupProcess()
 	d.remove("startup_process.json");
 }
 
-#ifdef HAVE_PTZP_GRPC_API
 grpc::Status PtzpDriver::GetHeads(grpc::ServerContext *context,
 								  const google::protobuf::Empty *request,
 								  ptzp::PtzHeadInfo *response)
@@ -1244,7 +1084,6 @@ QByteArray PtzpDriver::mapToJson(const QVariantMap &map)
 {
 	return QJsonDocument::fromVariant(map).toJson();
 }
-#endif
 
 void PtzpDriver::timeout()
 {

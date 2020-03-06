@@ -1,7 +1,7 @@
 #ifndef HTRSWIRMODULEHEAD_H
 #define HTRSWIRMODULEHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include <QElapsedTimer>
 #include <QStringList>

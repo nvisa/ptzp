@@ -1,8 +1,8 @@
 #ifndef TBGTHDRIVER_H
 #define TBGTHDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
-#include <ecl/ptzp/ptzptcptransport.h>
+#include <ptzpdriver.h>
+#include <ptzptcptransport.h>
 
 class YamanoLensHead;
 class EvpuPTHead;
@@ -18,8 +18,6 @@ public:
 
 	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
-	QVariant get(const QString &key);
-	int set(const QString &key, const QVariant &value);
 
 	QByteArray sendFilter(const char *bytes, int len);
 	int readFilter(QAbstractSocket *sock, QByteArray &ba);

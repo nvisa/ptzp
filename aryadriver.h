@@ -1,7 +1,7 @@
 #ifndef ARYADRIVER_H
 #define ARYADRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
+#include <ptzpdriver.h>
 #include <QElapsedTimer>
 
 class AryaPTHead;

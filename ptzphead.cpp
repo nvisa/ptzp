@@ -556,7 +556,6 @@ std::vector<float> PtzpHead::RangeMapper::map(int value)
 	return m;
 }
 
-#ifdef HAVE_PTZP_GRPC_API
 QVariantMap PtzpHead::getSettings()
 {
 	QVariantMap map;
@@ -576,4 +575,3 @@ void PtzpHead::setSettings(QVariantMap keyMap)
 			setProperty(key, keyMap[key]);
 	}
 }
-#endif

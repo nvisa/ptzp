@@ -1,7 +1,7 @@
 #ifndef HTRSWIRPTHEAD_H
 #define HTRSWIRPTHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include "QStringList"
 

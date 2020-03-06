@@ -7,9 +7,9 @@
 #include <QDataStream>
 #include <QElapsedTimer>
 
-#include <ecl/debug.h>
-#include <ecl/interfaces/ptzcontrolinterface.h>
-#include <ecl/interfaces/ptzpatterninterface.h>
+#include <debug.h>
+#include <ptzcontrolinterface.h>
+#include <ptzpatterninterface.h>
 
 class PatternNg: QObject
 {

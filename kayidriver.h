@@ -1,7 +1,7 @@
 #ifndef KAYIDRIVER_H
 #define KAYIDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
+#include <ptzpdriver.h>
 
 class MgeoFalconEyeHead;
 class AryaPTHead;

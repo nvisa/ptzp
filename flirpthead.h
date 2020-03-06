@@ -4,7 +4,7 @@
 #include <QTimer>
 #include <QStringList>
 
-#include "ecl/ptzp/ptzphead.h"
+#include "ptzphead.h"
 
 class FlirPTHead : public PtzpHead
 {

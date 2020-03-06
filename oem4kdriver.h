@@ -1,9 +1,9 @@
 #ifndef OEM4KDRIVER_H
 #define OEM4KDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
-#include <ecl/ptzp/ptzphttptransport.h>
-#include <ecl/ptzp/ptzptcptransport.h>
+#include <ptzpdriver.h>
+#include <ptzphttptransport.h>
+#include <ptzptcptransport.h>
 
 class Oem4kDriver : public PtzpDriver
 {

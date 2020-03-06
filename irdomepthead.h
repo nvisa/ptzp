@@ -1,7 +1,7 @@
 #ifndef IRDOMEPTHEAD_H
 #define IRDOMEPTHEAD_H
 
-#include <ecl/ptzp/ptzphead.h>
+#include <ptzphead.h>
 
 #include <QElapsedTimer>
 

@@ -1,8 +1,8 @@
 #ifndef HTRSWIRDRIVER_H
 #define HTRSWIRDRIVER_H
 
-#include <ecl/ptzp/ptzpdriver.h>
-#include <ecl/ptzp/ptzptcptransport.h>
+#include <ptzpdriver.h>
+#include <ptzptcptransport.h>
 
 class HtrSwirPtHead;
 class HtrSwirModuleHead;
