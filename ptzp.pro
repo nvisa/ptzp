@@ -1,6 +1,7 @@
 QT -= gui
 QT += network
 
+DEFINES += DEBUG INFO LOG LOGV DEBUG_TIMING
 TARGET = ptzp
 TEMPLATE = lib
 CONFIG += c++11 staticlib
@@ -53,7 +54,6 @@ SOURCES += \
         i2cdevice.cpp \
         htrswirpthead.cpp \
         moxacontrolhead.cpp \
-        hitachimodule110.cpp \
         irdomedriver.cpp \
         flirmodulehead.cpp \
         hitachimodule.cpp \
@@ -64,7 +64,6 @@ SOURCES += \
         htrswirdriver.cpp \
         ptzptransport.cpp \
         irdomepthead.cpp \
-        hitachimodule120.cpp \
         mgeofalconeyehead.cpp
 
 HEADERS += \
@@ -106,7 +105,6 @@ HEADERS += \
         networkcommon.h \
         networkmanagementinterface.h \
         irdomepthead.h \
-        hitachimodule120.h \
         virtualptzpdriver.h \
         keyvalueinterface.h \
         flirpttcphead.h \
@@ -130,7 +128,6 @@ HEADERS += \
         yamgozdriver.h \
         systemtimeinterface.h \
         hitachimodule.h \
-        hitachimodule110.h \
         gpiocontroller.h \
         tbgthdriver.h 
 
