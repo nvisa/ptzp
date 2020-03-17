@@ -226,6 +226,7 @@ OemModuleHead::OemModuleHead()
 	syncInterval = 40;
 	syncTime.start();
 	registersCache[R_IRCF_STATUS] = 0;
+	zoomTrig = false;
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
 		{"gain_value", {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
@@ -327,6 +328,7 @@ int OemModuleHead::getHeadStatus()
 int OemModuleHead::startZoomIn(int speed)
 {
 	zoomSpeed = speed;
+	zoomTrig = true;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_IN];
 	p[4 + 2] = 0x20 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -335,6 +337,7 @@ int OemModuleHead::startZoomIn(int speed)
 int OemModuleHead::startZoomOut(int speed)
 {
 	zoomSpeed = speed;
+	zoomTrig = true;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_OUT];
 	p[4 + 2] = 0x30 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -342,6 +345,7 @@ int OemModuleHead::startZoomOut(int speed)
 
 int OemModuleHead::stopZoom()
 {
+	zoomTrig = false;
 	const unsigned char *p = protoBytes[C_VISCA_ZOOM_STOP];
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -646,7 +650,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray OemModuleHead::transportReady()
 {
-	if (syncEnabled && syncTime.elapsed() > syncInterval) {
+	if (syncEnabled && syncTime.elapsed() > syncInterval && zoomTrig) {
 		mLogv("Syncing zoom positon");
 		syncTime.restart();
 		/* [CR] [yca] ooops, static degisken :( */

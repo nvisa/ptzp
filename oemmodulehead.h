@@ -92,6 +92,7 @@ protected:
 	void unmarshallloadAllRegisters(const QJsonValue &node);
 	int addSpecialModulSettings();
 
+	bool zoomTrig;
 	bool syncEnabled;
 	int syncInterval;
 	CommandHistory *hist;
