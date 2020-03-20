@@ -136,6 +136,18 @@ GpioController::Direction GpioController::getDirection(int gpio)
 	return requested[gpio]->d;
 }
 
+int GpioController::setActiveLow(int gpio)
+{
+	QFile f(QString("/sys/class/gpio/gpio%1/direction").arg(gpio));
+	if (!f.open(QIODevice::WriteOnly))
+		return -EPERM;
+
+	f.write("1\n");
+	f.close();
+	return 0;
+
+}
+
 int GpioController::exportGpio(int gpio)
 {
 	QFile f("/sys/class/gpio/export");

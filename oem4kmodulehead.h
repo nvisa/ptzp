@@ -2,6 +2,7 @@
 #define OEM4KMODULEHEAD_H
 
 #include <ptzphead.h>
+#include <ptzpserialtransport.h>
 
 class Oem4kModuleHead : public PtzpHead
 {
@@ -15,6 +16,7 @@ public:
 		R_HUE,
 		R_SATURATION,
 		R_SHARPNESS,
+		R_CAMMODE
 	};
 
 	void fillCapabilities(ptzp::PtzHead *head);
@@ -33,13 +35,20 @@ public:
 	int syncRegisters();
 	virtual int getHeadStatus();
 
+
 protected:
 	int sendCommand(const QString &key);
 	QByteArray transportReady();
 	int dataReady(const unsigned char *bytes, int len);
 private:
+	QHash <QString, int> camModes;
+	PtzpSerialTransport *tpIRC;
+	bool switchCmd;
+	void manageIRC();
+
 	QStringList commandList;
 	int nextSync;
+
 	uint mapZoom(uint x);
 };
 
