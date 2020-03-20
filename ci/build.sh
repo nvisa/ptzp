@@ -107,5 +107,5 @@ mkdir -p build/ptzp
 cd build/ptzp
 qmake ../../
 make -j4
-
 }
+choose_device
