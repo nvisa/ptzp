@@ -75,7 +75,7 @@ apt update
 apt install -y qt5-default make g++ wget
 
 wget https://gitlab.com/ozogulf/ci-files/raw/master/x86_64/grpc_x86_64_16_04.tar.gz
-tar xf grpc_TX1.tar.gz -C /usr/local
+tar xf grpc_x86_64_16_04.tar.gz -C /usr/local
 
 ldconfig
 
@@ -92,7 +92,7 @@ apt update
 apt install -y qt5-default make g++ wget
 
 wget https://gitlab.com/ozogulf/ci-files/raw/master/x86_64/grpc_x86_64_16_04.tar.gz
-tar xf grpc_TX1.tar.gz -C /usr/local
+tar xf grpc_x86_64_16_04.tar.gz -C /usr/local
 
 ldconfig
 
