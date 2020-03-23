@@ -36,7 +36,6 @@ SOURCES += \
         patrolng.cpp \
         ptzphttptransport.cpp \
         virtualptzpdriver.cpp \
-        viscamodule.cpp \
         oem4kdriver.cpp \
         patternng.cpp \
         evpupthead.cpp \
@@ -120,7 +119,6 @@ HEADERS += \
         multicastsocket.h \
         evpupthead.h \
         presetng.h \
-        viscamodule.h \
         htrswirpthead.h \
         mgeothermalhead.h \
         ioerrors.h \
@@ -131,6 +129,15 @@ HEADERS += \
         gpiocontroller.h \
         tbgthdriver.h 
 
+deprecated {
+    HEADERS += \
+        viscamodule.h \
+
+    SOURCES += \
+        viscamodule.cpp \
+
+
+}
 #Add make targets for checking version info
 VersionCheck.commands = @$$PWD/checkversion.sh $$PWD
 QMAKE_EXTRA_TARGETS += VersionCheck
