@@ -97,6 +97,7 @@ protected:
 	int syncInterval;
 	CommandHistory *hist;
 	uint nextSync;
+	uint queryIndex;
 	QElapsedTimer syncTime;
 	QString deviceDefinition;
 	/* TODO: investigate zoomSpeed and move to PtzpHead if possible */

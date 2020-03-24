@@ -228,6 +228,7 @@ OemModuleHead::OemModuleHead()
 	registersCache[R_IRCF_STATUS] = 0;
 	registersCache[R_ZOOM_POS] = 0;
 	zoomTrig = false;
+	queryIndex = 0;
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
 		{"gain_value", {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
@@ -699,11 +700,9 @@ QByteArray OemModuleHead::transportReady()
 	if (syncEnabled && syncTime.elapsed() > syncInterval && zoomTrig) {
 		mLogv("Syncing zoom positon");
 		syncTime.restart();
-		/* [CR] [yca] ooops, static degisken :( */
-		static uint ind = 0;
-		Commands q = queryPatternList[ind++];
-		if (ind >= sizeof(queryPatternList) / sizeof(queryPatternList[0]))
-			ind = 0;
+		Commands q = queryPatternList[queryIndex++];
+		if (queryIndex >= sizeof(queryPatternList) / sizeof(queryPatternList[0]))
+			queryIndex = 0;
 		const unsigned char *p = protoBytes[q];
 		hist->add(q);
 		return QByteArray((const char *)p + 2, p[0]);
