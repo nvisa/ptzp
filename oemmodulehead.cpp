@@ -262,7 +262,6 @@ OemModuleHead::OemModuleHead()
 
 int OemModuleHead::addSpecialModulSettings()
 {
-#ifdef HAVE_PTZP_GRPC_API
 	int module = getRegister(R_VISCA_MODUL_ID);
 	if (module == SONY_FCB_CV7500) {
 		settings.insert("exp_comp_mode", {C_VISCA_SET_EXP_COMPMODE, R_EXP_COMPMODE});
@@ -281,13 +280,11 @@ int OemModuleHead::addSpecialModulSettings()
 	if (module == POWERVIEW_36X) {
 		settings.remove("defog_mode");
 	}
-#endif
 	return 0;
 }
 
 int OemModuleHead::addCustomSettings()
 {
-#ifdef HAVE_PTZP_GRPC_API
 	settings.clear();
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -307,9 +304,6 @@ int OemModuleHead::addCustomSettings()
 		{"cam_model", {-1, R_VISCA_MODUL_ID}}
 	};
 	return settings.size();
-#else
-	return 0;
-#endif
 }
 
 void OemModuleHead::fillCapabilities(ptzp::PtzHead *head)
