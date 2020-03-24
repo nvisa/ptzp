@@ -219,7 +219,6 @@ protected:
 
 OemModuleHead::OemModuleHead()
 {
-	oldZoomValue = 0;
 	/* [CR] [yca] Memory leak... */
 	hist = new CommandHistory;
 	nextSync = C_COUNT;
@@ -227,6 +226,7 @@ OemModuleHead::OemModuleHead()
 	syncInterval = 40;
 	syncTime.start();
 	registersCache[R_IRCF_STATUS] = 0;
+	registersCache[R_ZOOM_POS] = 0;
 	zoomTrig = false;
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -625,14 +625,15 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 			return expected;
 		}
 
-		if (regValue * 1.1 < value || value < regValue * 0.9) {
-			if (oldZoomValue * 1.1 < value || value < oldZoomValue * 0.9) {
+		int oldZoomValue = registersCache[R_ZOOM_POS];
+		registersCache[R_ZOOM_POS] = value;
+		if (oldZoomValue * 1.1 < value || value < oldZoomValue * 0.9) {
+			if (regValue * 1.1 < value || value < regValue * 0.9) {
 				oldZoomValue = value;
 				mInfo("Zoom response err: value peak [%d]", value);
 				return expected;
 			}
 		}
-		oldZoomValue = value;
 
 		mLogv("Zoom Position synced");
 		setRegister(R_ZOOM_POS, value);

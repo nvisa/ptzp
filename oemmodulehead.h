@@ -101,7 +101,6 @@ protected:
 	QString deviceDefinition;
 	/* TODO: investigate zoomSpeed and move to PtzpHead if possible */
 	int zoomSpeed;
-	int oldZoomValue;
 
 	QHash<uint, uint> registersCache;
 };
