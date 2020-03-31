@@ -10,6 +10,20 @@
 #include <QTimer>
 #include <errno.h>
 
+static QHash<QString, QString> parseTargetFlags(const QString &target)
+{
+	QStringList list = target.split("?");
+	QHash<QString, QString> targetFlags;
+	for (int i = 0; i < list.size(); i++) {
+		if (list[i].contains("="))
+			targetFlags.insert(list[i].split("=")[0],
+					list[i].split("=")[1]);
+		else
+			targetFlags.insert(list[i], "");
+	}
+	return targetFlags;
+}
+
 IRDomeDriver::IRDomeDriver(QObject *parent) : PtzpDriver(parent)
 {
 	defaultPTHead = NULL;
@@ -80,6 +94,9 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 			tp1 = new PtzpSerialTransport();
 			headDome->setTransport(tp1);
 			headDome->enableSyncing(true);
+			QHash<QString, QString> domeTargetFlags = parseTargetFlags(fields[1]);
+			if (domeTargetFlags.contains("variant") && domeTargetFlags["variant"] == "absgs")
+				headDome->setDeviceVariant(IRDomePTHead::ABSGS_DOME);
 
 			defaultPTHead = headDome;
 			if (tp1->connectTo(fields[1]))
@@ -97,15 +114,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 	}
 
 	/* parse zoom control flags for oemmodule */
-	QStringList oemTarget = fields[0].split("?");
-	QHash<QString, QString> oemTargetFlags;
-	for (int i = 0; i < oemTarget.size(); i++) {
-		if (oemTarget[i].contains("="))
-			oemTargetFlags.insert(oemTarget[i].split("=")[0],
-					oemTarget[i].split("=")[1]);
-		else
-			oemTargetFlags.insert(oemTarget[i], "");
-	}
+	QHash<QString, QString> oemTargetFlags = parseTargetFlags(fields[0]);
 	if (oemTargetFlags.contains("controls")) {
 		int cflags = oemTargetFlags["controls"].toInt(nullptr, 0);
 		if (cflags & 0x01)
@@ -248,6 +257,12 @@ void IRDomeDriver::autoIRcontrol()
 	if (headModule->getProperty(OemModuleHead::R_IRCF_STATUS)) {
 		ledLevel = headModule->getZoomRatio() / 5 + 2;
 		if (ledLevel > 7)
+			ledLevel = 7;
+	}
+	if (headDome->getDeviceVariant() == IRDomePTHead::ABSGS_DOME) {
+		if (ledLevel == 4)
+			ledLevel = 5;
+		else if (ledLevel == 6)
 			ledLevel = 7;
 	}
 	if (ledLevel != headDome->getIRLed())
