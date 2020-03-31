@@ -1,6 +1,7 @@
 #include "oem4kmodulehead.h"
 
 #include <ptzptransport.h>
+#include <gpiocontroller.h>
 #include "debug.h"
 
 enum CommandsList {
@@ -19,6 +20,9 @@ enum CommandsList {
 	C_SET_FOCUS_OUT,
 	C_SET_FOCUS_STOP,
 
+	C_SET_CAMMODE,
+
+	C_GET_CAMMODE,
 	C_GET_BRIGHTNESS,
 	C_GET_CONTRAST,
 	C_GET_HUE,
@@ -26,6 +30,7 @@ enum CommandsList {
 	C_GET_SHARPNESS,
 	C_GET_ZOOM,
 	C_COUNT
+
 };
 
 static QStringList createCommandList()
@@ -45,6 +50,9 @@ static QStringList createCommandList()
 	cmdList << QString("/cgi-bin/ptz.cgi?action=start&channel=0&code=FocusFar&arg1=1&arg2=1&arg3=0&arg4=0");
 	cmdList << QString("/cgi-bin/ptz.cgi?action=stop&channel=0&code=FocusFar&arg1=1&arg2=1&arg3=0&arg4=0");
 
+	cmdList << QString("/cgi-bin/configManager.cgi?action=setConfig&VideoInDayNight[0][0].Mode=%1");
+
+	cmdList << QString("/cgi-bin/configManager.cgi?action=getConfig&name=VideoInDayNight[0][0].Mode");
 	cmdList << QString("/cgi-bin/configManager.cgi?action=getConfig&name=VideoColor[0][0].Brightness");
 	cmdList << QString("/cgi-bin/configManager.cgi?action=getConfig&name=VideoColor[0][0].Contrast");
 	cmdList << QString("/cgi-bin/configManager.cgi?action=getConfig&name=VideoColor[0][0].Hue");
@@ -64,9 +72,22 @@ Oem4kModuleHead::Oem4kModuleHead()
 		{"saturation", {C_SET_SATURATION,R_SATURATION}},
 		{"sharpness", {C_SET_SHARPNESS,R_SHARPNESS}},
 		{"zoom_pos_level", {C_SET_ZOOM,R_ZOOM}},
-		{"focus", {NULL, NULL}}
+		{"focus", {NULL, NULL}},
+		{"choose_cam", {C_SET_CAMMODE, R_CAMMODE}}
 	};
+
+	camModes = {
+		{ "Brightness", 0 }, //auto
+		{ "Color", 1 },		 //day
+		{ "BlackWhite", 2 }, //night
+	};
+
 	nextSync = 0;
+
+	switchCmd = false;
+	tpIRC = new PtzpSerialTransport();
+	tpIRC->setMaxBufferLength(20);
+	tpIRC->connectTo("ttyUSB0?baud=115200");
 }
 
 void Oem4kModuleHead::fillCapabilities(ptzp::PtzHead *head)
@@ -87,7 +108,6 @@ void Oem4kModuleHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW);
-	//head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW);
 }
 
 int Oem4kModuleHead::focusIn(int speed)
@@ -145,6 +165,11 @@ int Oem4kModuleHead::setZoom(uint pos)
 
 void Oem4kModuleHead::setProperty(uint r, uint x)
 {
+	if(r == C_SET_CAMMODE) {
+		setRegister(R_CAMMODE, x);
+		sendCommand(commandList.at(C_SET_CAMMODE).arg(camModes.key(x)));
+	}
+
 	if(r == C_SET_ZOOM)
 		setRegister(R_ZOOM, x);
 	if(r == C_SET_BRIGHTNESS)
@@ -169,7 +194,7 @@ int Oem4kModuleHead::syncRegisters()
 {
 	if (!transport)
 		return -ENOENT;
-	nextSync = C_SET_FOCUS_STOP;
+	nextSync = C_GET_CAMMODE;
 	return 0;
 }
 
@@ -187,15 +212,19 @@ int Oem4kModuleHead::sendCommand(const QString &key)
 
 QByteArray Oem4kModuleHead::transportReady()
 {
-	if (nextSync != C_COUNT) {
-		/* we are in sync mode, let's sync next */
-		if (++nextSync == C_COUNT) {
+	QByteArray ba;
+	if(nextSync != C_COUNT) {
+		ba = commandList.at(nextSync).toUtf8();
+		if(++nextSync == C_COUNT)
 			ffDebug() << "Oem4k register syncing completed, activating auto-sync";
-		} else
-			return commandList.at(nextSync).toUtf8();
+		return ba;
 	}
 
-	return commandList.at(C_GET_ZOOM).toUtf8();
+	switchCmd = !switchCmd;
+	if(switchCmd)
+		return commandList.at(C_GET_CAMMODE).toUtf8();
+	else
+		return commandList.at(C_GET_ZOOM).toUtf8();
 }
 
 int Oem4kModuleHead::dataReady(const unsigned char *bytes, int len)
@@ -210,10 +239,13 @@ int Oem4kModuleHead::dataReady(const unsigned char *bytes, int len)
 		QString key = line.split("=").first();
 		if(key == "ZoomValue")
 			setRegister(R_ZOOM, mapZoom(line.split("=").last().toInt()));
+		else if(key == "Mode")
+			setRegister(R_CAMMODE, camModes.value(line.split("=").last()));
 		else if(settings.contains(key.toLower()))
 			setRegister(settings[key.toLower()].second, line.split("=").last().toInt());
 	}
 
+	manageIRC();
 	return len;
 }
 
@@ -221,4 +253,42 @@ uint Oem4kModuleHead::mapZoom(uint x)
 {
 	uint z = (x - 10) * 6.4;
 	return z > 128 ? 128 : z;
+}
+
+static unsigned char ircInit[20] = {
+	0x3a, 0xff, 0xb1, 0x00, 0xa3, 0x00, 0x09, 0x5e,
+	0x1e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x5c
+};
+
+void Oem4kModuleHead::manageIRC()
+{
+	unsigned char pb[20];
+	memcpy((void *) pb, (void *) ircInit, sizeof(ircInit));
+
+	int zoomlvl = getRegister(R_ZOOM) / 43;
+
+	if(getRegister(R_CAMMODE) != camModes.value("BlackWhite")) {
+		zoomlvl = -1;
+	}
+
+	switch(zoomlvl){
+	case 2:
+		pb[11] = 0xff;
+	case 1:
+		pb[10] = 0xff;
+	case 0:
+		pb[9] = 0xff;
+		break;
+	default:
+		break;
+	}
+
+	int chksum = 0;
+	for(size_t i = 1; i < 17; i++) {
+		chksum += pb[i];
+	}
+	pb[18] = chksum;
+
+	tpIRC->send((const char*) pb, 20);
 }

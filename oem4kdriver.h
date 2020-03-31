@@ -4,6 +4,7 @@
 #include <ptzpdriver.h>
 #include <ptzphttptransport.h>
 #include <ptzptcptransport.h>
+#include <gpiocontroller.h>
 
 class Oem4kDriver : public PtzpDriver
 {
@@ -28,6 +29,7 @@ protected:
 	PtzpHead *headModule;
 	PtzpHttpTransport *httpTransportModule;
 	QNetworkRequest req;
+	int gpioPin;
 };
 
 #endif // OEM4KDRIVER_H

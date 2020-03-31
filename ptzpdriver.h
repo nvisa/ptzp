@@ -70,6 +70,7 @@ public:
 	void setChangeOverlayState(bool state);
 	bool getChangeOverlayState();
 	virtual bool isReady();
+	GpioController *getGpioCont() { return gpiocont; }
 
 public:
 	static QStringList commaToList(const QString &comma);

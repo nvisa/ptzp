@@ -29,6 +29,7 @@ public:
 	int clearGpio(int gpio);
 	int getGpioValue(int gpio);
 	Direction getDirection(int gpio);
+	int setActiveLow(int gpio);
 
 protected:
 	int exportGpio(int gpio);
