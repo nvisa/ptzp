@@ -96,6 +96,30 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 		}
 	}
 
+	/* parse zoom control flags for oemmodule */
+	QStringList oemTarget = fields[0].split("?");
+	QHash<QString, QString> oemTargetFlags;
+	for (int i = 0; i < oemTarget.size(); i++) {
+		if (oemTarget[i].contains("="))
+			oemTargetFlags.insert(oemTarget[i].split("=")[0],
+					oemTarget[i].split("=")[1]);
+		else
+			oemTargetFlags.insert(oemTarget[i], "");
+	}
+	if (oemTargetFlags.contains("controls")) {
+		int cflags = oemTargetFlags["controls"].toInt(nullptr, 0);
+		if (cflags & 0x01)
+			headModule->enableZoomControlFiltering(true);
+		if (cflags & 0x02)
+			headModule->enableZoomControlTriggerredRead(true);
+		if (cflags & 0x04)
+			headModule->enableZoomControlStationaryFiltering(true);
+		if (cflags & 0x08)
+			headModule->enableZoomControlErrorRateChecking(true);
+		if (cflags & 0x10)
+			headModule->enableZoomControlReadLatencyChecking(true);
+	}
+
 	QStringList zoomRatios;
 	QString zrfname = "/etc/smartstreamer/ZoomRatios_value.txt";
 	if (ptSupport)
