@@ -595,7 +595,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		return 3;
 	} else if ((p[1] & 0x60) == 0x60) {
 		// Visca error messages
-		QByteArray ba = "Unknow";
+		QByteArray ba = "Unknown";
 		int errlen = 0;
 		if (p[1] == 0x60 && p[2] == 0xff) {
 			if (p[2] == 0x02)
