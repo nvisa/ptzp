@@ -738,11 +738,15 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		mInfo("Program AE Mode synced");
 		setRegister(R_PROGRAM_AE_MODE, p[2]);
 	} else if (sendcmd == C_VISCA_GET_ZOOM) {
-		if (p[1] != 0x50 || 0 != (p[2] & p[3] & p[4] & p[2] & 0xF0)) {
+		if (p[1] != 0x50) {
 			mInfo("Zoom response err: wrong mesg[%s]",
 				  QByteArray((char *)p, len).toHex().data());
 			return expected;
 		}
+
+		/* check first byte error on zoom response */
+		if ((p[2] | p[3] | p[4] | p[5]) & 0xF0)
+			return expected;
 
 		uint regValue = getRegister(R_ZOOM_POS);
 		uint value = ((p[2] & 0x0F) << 12) | ((p[3] & 0x0F) << 8) |
