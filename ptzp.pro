@@ -63,7 +63,8 @@ SOURCES += \
         htrswirdriver.cpp \
         ptzptransport.cpp \
         irdomepthead.cpp \
-        mgeofalconeyehead.cpp
+        mgeofalconeyehead.cpp \
+        simplemetrics.cpp \
 
 HEADERS += \
         i2cdevice.h \
@@ -127,7 +128,13 @@ HEADERS += \
         systemtimeinterface.h \
         hitachimodule.h \
         gpiocontroller.h \
-        tbgthdriver.h 
+        tbgthdriver.h \ 
+        simplemetrics.h \
+
+contains(QT, websockets) {
+    SOURCES += networksource.cpp
+    HEADERS += networksource.h
+}
 
 deprecated {
     HEADERS += \
