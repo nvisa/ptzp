@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "ioerrors.h"
 #include "ptzptransport.h"
+#include "simplemetrics.h"
 
 #include <QFile>
 #include <QJsonArray>
@@ -390,6 +391,10 @@ OemModuleHead::OemModuleHead()
 		{"cam_model", {-1, R_VISCA_MODUL_ID}}
 	};
 	setRegister(R_VISCA_MODUL_ID, 0);
+	auto &m = SimpleMetrics::Metrics::instance();
+	mp = m.addPoint("oemmodule");
+	serialRecved = mp->addIntegerChannel();
+	zoomRecved = mp->addIntegerChannel();
 }
 
 int OemModuleHead::addSpecialModulSettings()
@@ -663,6 +668,8 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 			syncNext();
 	}
 
+	serialRecved->push(sendcmd);
+
 	if (sendcmd == C_VISCA_GET_EXPOSURE) {
 		uint exVal = ((p[4] << 4) | p[5]);
 		if (exVal == 0) // Açıklama için setProperty'de exposure kısmına bakın!
@@ -773,6 +780,7 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		if (zoomControls.stationaryFiltering && !zoomControls.sfilter->check(value))
 			return expected;
 
+		zoomRecved->push((int)value);
 		mLogv("Zoom Position synced");
 		setRegister(R_ZOOM_POS, value);
 		if (zoomControls.errorRateCheck) {

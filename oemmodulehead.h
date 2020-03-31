@@ -11,6 +11,11 @@ class ErrorRateChecker;
 class SimpleStatistics;
 class StationaryFilter;
 
+namespace SimpleMetrics {
+class Point;
+class Channel;
+}
+
 class OemModuleHead : public PtzpHead
 {
 public:
@@ -124,6 +129,9 @@ protected:
 	int zoomSpeed;
 
 	QHash<uint, uint> registersCache;
+	SimpleMetrics::Point *mp;
+	SimpleMetrics::Channel *serialRecved;
+	SimpleMetrics::Channel *zoomRecved;
 };
 
 #endif // OEMMODULEHEAD_H
