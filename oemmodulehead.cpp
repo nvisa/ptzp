@@ -108,6 +108,133 @@ const Commands queryPatternList[] = {
 	C_VISCA_GET_IRCF_STATUS,
 };
 
+class SimpleStatistics
+{
+public:
+	SimpleStatistics()
+	{
+		reset();
+	}
+
+	void reset()
+	{
+		total = 0;
+		min = INT_MAX;
+		max = 0;
+		count = 0;
+	}
+
+	void add()
+	{
+		if (count == -1) {
+			t.start();
+			count = 0;
+			return;
+		}
+		count++;
+		int value = t.restart();
+		total += value;
+		if (value < min)
+			min = value;
+		if (value > max)
+			max = value;
+		if (count == 100) {
+			reset();
+			count = 100;
+		}
+		fDebug("samples=%d min=%d max=%d avg=%lf", count, min, max, double(total) / count);
+	}
+
+protected:
+	qint64 total;
+	int min;
+	int max;
+	int count;
+	QElapsedTimer t;
+};
+
+class StationaryFilter
+{
+public:
+	StationaryFilter()
+	{
+
+	}
+
+	bool check(int value)
+	{
+		cache << value;
+		if (cache.size() > 10)
+			cache.removeFirst();
+		bool allSame = true;
+		for (int i = 1; i < cache.size(); i++) {
+			if (cache[i] != cache[i - 1]) {
+				allSame = false;
+				break;
+			}
+		}
+		if (!allSame) {
+			cache.clear();
+			return false;
+		}
+		return true;
+	}
+protected:
+	QList<int> cache;
+};
+
+class ErrorRateChecker
+{
+public:
+	ErrorRateChecker()
+	{
+
+	}
+
+	float add(int value)
+	{
+		int target = updateCache(value);
+		auto s = stats[target];
+		s.count++;
+		if (value != target)
+			s.wrong++;
+		stats[target] = s;
+		if (value == target)
+			return s.wrong * 1.0 / s.count;
+		return 0;
+	}
+
+protected:
+	struct Stats {
+		int count;
+		int wrong;
+	};
+
+	int updateCache(int value)
+	{
+		cache << value;
+		if (cache.size() > 10)
+			cache.removeFirst();
+		/* find max entry */
+		QHash<int, int> counts;
+		foreach (int v, cache)
+			counts[v]++;
+		QHashIterator<int, int> hi(counts);
+		int max = 0, maxv = 0;
+		while (hi.hasNext()) {
+			hi.next();
+			if (hi.value() > max) {
+				max = hi.value();
+				maxv = hi.key();
+			}
+		}
+		return maxv;
+	}
+
+	QList<int> cache;
+	QHash<int, Stats> stats;
+};
+
 static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	/* visca commands */
 	{0x09, 0x00, 0x81, 0x01, 0x04, 0x4b, 0x00, 0x00, 0x00, 0x0f,
@@ -227,7 +354,12 @@ OemModuleHead::OemModuleHead()
 	syncTime.start();
 	registersCache[R_IRCF_STATUS] = 0;
 	registersCache[R_ZOOM_POS] = 0;
-	zoomTrig = false;
+	zoomControls.zoomed = false;
+	zoomControls.zoomFiltering = false;
+	zoomControls.tiggerredRead = false;
+	zoomControls.stationaryFiltering = false;
+	zoomControls.errorRateCheck = false;
+	zoomControls.readLatencyCheck = false;
 	queryIndex = 0;
 	settings = {
 		{"exposure_value", {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
@@ -335,7 +467,7 @@ int OemModuleHead::getHeadStatus()
 int OemModuleHead::startZoomIn(int speed)
 {
 	zoomSpeed = speed;
-	zoomTrig = true;
+	zoomControls.zoomed = true;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_IN];
 	p[4 + 2] = 0x20 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -344,7 +476,7 @@ int OemModuleHead::startZoomIn(int speed)
 int OemModuleHead::startZoomOut(int speed)
 {
 	zoomSpeed = speed;
-	zoomTrig = true;
+	zoomControls.zoomed = true;
 	unsigned char *p = protoBytes[C_VISCA_ZOOM_OUT];
 	p[4 + 2] = 0x30 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -352,7 +484,7 @@ int OemModuleHead::startZoomOut(int speed)
 
 int OemModuleHead::stopZoom()
 {
-	zoomTrig = false;
+	zoomControls.zoomed = false;
 	const unsigned char *p = protoBytes[C_VISCA_ZOOM_STOP];
 	return transport->send((const char *)p + 2, p[0]);
 }
@@ -615,23 +747,38 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		uint regValue = getRegister(R_ZOOM_POS);
 		uint value = ((p[2] & 0x0F) << 12) | ((p[3] & 0x0F) << 8) |
 					 ((p[4] & 0x0F) << 4) | ((p[5] & 0x0F) << 0);
+
+		/* check maximum limit value */
 		if (value > 0x7AC0) {
 			mInfo("Zoom response err: big value [%d]", value);
 			return expected;
 		}
 
-		int oldZoomValue = registersCache[R_ZOOM_POS];
-		registersCache[R_ZOOM_POS] = value;
-		if (oldZoomValue * 1.1 < value || value < oldZoomValue * 0.9) {
-			if (regValue * 1.1 < value || value < regValue * 0.9) {
-				oldZoomValue = value;
-				mInfo("Zoom response err: value peak [%d]", value);
-				return expected;
+		if (zoomControls.zoomFiltering) {
+			int oldZoomValue = registersCache[R_ZOOM_POS];
+			registersCache[R_ZOOM_POS] = value;
+			if (oldZoomValue * 1.1 < value || value < oldZoomValue * 0.9) {
+				if (regValue * 1.1 < value || value < regValue * 0.9) {
+					oldZoomValue = value;
+					mInfo("Zoom response err: value peak [%d]", value);
+					return expected;
+				}
 			}
 		}
 
+		if (zoomControls.stationaryFiltering && !zoomControls.sfilter->check(value))
+			return expected;
+
 		mLogv("Zoom Position synced");
 		setRegister(R_ZOOM_POS, value);
+		if (zoomControls.errorRateCheck) {
+			float er = zoomControls.echeck->add(value);
+			qDebug("Error rate for %d is %f", value, er);
+		}
+		if (zoomControls.readLatencyCheck)
+			zoomControls.stats->add();
+
+		/* check digital zoom */
 		if (value >= 16384) {
 			mLogv("Optic and digital zoom position synced");
 			setRegister(R_DIGI_ZOOM_POS, getRegister(R_ZOOM_POS) - 16384);
@@ -691,7 +838,9 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 
 QByteArray OemModuleHead::transportReady()
 {
-	if (syncEnabled && syncTime.elapsed() > syncInterval && zoomTrig) {
+	if (syncEnabled && syncTime.elapsed() > syncInterval) {
+		if (zoomControls.tiggerredRead && zoomControls.zoomed == false)
+			return QByteArray();
 		mLogv("Syncing zoom positon");
 		syncTime.restart();
 		Commands q = queryPatternList[queryIndex++];
@@ -1199,4 +1348,40 @@ QString OemModuleHead::getGainLimit()
 float OemModuleHead::getAngle()
 {
 	return getZoom();
+}
+
+void OemModuleHead::enableZoomControlFiltering(bool en)
+{
+	mDebug("%s", en ? "enabled" : "disabled");
+	zoomControls.zoomFiltering = en;
+}
+
+void OemModuleHead::enableZoomControlTriggerredRead(bool en)
+{
+	mDebug("%s", en ? "enabled" : "disabled");
+	zoomControls.tiggerredRead = en;
+}
+
+void OemModuleHead::enableZoomControlStationaryFiltering(bool en)
+{
+	mDebug("%s", en ? "enabled" : "disabled");
+	zoomControls.stationaryFiltering = en;
+	if (en)
+		zoomControls.sfilter = new StationaryFilter;
+}
+
+void OemModuleHead::enableZoomControlErrorRateChecking(bool en)
+{
+	mDebug("%s", en ? "enabled" : "disabled");
+	zoomControls.errorRateCheck = en;
+	if (en)
+		zoomControls.echeck = new ErrorRateChecker;
+}
+
+void OemModuleHead::enableZoomControlReadLatencyChecking(bool en)
+{
+	mDebug("%s", en ? "enabled" : "disabled");
+	zoomControls.readLatencyCheck = en;
+	if (en)
+		zoomControls.stats = new SimpleStatistics;
 }

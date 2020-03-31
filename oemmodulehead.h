@@ -7,6 +7,10 @@
 
 class CommandHistory;
 
+class ErrorRateChecker;
+class SimpleStatistics;
+class StationaryFilter;
+
 class OemModuleHead : public PtzpHead
 {
 public:
@@ -84,6 +88,12 @@ public:
 
 	int addCustomSettings();
 	float getAngle();
+
+	void enableZoomControlFiltering(bool en);
+	void enableZoomControlTriggerredRead(bool en);
+	void enableZoomControlStationaryFiltering(bool en);
+	void enableZoomControlErrorRateChecking(bool en);
+	void enableZoomControlReadLatencyChecking(bool en);
 protected:
 	int syncNext();
 	int dataReady(const unsigned char *bytes, int len);
@@ -92,7 +102,17 @@ protected:
 	void unmarshallloadAllRegisters(const QJsonValue &node);
 	int addSpecialModulSettings();
 
-	bool zoomTrig;
+	struct zoomErrorChecks {
+		bool zoomFiltering;
+		bool tiggerredRead;
+		bool stationaryFiltering;
+		bool zoomed; //for triggerred reading
+		bool errorRateCheck;
+		bool readLatencyCheck;
+		ErrorRateChecker *echeck;
+		SimpleStatistics *stats;
+		StationaryFilter *sfilter;
+	} zoomControls;
 	bool syncEnabled;
 	int syncInterval;
 	CommandHistory *hist;
