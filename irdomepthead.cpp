@@ -54,6 +54,7 @@ static uint checksum(const uchar *cmd, uint lenght)
 
 IRDomePTHead::IRDomePTHead()
 {
+	devvar = BOTAS_DOME;
 	maxPatternSpeed = 30;
 	syncEnabled = true;
 	syncInterval = 20;
@@ -359,4 +360,9 @@ int IRDomePTHead::setIRLed(int led)
 int IRDomePTHead::getIRLed()
 {
 	return irLedLevel;
+}
+
+void IRDomePTHead::setDeviceVariant(IRDomePTHead::DeviceVariant v)
+{
+	devvar = v;
 }

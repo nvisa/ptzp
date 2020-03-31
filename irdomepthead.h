@@ -17,6 +17,11 @@ public:
 		R_COUNT
 	};
 
+	enum DeviceVariant {
+		BOTAS_DOME,
+		ABSGS_DOME,
+	};
+
 	void fillCapabilities(ptzp::PtzHead *head);
 	int panLeft(float speed);
 	int panRight(float speed);
@@ -36,6 +41,9 @@ public:
 	int setIRLed(int led);
 	int getIRLed();
 
+	void setDeviceVariant(DeviceVariant v);
+	DeviceVariant getDeviceVariant() { return devvar; }
+
 protected:
 	int dataReady(const unsigned char *bytes, int len);
 	QByteArray transportReady();
@@ -50,6 +58,7 @@ protected:
 	int syncInterval;
 	QElapsedTimer syncTime;
 	std::vector<float> speedTableMapping;
+	DeviceVariant devvar;
 };
 
 #endif // IRDOMEPTHEAD_H
