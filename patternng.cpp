@@ -203,9 +203,7 @@ int PatternNg::deletePattern(const QString &name)
 {
 	if (currentPattern == name)
 		return -EBUSY;
-	QDir a;
-	QString path = a.absolutePath();
-	return QProcess::execute(QString("rm %1/%2.pattern").arg(path).arg(name));
+	return QFile::remove(name);
 }
 
 QString PatternNg::getList()
