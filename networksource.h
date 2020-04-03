@@ -30,6 +30,7 @@ public:
 	int sendMessage(const QByteArray &ba);
 	/* chart related messages */
 	int sendMessage(const ChartData &data);
+	int sendMessage(const QList<ChartData> &data);
 	int sendMessage(qreal sample);
 
 signals:

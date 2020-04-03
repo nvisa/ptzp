@@ -54,6 +54,14 @@ int NetworkSource::sendMessage(const QByteArray &ba)
 	return -ENOENT;
 }
 
+static void writeHeader(QDataStream &out, qint32 type)
+{
+	out << qint32(0x12345678); //serialization version
+	out << qint32(0); //reserved
+	out << qint32(0); //reserved
+	out << qint32(type); //message type for the following bytes
+}
+
 int NetworkSource::sendMessage(const ChartData &data)
 {
 	if (!readyToSend)
@@ -62,10 +70,30 @@ int NetworkSource::sendMessage(const ChartData &data)
 	QDataStream out(&ba, QIODevice::WriteOnly);
 	out.setFloatingPointPrecision(QDataStream::DoublePrecision);
 	out.setByteOrder(QDataStream::LittleEndian);
+	writeHeader(out, 1);
 	out << data.samples;
 	out << data.ts;
 	out << data.meta;
 	out << data.channel;
+	return sendMessage(ba);
+}
+
+int NetworkSource::sendMessage(const QList<ChartData> &data)
+{
+	if (!readyToSend)
+		return -ENOENT;
+	QByteArray ba;
+	QDataStream out(&ba, QIODevice::WriteOnly);
+	out.setFloatingPointPrecision(QDataStream::DoublePrecision);
+	out.setByteOrder(QDataStream::LittleEndian);
+	writeHeader(out, 2);
+	out << data.size();
+	for (int i = 0; i < data.size(); i++) {
+		out << data[i].samples;
+		out << data[i].ts;
+		out << data[i].meta;
+		out << data[i].channel;
+	}
 	return sendMessage(ba);
 }
 
@@ -106,13 +134,29 @@ void NetworkSource::processBinaryMessage(QByteArray message)
 	QDataStream s(&message, QIODevice::ReadOnly);
 	s.setFloatingPointPrecision(QDataStream::DoublePrecision);
 	s.setByteOrder(QDataStream::LittleEndian);
-	ChartData d;
-	s >> d.samples;
-	s >> d.ts;
-	s >> d.meta;
-	s >> d.channel;
-	emit newChartData(d);
-	qDebug() << __func__ << message.size() << d.samples.size() << d.ts.size();
+	qint32 sver; s >> sver;
+	qint32 r0; s >> r0;
+	qint32 r1; s >> r1;
+	qint32 type; s >> type;
+	if (type == 1) {
+		ChartData d;
+		s >> d.samples;
+		s >> d.ts;
+		s >> d.meta;
+		s >> d.channel;
+		emit newChartData(d);
+	} else if (type == 2) {
+		qint32 len; s >> len;
+		for (int i = 0; i < len; i++) {
+			ChartData d;
+			s >> d.samples;
+			s >> d.ts;
+			s >> d.meta;
+			s >> d.channel;
+			emit newChartData(d);
+		}
+	}
+	qDebug() << __func__ << message.size();
 }
 
 void NetworkSource::clientProcessBinaryMessage(QByteArray message)
