@@ -155,8 +155,6 @@ int IRDomePTHead::panTiltDegree(float pan, float tilt)
 		speed_pan *= -1;
 	if (tilt < 0)
 		speed_tilt *= -1;
-	/* [CR] [yca] Bu yorum mDebug/mInfo kullanilacak hale getirilebilir */
-	ffDebug() << speed_pan << speed_tilt << pan << tilt;
 	/* [CR] [yca] Maximum degeri bir define'a baglayabiliriz */
 	return panTiltAbs((float)speed_pan / 63.0, (float)speed_tilt / 63.0);
 }
