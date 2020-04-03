@@ -6,7 +6,9 @@
 #include <QString>
 #include <QDateTime>
 #include <QMutexLocker>
+#include <QElapsedTimer>
 
+class DataPool;
 class NetworkSource;
 
 namespace SimpleMetrics {
@@ -20,6 +22,7 @@ public:
 		INT,
 		FLOAT,
 		DOUBLE,
+		INT64,
 	};
 
 	Channel(Point *parent, ChannelDataType type, int chno)
@@ -27,18 +30,29 @@ public:
 		p = parent;
 		dtype = type;
 		no = chno;
+		ft.start();
 	}
 
 	int channelNo() { return no; }
 	ChannelDataType dataType() { return dtype; }
 	void push(int data);
 	void push(float data);
+	void push(double data);
+	void push(qint64 data);
+	QString getName() { return name; }
+	void setName(const QString &n) { name = n; }
+
+	qint64 lastFetchTime()
+	{
+		return ft.elapsed();
+	}
 
 	QList<QPair<qint64, int>> fetchIntSamples()
 	{
 		QMutexLocker ml(&m);
 		QList<QPair<qint64, int>> s = samplesInt;
 		samplesInt.clear();
+		ft.restart();
 		return s;
 	}
 
@@ -47,6 +61,7 @@ public:
 		QMutexLocker ml(&m);
 		QList<QPair<qint64, float>> s = samplesFloat;
 		samplesFloat.clear();
+		ft.restart();
 		return s;
 	}
 
@@ -55,6 +70,16 @@ public:
 		QMutexLocker ml(&m);
 		QList<QPair<qint64, double>> s = samplesDouble;
 		samplesDouble.clear();
+		ft.restart();
+		return s;
+	}
+
+	QList<QPair<qint64, qint64>> fetchInt64Samples()
+	{
+		QMutexLocker ml(&m);
+		QList<QPair<qint64, qint64>> s = samplesInt64;
+		samplesInt64.clear();
+		ft.restart();
 		return s;
 	}
 
@@ -62,10 +87,13 @@ protected:
 	int no;
 	Point *p;
 	QMutex m;
+	QString name;
+	QElapsedTimer ft;
 	ChannelDataType dtype;
 	QList<QPair<qint64, int>> samplesInt;
 	QList<QPair<qint64, float>> samplesFloat;
 	QList<QPair<qint64, double>> samplesDouble;
+	QList<QPair<qint64, qint64>> samplesInt64;
 };
 
 class Point
@@ -77,9 +105,13 @@ public:
 		chno = choff;
 	}
 
-	Channel * addIntegerChannel();
-	Channel * addFloatChannel();
-	Channel * addDoubleChannel();
+	Channel * addIntegerChannel(const QString &name);
+	Channel * addFloatChannel(const QString &name);
+	Channel * addDoubleChannel(const QString &name);
+	Channel * addInt64Channel(const QString &name);
+
+	QString getName() { return name; }
+	void setName(const QString &n) { name = n; }
 
 protected:
 	friend class Channel;
@@ -87,6 +119,7 @@ protected:
 
 	int choff;
 	int chno;
+	QString name;
 };
 
 class Metrics
@@ -110,6 +143,8 @@ private:
 	QMutex mutex;
 	NetworkSource *wssrc;
 	QHash<QString, Point *> points;
+	int fetchInterval;
+	DataPool *pool;
 };
 
 }

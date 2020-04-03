@@ -393,8 +393,8 @@ OemModuleHead::OemModuleHead()
 	setRegister(R_VISCA_MODUL_ID, 0);
 	auto &m = SimpleMetrics::Metrics::instance();
 	mp = m.addPoint("oemmodule");
-	serialRecved = mp->addIntegerChannel();
-	zoomRecved = mp->addIntegerChannel();
+	serialRecved = mp->addIntegerChannel("serial_recved");
+	zoomRecved = mp->addIntegerChannel("zoom_recved");
 }
 
 int OemModuleHead::addSpecialModulSettings()
