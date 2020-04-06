@@ -13,6 +13,10 @@ struct ChartData
 class NetworkSource
 {
 public:
+	NetworkSource(QObject *parent = nullptr)
+	{
+		Q_UNUSED(parent);
+	}
 	void setThreadSupport(bool)
 	{
 	}
@@ -21,6 +25,9 @@ public:
 		Q_UNUSED(reconnect);
 	}
 	void sendMessage(const ChartData &)
+	{
+	}
+	void sendMessage(const QList<ChartData > &)
 	{
 	}
 };
