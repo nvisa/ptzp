@@ -181,6 +181,27 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 	return 0;
 }
 
+grpc::Status IRDomeDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	if(cap == ptzp::PtzHead_Capability_FOCUS || cap == ptzp::PtzHead_Capability_KARDELEN_FOCUS){
+		response->set_enum_field(true);
+		response->set_raw_value(headModule->getProperty(OemModuleHead::R_FOCUS_MODE));
+	}
+
+	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
+}
+
+grpc::Status IRDomeDriver::SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	if(cap == ptzp::PtzHead_Capability_FOCUS || cap == ptzp::PtzHead_Capability_KARDELEN_FOCUS){
+		if(request->raw_value())
+			headModule->setProperty(16, 0); //auto 0 manuel 1
+		else headModule->setProperty(16, 1);
+	}
+
+	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
+}
+
 void IRDomeDriver::timeout()
 {
 	//	mLog("Driver state: %d", state);
