@@ -448,6 +448,19 @@ void OemModuleHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW);
+	head->add_capabilities(ptzp::PtzHead_Capability_FOCUS);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
+	head->add_capabilities(ptzp::PtzHead_Capability_BACKLIGHT);
+	head->add_capabilities(ptzp::PtzHead_Capability_EXPOSURE);
+	head->add_capabilities(ptzp::PtzHead_Capability_GAIN);
+	head->add_capabilities(ptzp::PtzHead_Capability_SHUTTER);
+	head->add_capabilities(ptzp::PtzHead_Capability_DEFOG);
+	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_ROTATE);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_VIDEO_STABILIZATION);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
 }
 
 int OemModuleHead::syncRegisters()
