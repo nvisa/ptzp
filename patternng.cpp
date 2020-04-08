@@ -203,6 +203,9 @@ int PatternNg::deletePattern(const QString &name)
 {
 	if (currentPattern == name)
 		return -EBUSY;
+	QFileInfo finfo (name);
+	if (finfo.suffix() != "pattern")
+		return QFile::remove(name + ".pattern");
 	return QFile::remove(name);
 }
 
