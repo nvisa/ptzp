@@ -1231,6 +1231,7 @@ static QString getCapString(ptzp::PtzHead_Capability cap)
 		_map[ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE] = "reticle_mode";
 		_map[ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS] = "brightness_change";
 		_map[ptzp::PtzHead_Capability_KARDELEN_CONTRAST] = "contrast_change";
+		_map[ptzp::PtzHead_Capability_KARDELEN_FOCUS] = "auto_focus";
 
 	}
 
