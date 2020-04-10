@@ -14,6 +14,7 @@ Oem4kDriver::Oem4kDriver()
 	state = INIT;
 
 	gpioPin = gpiocont->getGpioNo("LdrControl");
+	gpioValue = -1;
 }
 
 Oem4kDriver::~Oem4kDriver()
@@ -56,11 +57,14 @@ void Oem4kDriver::timeout()
 		state = NORMAL;
 		break;
 	case NORMAL:
-		if(gpiocont->getGpioValue(gpioPin))
-			headModule->setProperty(Oem4kModuleHead::R_CAMMODE, 2);
-		else
-			headModule->setProperty(Oem4kModuleHead::R_CAMMODE, 1);
-		break;
+		if(gpioValue != gpiocont->getGpioValue(gpioPin)) {
+			gpioValue = gpiocont->getGpioValue(gpioPin);
+			if(gpioValue)
+				headModule->setProperty(12, 2);
+			else
+				headModule->setProperty(12, 1);
+			break;
+		}
 	}
 	return;
 }

@@ -30,6 +30,7 @@ protected:
 	PtzpHttpTransport *httpTransportModule;
 	QNetworkRequest req;
 	int gpioPin;
+	int gpioValue;
 };
 
 #endif // OEM4KDRIVER_H
