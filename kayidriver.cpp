@@ -99,7 +99,7 @@ grpc::Status KayiDriver::GetZoom(grpc::ServerContext *context, const ptzp::Advan
 		response->set_max(5);
 	else
 		response->set_max(3);
-
+	response->set_enum_field(true);
 	response->set_value(headModule->getProperty(MgeoFalconEyeHead::R_FOV));
 	return grpc::Status::OK;
 }
