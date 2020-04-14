@@ -181,6 +181,16 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 	return 0;
 }
 
+QString IRDomeDriver::getCapString(ptzp::PtzHead_Capability cap)
+{
+	static QHash<int, QString> _map;
+	if (_map.isEmpty()) {
+		_map[ptzp::PtzHead_Capability_KARDELEN_FOCUS] = "auto_focus";
+	}
+
+	return _map[cap];
+}
+
 grpc::Status IRDomeDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
 {
 	if(cap == ptzp::PtzHead_Capability_FOCUS || cap == ptzp::PtzHead_Capability_KARDELEN_FOCUS){

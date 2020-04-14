@@ -45,6 +45,21 @@ int Oem4kDriver::setTarget(const QString &targetUri)
 	return 0;
 }
 
+QString Oem4kDriver::getCapString(ptzp::PtzHead_Capability cap)
+{
+	static QHash<int, QString> _map;
+	if (_map.isEmpty()) {
+		_map[ptzp::PtzHead_Capability_BRIGHTNESS] = "brightness";
+		_map[ptzp::PtzHead_Capability_CONTRAST] = "contrast";
+		_map[ptzp::PtzHead_Capability_HUE] = "hue";
+		_map[ptzp::PtzHead_Capability_SATURATION] = "saturation";
+		_map[ptzp::PtzHead_Capability_SHARPNESS] = "sharpness";
+		_map[ptzp::PtzHead_Capability_ZOOM] = "zoom_pos_level";
+	}
+
+	return _map[cap];
+}
+
 void Oem4kDriver::timeout()
 {
 	switch (state) {

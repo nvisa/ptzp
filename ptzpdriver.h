@@ -71,6 +71,7 @@ public:
 	bool getChangeOverlayState();
 	virtual bool isReady();
 	GpioController *getGpioCont() { return gpiocont; }
+	virtual QString getCapString(ptzp::PtzHead_Capability cap);
 
 public:
 	static QStringList commaToList(const QString &comma);
