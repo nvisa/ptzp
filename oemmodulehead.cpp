@@ -50,7 +50,7 @@ enum Commands {
 	C_VISCA_SET_BLC_STATUS,			// 1:On, 0:Off
 	C_VISCA_SET_IRCF_STATUS,		// 1:On, 0:Off
 	C_VISCA_SET_AUTO_ICR,			// 1:On, 0:Off
-	C_VISCA_SET_PROGRAM_AE_MODE,	// 3:Auto 10:manual 11:irisP 13:BrigthP
+	C_VISCA_SET_PROGRAM_AE_MODE,	// 0:Auto 3:manual 10:shutterP 11:irisP 13:Brigth
 	C_VISCA_SET_FLIP_MODE,			// 1:On, 0:Off
 	C_VISCA_SET_MIRROR_MODE,		// 1:On, 0:Off
 	C_VISCA_SET_ONE_PUSH,			//
@@ -1158,7 +1158,11 @@ void OemModuleHead::setProperty(uint r, uint x)
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_AUTO_ICR, (int)x);
 	} else if (r == C_VISCA_SET_PROGRAM_AE_MODE) {
-		if (x != 3 && (x < 10 || x > 13))
+		if (x != 0 &&
+				x != 3 &&
+				x != 10 &&
+				x != 11 &&
+				x != 13)
 			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_PROGRAM_AE_MODE];
 		p[4 + 2] = x;
