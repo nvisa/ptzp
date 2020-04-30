@@ -165,8 +165,9 @@ public:
 class RelayControlThread : public QThread
 {
 public:
-	RelayControlThread()
+	RelayControlThread(QString type)
 	{
+		devType = type;
 		switching = false;
 		x = 0;
 	}
@@ -186,7 +187,9 @@ public:
 			gosem.acquire();
 
 			switching = true;
-			i2c->controlRelay(0x01, 0x00);
+
+			if(devType != "absgs")
+				i2c->controlRelay(0x01, 0x00);
 			sleep(3);
 			if (x == 0) // Thermal
 				i2c->controlRelay(0x01, ((1 << (standbyRelay - 1)) +
@@ -206,6 +209,7 @@ public:
 	int dayCamRelay;
 	int thermalRelay;
 	int standbyRelay;
+	QString devType;
 	PCA9538Driver *i2c;
 };
 
@@ -229,7 +233,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps, QString t
 	i2c = new PCA9538Driver;
 	i2c->open();
 	i2c->resetAllPorts();
-	relth = new RelayControlThread;
+	relth = new RelayControlThread(type);
 	relth->i2c = i2c;
 	relth->dayCamRelay = dayCamRelay;
 	relth->thermalRelay = thermalRelay;
