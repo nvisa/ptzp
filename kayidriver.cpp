@@ -196,22 +196,24 @@ void KayiDriver::timeout()
 	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
-		if(firmwareType == "absgs") {
-			headModule->setProperty(37, 2);
-			headModule->setProperty(5, 1);
-			headModule->setProperty(37, 2);
-			while (headModule->getProperty(61) != 2) {
-				usleep(1000);
-				headModule->setProperty(37, 1);
+		if(1){
+			if(firmwareType == "absgs") {
+				headModule->setProperty(37, 2);
+				headModule->setProperty(5, 1);
+				headModule->setProperty(37, 2);
+				while (headModule->getProperty(61) != 2) {
+					usleep(1000);
+					headModule->setProperty(37, 1);
+				}
 			}
-		}
-		else {
-			headModule->setProperty(37, 2);
-			headModule->setProperty(5, 1);
-			headModule->setProperty(37, 1);
-			while (headModule->getProperty(61) != 1) {
-				usleep(1000);
+			else {
+				headModule->setProperty(37, 2);
+				headModule->setProperty(5, 1);
 				headModule->setProperty(37, 1);
+				while (headModule->getProperty(61) != 1) {
+					usleep(1000);
+					headModule->setProperty(37, 1);
+				}
 			}
 		}
 		state = WAIT_ALIVE;
