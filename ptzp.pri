@@ -1,4 +1,13 @@
-LIBS += -L/usr/local/lib -lprotobuf -lgrpc++
+LIBS += -lprotobuf -lgrpc++
+
+TARGETXSPEC=$$[QMAKE_XSPEC]
+TARGETXSPEC=$$dirname(TARGETXSPEC)
+TARGETXSPEC=$$basename(TARGETXSPEC)
+contains(TARGETXSPEC , "linux-tx1-331") {
+	CONFIG += dont_gen_proto_files
+}
+
+!dont_gen_proto_files {
 
 QMAKE_EXTRA_VARIABLES = GRPC_CPP_PLUGIN GRPC_CPP_PLUGIN_PATH
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
@@ -39,3 +48,6 @@ grpc_impl.commands = $$escape_expand(\n)
 grpc_impl.variable_out = SOURCES
 QMAKE_EXTRA_COMPILERS += grpc_impl
 
+} else {
+SOURCES += $$PWD/grpc/*.cc
+}
