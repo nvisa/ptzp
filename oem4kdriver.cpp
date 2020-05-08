@@ -12,9 +12,6 @@ Oem4kDriver::Oem4kDriver()
 
 	httpTransportModule = new PtzpHttpTransport(PtzpTransport::PROTO_BUFFERED, this, true);
 	state = INIT;
-
-	gpioPin = gpiocont->getGpioNo("LdrControl");
-	gpioValue = -1;
 }
 
 Oem4kDriver::~Oem4kDriver()
@@ -41,7 +38,12 @@ int Oem4kDriver::setTarget(const QString &targetUri)
 		return ret;
 	httpTransportModule->enableQueueFreeCallbacks(true);
 	httpTransportModule->setTimerInterval(2000);
+
+	gpioPin = gpiocont->getGpioNo("LdrControl");
+	gpioValue = -1;
+
 	createHeadMaps();
+
 	return 0;
 }
 
