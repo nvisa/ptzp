@@ -17,6 +17,7 @@ public:
 	int setTarget(const QString &targetUri);
 	int set(const QString &key, const QVariant &value);
 	bool isReady();
+	QString getCapString(ptzp::PtzHead_Capability cap);
 
 	grpc::Status GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response);
 	grpc::Status SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response);

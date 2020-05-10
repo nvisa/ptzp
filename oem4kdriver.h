@@ -23,6 +23,8 @@ public:
 
 	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
+	QString getCapString(ptzp::PtzHead_Capability cap);
+
 protected slots:
 	void timeout();
 protected:

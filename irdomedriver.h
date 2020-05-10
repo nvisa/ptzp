@@ -15,6 +15,10 @@ public:
 
 	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
+	QString getCapString(ptzp::PtzHead_Capability cap);
+
+	grpc::Status GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap);
+	grpc::Status SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap);
 
 protected slots:
 	void timeout();
