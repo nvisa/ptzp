@@ -10,7 +10,8 @@
 #include <errno.h>
 #include <unistd.h>
 
-DortgozDriver::DortgozDriver(QList<int> relayConfig)
+DortgozDriver::DortgozDriver(QList<int> relayConfig, QObject *parent)
+	: PtzpDriver(parent)
 {
 	ffDebug() << "dortgoz driver başlatıldı";
 	headModule = new MgeoDortgozHead(relayConfig);

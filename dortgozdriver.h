@@ -11,7 +11,7 @@ class DortgozDriver : public PtzpDriver
 {
 		Q_OBJECT
 public:
-	DortgozDriver(QList<int> relayConfig);
+	explicit DortgozDriver(QList<int> relayConfig, QObject *parent = 0);
 	PtzpHead *getHead(int index);
 	int setTarget(const QString &targetUri);
 	QString getCapString(ptzp::PtzHead_Capability cap);
