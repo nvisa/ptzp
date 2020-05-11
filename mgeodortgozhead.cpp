@@ -322,7 +322,8 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 		{"one_point_nuc", {C_SET_NUC, 0}},
 		{"relay_control", {C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
 		{"brightness_change", {C_SET_BRIGHTNES, R_BRIGTNESS}},
-		{"contrast_change", {C_SET_CONTRAST, R_BRIGTNESS}},
+		{"contrast_change", {C_SET_CONTRAST, R_CONTRAST}},
+		{"focus", {}},
 	};
 }
 
