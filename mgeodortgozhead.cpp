@@ -406,10 +406,10 @@ int MgeoDortgozHead::getZoom()
 
 int MgeoDortgozHead::focusIn(int speed)
 {
-	uchar *cmd = protoBytes[C_SET_ZOOM];
+	uchar *cmd = protoBytes[C_SET_FOCUS];
 	int len = cmd[0];
 	cmd++;
-	cmd[10] = (2 << 6) + 0x02;
+	cmd[17] = (2 << 6) + 0x02;
 	int chk = crc_ccitt_generic(cmd, len - 2);
 	cmd[40] = chk & 0x00FF;
 	cmd[41] = chk >> 8;
@@ -421,7 +421,7 @@ int MgeoDortgozHead::focusOut(int speed)
 	uchar *cmd = protoBytes[C_SET_ZOOM];
 	int len = cmd[0];
 	cmd++;
-	cmd[10] = (2 << 6) + 0x03;
+	cmd[17] = (2 << 6) + 0x03;
 	int chk = crc_ccitt_generic(cmd, len - 2);
 	cmd[40] = chk & 0x00FF;
 	cmd[41] = chk >> 8;
@@ -433,7 +433,7 @@ int MgeoDortgozHead::focusStop()
 	uchar *cmd = protoBytes[C_SET_ZOOM];
 	int len = cmd[0];
 	cmd++;
-	cmd[10] = 0x01;
+	cmd[17] = 0x01;
 	int chk = crc_ccitt_generic(cmd, len - 2);
 	cmd[40] = chk & 0x00FF;
 	cmd[41] = chk >> 8;
@@ -632,8 +632,8 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 	if(bytes[5] != 0x02)
 		return -ENOENT;
 
-	uchar chk = crc_ccitt_generic(bytes, len - 2);
-	if((chk >> 8) != bytes[41] || (chk &0x00FF) != bytes[40]){
+	int chk = crc_ccitt_generic(bytes, len - 2);
+	if(((chk >> 8) != bytes[41]) || ((chk &0x00FF) != bytes[40])){
 		fDebug("Cheksum error");
 		return -ENOENT;
 	}
