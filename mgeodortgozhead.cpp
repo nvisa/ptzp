@@ -328,6 +328,8 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 
 void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 {
+	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
+	head->add_capabilities(ptzp::PtzHead_Capability_FOCUS);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
@@ -338,11 +340,11 @@ void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NUC);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
 }
 
 int MgeoDortgozHead::syncRegisters()
 {
-	ffDebug() << "sync reg dortgoz";
 	if(!transport)
 		return -ENOENT;
 	nextSync = C_GET_ALL_SYSTEM_VALUES;
