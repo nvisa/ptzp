@@ -76,7 +76,6 @@ static uint16_t crc_ccitt_generic( const unsigned char *input_str, size_t num_by
 
 		ptr++;
 	}
-	qDebug("crc: 0x%x", crc);
 
 	return crc;
 
@@ -721,8 +720,6 @@ int MgeoDortgozHead::syncNext()
 
 int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 {
-	dump(bytes, len);
-
 	if(len < bytes[2])
 		return -EAGAIN;
 

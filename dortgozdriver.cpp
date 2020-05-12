@@ -13,7 +13,6 @@
 DortgozDriver::DortgozDriver(QList<int> relayConfig, QObject *parent)
 	: PtzpDriver(parent)
 {
-	ffDebug() << "dortgoz driver başlatıldı";
 	headModule = new MgeoDortgozHead(relayConfig);
 	headDome = new AryaPTHead;
 	headDome->setMaxSpeed(888889);
@@ -89,9 +88,7 @@ void DortgozDriver::timeout()
 	mLog("Driver state: %d", state);
 	switch (state) {
 	case INIT:
-
 		headModule->setProperty(16, 0);
-		headModule->setProperty(5, 1);
 		headModule->setProperty(16, 0);
 		while (headModule->getProperty(20) != 1) {
 			usleep(1000);
