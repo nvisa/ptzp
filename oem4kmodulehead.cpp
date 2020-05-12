@@ -108,6 +108,9 @@ void Oem4kModuleHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_JOYSTICK_CONTROL);
 }
 
 int Oem4kModuleHead::focusIn(int speed)

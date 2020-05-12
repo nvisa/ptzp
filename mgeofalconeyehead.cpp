@@ -326,6 +326,12 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		if(firmwareType == "absgs"){
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FUSION_VIEW);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
 		}
 	}
 	else if (getProperty(R_CAM) == 1){
@@ -347,6 +353,12 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		if(firmwareType == "absgs"){
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FUSION_VIEW);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
+			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
 		}
 	}
 

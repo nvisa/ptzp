@@ -458,9 +458,9 @@ void OemModuleHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_ROTATE);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_VIDEO_STABILIZATION);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
 }
 
 int OemModuleHead::syncRegisters()

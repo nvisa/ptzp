@@ -57,9 +57,24 @@ QString Oem4kDriver::getCapString(ptzp::PtzHead_Capability cap)
 		_map[ptzp::PtzHead_Capability_SATURATION] = "saturation";
 		_map[ptzp::PtzHead_Capability_SHARPNESS] = "sharpness";
 		_map[ptzp::PtzHead_Capability_ZOOM] = "zoom_pos_level";
+		_map[ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS] = "brightness";
+		_map[ptzp::PtzHead_Capability_KARDELEN_CONTRAST] = "contrast";
+		_map[ptzp::PtzHead_Capability_KARDELEN_SHARPNESS] = "sharpness";
+		_map[ptzp::PtzHead_Capability_KARDELEN_SATURATION] = "saturation";
+		_map[ptzp::PtzHead_Capability_KARDELEN_HUE] = "hue";
 	}
 
 	return _map[cap];
+}
+
+grpc::Status Oem4kDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	if(cap == ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW){
+		response->set_value(1);
+		return grpc::Status::OK;
+	}
+
+	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
 }
 
 void Oem4kDriver::timeout()
