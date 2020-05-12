@@ -107,9 +107,14 @@ enum Commands {
 	C_SET_FOCUS_MODE,
 	C_SET_NUC,
 	C_SET_RELAY_CONTROL,
+	C_SET_FOV,
+	C_SET_NUC_TABLE,
+	C_SET_IBIT,
+	C_SET_BUTTON,
+
+	C_GET_IBIT,
 
 	C_GET_ALL_SYSTEM_VALUES,
-
 	C_COUNT
 };
 
@@ -218,6 +223,25 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00,
 	 0x00, 0x00}, // nuc
 	{}, // relay control
+	{0x2a,
+	 0x00, 0x01 ,0x22, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00,
+	 0x00, 0x00}, // fov
+	{0x2a,
+	 0x00, 0x01 ,0x22, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00,
+	 0x00, 0x00}, // nuc table
+	{0x09,
+	 0x03, 0x01 ,0x01, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00}, // ibit
+	{0x0a,
+	 0x09, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00}, // button
+
+	{0x09,
+	 0x03, 0x01 ,0x01, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00}, //get ibit
 
 	{0x2a,
 	 0x00, 0x01 ,0x22, 0x00, 0x01, 0x02, 0x04, 0x00, 0x00, 0x00,
@@ -323,7 +347,14 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 		{"relay_control", {C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
 		{"brightness_change", {C_SET_BRIGHTNES, R_BRIGTNESS}},
 		{"contrast_change", {C_SET_CONTRAST, R_CONTRAST}},
+		{"button", {C_SET_BUTTON, 0}},
 		{"focus", {}},
+		{"fov", {C_SET_FOV, R_FOV}},
+		{"thermal_chart", {C_SET_NUC_TABLE, R_THERMAL_TABLE}},
+		{"start_ibit", {C_SET_IBIT, 0}},
+		{"get_ibit", {C_GET_IBIT, R_IBIT_RESULT}},
+		{"auto_focus", {C_SET_FOCUS_MODE, R_FOCUS_MODE}},
+
 	};
 }
 
@@ -342,6 +373,7 @@ void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
+	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MENU_OVER_VIDEO);
 }
 
 int MgeoDortgozHead::syncRegisters()
@@ -546,7 +578,7 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		p[28] = x << 3;
+		p[28] = (x << 3) + (1 << 2);
 		int chk = crc_ccitt_generic(p, len - 2);
 		p[40] = chk & 0x00FF;
 		p[41] = chk >> 8;
@@ -605,6 +637,70 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 		if (!relth->switch2(x))
 			setRegister(R_RELAY_STATUS, x);
 	}
+	else if (r == C_SET_FOV) {
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		if(x == 0)
+			p[10] = (2 << 6) + 0x07;
+		else if (x == 1)
+			p[10] = (2 << 6) + 0x08;
+		else if (x == 2)
+			p[10] = (2 << 6) + 0x09;
+		int chk = crc_ccitt_generic(p, len - 2);
+		p[40] = chk & 0x00FF;
+		p[41] = chk >> 8;
+		setRegister(R_FOV, x);
+		sendCommand(p, len);
+	}
+	else if (r == C_SET_NUC_TABLE){
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[34] = x << 4;
+		int chk = crc_ccitt_generic(p, len - 2);
+		p[40] = chk & 0x00FF;
+		p[41] = chk >> 8;
+		setRegister(R_THERMAL_TABLE, x);
+		sendCommand(p, len);
+	}
+	else if (r == C_SET_IBIT){
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[6] = 0x01;
+		int chk = crc_ccitt_generic(p, len - 2);
+		p[7] = chk & 0x00FF;
+		p[8] = chk >> 8;
+		sendCommand(p, len);
+	}
+	else if (r == C_GET_IBIT){
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		p[6] = 0x03;
+		int chk = crc_ccitt_generic(p, len - 2);
+		p[7] = chk & 0x00FF;
+		p[8] = chk >> 8;
+		sendCommand(p, len);
+	}
+	else if (r == C_SET_BUTTON){
+		int i = (int)x;
+		unsigned char *p = protoBytes[r];
+		int len = p[0];
+		p++;
+		if(i < 0){
+			p[6] = -1*i;
+			p[7] = 0x01;
+		} else {
+			p[6] = i;
+			p[7] = 0x02;
+		}
+		int chk = crc_ccitt_generic(p, len - 2);
+		p[8] = chk & 0x00FF;
+		p[9] = chk >> 8;
+		sendCommand(p, len);
+	}
 }
 
 uint MgeoDortgozHead::getProperty(uint r)
@@ -638,7 +734,7 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 	int chk = crc_ccitt_generic(bytes, len - 2);
 	if(((chk >> 8) != bytes[41]) || ((chk &0x00FF) != bytes[40])){
 		fDebug("Cheksum error");
-		return -ENOENT;
+		return len;
 	}
 
 	pingTimer.restart();
@@ -651,6 +747,9 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 			syncNext();
 	}
 	if (bytes[0] == 0x00 && bytes[1] == 0x01){
+		uint fov = bytes[10] & 0x0F;
+		if(fov >= 0x07)
+			setRegister(R_FOV, fov - 0x07);
 		setRegister(R_STATE, bytes[6] & 0x03);
 //		setRegister(, bytes[7])
 
@@ -672,7 +771,10 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_POLARITY, bytes[34] & 0x07 );
 		setRegister(R_THERMAL_TABLE, (bytes[34] >> 4) & 0x03);
 		setRegister(R_IMG_PROC_MODE, bytes[35] & 0x0F);
+	}
 
+	if(bytes[0] == 0x03 && bytes[1] == 0x01){
+		setRegister(R_IBIT_RESULT,(bytes[7] + bytes[8]+ bytes[9]+ bytes[10]));
 	}
 
 	return len;

@@ -42,6 +42,8 @@ public:
 		R_IMG_PROC_MODE,
 		R_FOCUS_MODE,
 		R_RELAY_STATUS,
+		R_FOV,
+		R_IBIT_RESULT,
 
 		R_COUNT
 	};
