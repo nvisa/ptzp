@@ -357,7 +357,7 @@ int MgeoDortgozHead::startZoomIn(int speed)
 	uchar *cmd = protoBytes[C_SET_ZOOM];
 	int len = cmd[0];
 	cmd++;
-	cmd[10] = (2 << 6) + 0x02;
+	cmd[10] = (speed << 6) + 0x02;
 	int chk = crc_ccitt_generic(cmd, len - 2);
 	cmd[40] = chk & 0x00FF;
 	cmd[41] = chk >> 8;
@@ -369,7 +369,7 @@ int MgeoDortgozHead::startZoomOut(int speed)
 	uchar *cmd = protoBytes[C_SET_ZOOM];
 	int len = cmd[0];
 	cmd++;
-	cmd[10] = (2 << 6) + 0x03;
+	cmd[10] = (speed << 6) + 0x03;
 	int chk = crc_ccitt_generic(cmd, len - 2);
 	cmd[40] = chk & 0x00FF;
 	cmd[41] = chk >> 8;
