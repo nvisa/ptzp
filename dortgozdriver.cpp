@@ -52,9 +52,6 @@ QString DortgozDriver::getCapString(ptzp::PtzHead_Capability cap)
 {
 	static QHash<int, QString> _map;
 	if (_map.isEmpty()) {
-		_map[ptzp::PtzHead_Capability_DAY_NIGHT] = "choose_cam";
-		_map[ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW] = "choose_cam";
-		_map[ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW] = "choose_cam";
 		_map[ptzp::PtzHead_Capability_KARDELEN_SHOW_HIDE_SYMBOLOGY] = "symbology";
 		_map[ptzp::PtzHead_Capability_KARDELEN_NUC] = "one_point_nuc";
 		_map[ptzp::PtzHead_Capability_KARDELEN_DIGITAL_ZOOM] = "digital_zoom";
@@ -63,9 +60,28 @@ QString DortgozDriver::getCapString(ptzp::PtzHead_Capability cap)
 		_map[ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE] = "reticle_mode";
 		_map[ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS] = "brightness_change";
 		_map[ptzp::PtzHead_Capability_KARDELEN_CONTRAST] = "contrast_change";
+		_map[ptzp::PtzHead_Capability_KARDELEN_MENU_OVER_VIDEO] = "button";
 	}
 
 	return _map[cap];
+}
+
+grpc::Status DortgozDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
+}
+
+grpc::Status DortgozDriver::SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
+{
+	if(cap == ptzp::PtzHead_Capability_FOCUS || cap == ptzp::PtzHead_Capability_KARDELEN_FOCUS){
+		if(request->raw_value())
+			headModule->setProperty(16, 0); //auto 0 manuel 1
+		else headModule->setProperty(16, 1);
+
+		return grpc::Status::OK;
+	}
+
+	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
 }
 
 void DortgozDriver::timeout()
