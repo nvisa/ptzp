@@ -55,6 +55,8 @@ public:
 	void fillCapabilities(ptzp::PtzHead *head)
 	{
 		head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
+		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
+		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
 	}
 };
 
