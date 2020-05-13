@@ -503,7 +503,8 @@ QVariant MgeoFalconEyeHead::getProperty(const QString &key)
 						 .arg(r.lonsecond);
 		}
 		return lines.join(";");
-	}
+	} else if (key == "laser_reflections_clear")
+		reflections.clear();
 
 	return QVariant();
 }
