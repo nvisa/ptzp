@@ -154,8 +154,12 @@ grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 
 	if ( cap == ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER){
 		QVariant range = defaultModuleHead->getProperty("laser_reflections");
+		defaultModuleHead->getProperty("laser_reflections_clear");
 		QStringList rangeStr = range.toString().split(",");
-		response->set_value(rangeStr.first().toFloat());
+		if (rangeStr.size() > 1)
+			response->set_value(rangeStr.first().toFloat());
+		else
+			response->set_value(-1);
 		return grpc::Status::OK;
 	}
 
