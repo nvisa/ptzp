@@ -117,10 +117,18 @@ grpc::Status KayiDriver::GetZoom(grpc::ServerContext *context, const ptzp::Advan
 	Q_UNUSED(request);
 	Q_UNUSED(context);
 
-	if (firmwareType == "absgs")
-		response->set_max(5);
-	else
-		response->set_max(3);
+	if (firmwareType == "absgs"){
+		response->add_supported_values(0);
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+		response->add_supported_values(3);
+		response->add_supported_values(4);
+	}
+	else {
+		response->add_supported_values(0);
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+	}
 	response->set_enum_field(true);
 	response->set_value(headModule->getProperty(MgeoFalconEyeHead::R_FOV));
 	return grpc::Status::OK;

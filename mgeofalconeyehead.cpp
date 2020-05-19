@@ -609,7 +609,6 @@ void MgeoFalconEyeHead::buttonClick(int b, int action){
 
 void MgeoFalconEyeHead::screenClick(int x, int y, int action)
 {
-	ffDebug() << "Screen Click x: " << x << " y: " << y;
 	double BUTTON_HEIGHT 	= 0.108; //0.112
 	double BUTTON_WIDTH 	= 0.158; //0.158
 	double FIRST_BUTTON_UP_LEFT_X = 0.026; //0.026
