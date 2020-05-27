@@ -1221,7 +1221,10 @@ grpc::Status PtzpDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 	if (head == nullptr)
 		return grpc::Status::CANCELLED;
 
-	QVariant var = head->getSetting(getCapString(cap));
+	if(cap == ptzp::PtzHead_Capability_ZOOM){
+		GetZoom(context,request,response);
+	}
+
 	float normalized;
 	int ret = normalizeValue(request->head_id(), getCapString(cap), var, normalized);
 	if (ret < 0)
@@ -1238,6 +1241,10 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 	PtzpHead *head = findHeadNull(cap, request->head_id());
 	if (head == nullptr)
 		return grpc::Status::CANCELLED;
+
+	if(cap == ptzp::PtzHead_Capability_ZOOM){
+		SetZoom(context,request,response);
+	}
 
 	QVariant var;
 	int ret = denormalizeValue(request->head_id(), getCapString(cap), request->new_value(), var);
