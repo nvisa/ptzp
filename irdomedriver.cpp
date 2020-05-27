@@ -217,6 +217,13 @@ grpc::Status IRDomeDriver::SetAdvancedControl(grpc::ServerContext *context, cons
 	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
 }
 
+grpc::Status IRDomeDriver::SetImagingControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ::google::protobuf::Empty *response)
+{
+	uint val = request->new_value();
+	headModule-> setProperty(21, val);
+	return grpc::Status::OK;
+}
+
 void IRDomeDriver::timeout()
 {
 	//	mLog("Driver state: %d", state);
