@@ -1226,6 +1226,7 @@ grpc::Status PtzpDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 	}
 
 	float normalized;
+	QVariant var = head->getCapabilityValues(cap);
 	int ret = normalizeValue(request->head_id(), getCapString(cap), var, normalized);
 	if (ret < 0)
 		return grpc::Status::CANCELLED;
@@ -1251,7 +1252,7 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 	if (ret < 0)
 		return grpc::Status::CANCELLED;
 
-	head->setSetting(getCapString(cap), var);
+	head->setCapabilityValues(cap, var.toUInt());
 	return grpc::Status::OK;
 }
 
