@@ -57,11 +57,24 @@ MgeoYamGozHead::MgeoYamGozHead()
 				{"one_point_nuc", {C_SET_1_POINT_NUC, 0}},
 				{"image_flip", {C_SET_IMAGE_FLIP, R_IMAGE_FLIP}},
 				{"heart_beat", {0, R_HEART_BEAT}}};
+
+	_mapCap = {
+		{ptzp::PtzHead_Capability_VIDEO_SOURCE, {C_SET_VIDEO_SOURCE, R_VIDEO_SOURCE}},
+		{ptzp::PtzHead_Capability_POLARITY, {C_SET_POLARITY, R_POLARITY}},
+		{ptzp::PtzHead_Capability_NUC, {C_SET_1_POINT_NUC, 0}},
+		{ptzp::PtzHead_Capability_VIDEO_ROTATE, {C_SET_IMAGE_FLIP, R_IMAGE_FLIP}},
+//		{"heart_beat", {0, R_HEART_BEAT}}
+	};
 }
 
 void MgeoYamGozHead::fillCapabilities(ptzp::PtzHead *head)
 {
 	head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
+
+	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_SOURCE);
+	head->add_capabilities(ptzp::PtzHead_Capability_POLARITY);
+	head->add_capabilities(ptzp::PtzHead_Capability_NUC);
+	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_ROTATE);
 }
 
 int MgeoYamGozHead::startZoomIn(int speed)
@@ -167,6 +180,16 @@ void MgeoYamGozHead::setProperty(uint r, uint x)
 uint MgeoYamGozHead::getProperty(uint r)
 {
 	return getRegister(r);
+}
+
+QVariant MgeoYamGozHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return getRegister(_mapCap[c].second);
+}
+
+void MgeoYamGozHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	setProperty(_mapCap[c].first, val);
 }
 
 int MgeoYamGozHead::dataReady(const unsigned char *bytes, int len)

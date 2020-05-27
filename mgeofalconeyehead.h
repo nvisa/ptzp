@@ -109,6 +109,8 @@ public:
 	bool isAlive();
 	void screenClick(int x, int y, int action);
 	void buttonClick(int b, int action);
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 protected:
 	int syncNext();

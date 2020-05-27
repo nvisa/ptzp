@@ -355,6 +355,27 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 		{"auto_focus", {C_SET_FOCUS_MODE, R_FOCUS_MODE}},
 
 	};
+
+	_mapCap = {
+		{ptzp::PtzHead_Capability_VIDEO_SOURCE, {C_SET_VIDEO_STATE, R_STATE}},
+		{ptzp::PtzHead_Capability_DIGITAL_ZOOM, {C_SET_E_ZOOM, R_E_ZOOM}},
+		{ptzp::PtzHead_Capability_POLARITY, {C_SET_POLARITY, R_POLARITY}},
+		{ptzp::PtzHead_Capability_RETICLE_MODE, {C_SET_RETICLE_MODE, R_RETICLE_MODE}},
+		{ptzp::PtzHead_Capability_RETICLE_TYPE, {C_SET_RETICLE_MODE, R_RETICLE_MODE}},
+		{ptzp::PtzHead_Capability_RETICLE_INTENSITY, {C_SET_RETICLE_INTENSITY, R_RETICLE_INTENSITY}},
+		{ptzp::PtzHead_Capability_SYMBOLOGY, {C_SET_SYMBOLOGY, R_SYMBOLOGY}},
+		{ptzp::PtzHead_Capability_IMAGE_PROCESS, {C_SET_IMAGE_PROC, R_IMG_PROC_MODE}},
+		{ptzp::PtzHead_Capability_NUC, {C_SET_NUC, 0}},
+		{ptzp::PtzHead_Capability_RELAY_CONTROL, {C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
+		{ptzp::PtzHead_Capability_BRIGHTNESS, {C_SET_BRIGHTNES, R_BRIGTNESS}},
+		{ptzp::PtzHead_Capability_CONTRAST, {C_SET_CONTRAST, R_CONTRAST}},
+		{ptzp::PtzHead_Capability_MENU_OVER_VIDEO, {C_SET_BUTTON, 0}},
+//		{"fov", {C_SET_FOV, R_FOV}},
+//		{"thermal_chart", {C_SET_NUC_TABLE, R_THERMAL_TABLE}},
+//		{"start_ibit", {C_SET_IBIT, 0}},
+//		{"get_ibit", {C_GET_IBIT, R_IBIT_RESULT}},
+		{ptzp::PtzHead_Capability_ONE_PUSH_FOCUS, {C_SET_FOCUS_MODE, R_FOCUS_MODE}},
+	};
 }
 
 void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
@@ -373,6 +394,22 @@ void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MENU_OVER_VIDEO);
+
+	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_SOURCE);
+	head->add_capabilities(ptzp::PtzHead_Capability_DIGITAL_ZOOM);
+	head->add_capabilities(ptzp::PtzHead_Capability_POLARITY);
+	head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_MODE);
+	head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_TYPE);
+	head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_INTENSITY);
+	head->add_capabilities(ptzp::PtzHead_Capability_SYMBOLOGY);
+	head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
+	head->add_capabilities(ptzp::PtzHead_Capability_NUC);
+	head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
+	head->add_capabilities(ptzp::PtzHead_Capability_BRIGHTNESS);
+	head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
+	head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
+	head->add_capabilities(ptzp::PtzHead_Capability_ONE_PUSH_FOCUS);
+
 }
 
 int MgeoDortgozHead::syncRegisters()
@@ -511,7 +548,7 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 		int len = p[0];
 		p++;
 		if(x == 0)
-			p[8] == 0x00;
+			p[8] = 0x00;
 		else if (x == 1)
 			p[8] = 1 << 2;
 		else if (x == 2)
@@ -705,6 +742,16 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 uint MgeoDortgozHead::getProperty(uint r)
 {
 	return getRegister(r);
+}
+
+QVariant MgeoDortgozHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return getRegister(_mapCap[c].second);
+}
+
+void MgeoDortgozHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	setProperty(_mapCap[c].first, val);
 }
 
 int MgeoDortgozHead::syncNext()

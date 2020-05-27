@@ -61,6 +61,8 @@ public:
 	virtual int getHeadStatus();//ok
 	virtual void setProperty(uint r, uint x); // ok
 	virtual uint getProperty(uint r); //ok
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 protected:
 	int syncNext();//ok

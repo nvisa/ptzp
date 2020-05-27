@@ -395,6 +395,31 @@ OemModuleHead::OemModuleHead()
 	mp = m.addPoint("oemmodule");
 	serialRecved = mp->addIntegerChannel("serial_recved");
 	zoomRecved = mp->addIntegerChannel("zoom_recved");
+
+	_mapCap = {
+		{ptzp::PtzHead_Capability_EXPOSURE, {C_VISCA_SET_EXPOSURE, R_EXPOSURE_VALUE}},
+		{ptzp::PtzHead_Capability_GAIN, {C_VISCA_SET_GAIN, R_GAIN_VALUE}},
+		{ptzp::PtzHead_Capability_SHUTTER, {C_VISCA_SET_SHUTTER, R_SHUTTER}},
+		{ptzp::PtzHead_Capability_NOISE_REDUCT, {C_VISCA_SET_NOISE_REDUCT, R_NOISE_REDUCT}},
+		{ptzp::PtzHead_Capability_WDR, {C_VISCA_SET_WDRSTAT, R_WDRSTAT}},
+		{ptzp::PtzHead_Capability_GAMMA, {C_VISCA_SET_GAMMA, R_GAMMA}},
+//		{"awb_mode", {C_VISCA_SET_AWB_MODE, R_AWB_MODE}},
+		{ptzp::PtzHead_Capability_DEFOG, {C_VISCA_SET_DEFOG_MODE, R_DEFOG_MODE}},
+		{ptzp::PtzHead_Capability_DIGITAL_ZOOM, {C_VISCA_SET_DIGI_ZOOM_STAT, R_DIGI_ZOOM_STAT}},
+//		{"zoom_type", {C_VISCA_SET_ZOOM_TYPE, R_ZOOM_TYPE}},
+		{ptzp::PtzHead_Capability_FOCUS_MODE, {C_VISCA_SET_FOCUS_MODE, R_FOCUS_MODE}},
+//		{"zoom_trigger", {C_VISCA_SET_ZOOM_TRIGGER, R_ZOOM_TRIGGER}},
+		{ptzp::PtzHead_Capability_BACKLIGHT, {C_VISCA_SET_BLC_STATUS, R_BLC_STATUS}},
+//		{"ircf_status", {C_VISCA_SET_IRCF_STATUS, R_IRCF_STATUS}},
+//		{"auto_icr", {C_VISCA_SET_AUTO_ICR, R_AUTO_ICR}},
+//		{"flip", {C_VISCA_SET_FLIP_MODE, R_FLIP}},
+//		{"mirror", {C_VISCA_SET_MIRROR_MODE, R_MIRROR}},
+		{ptzp::PtzHead_Capability_ONE_PUSH_FOCUS, {C_VISCA_SET_ONE_PUSH, R_COUNT}},
+		{ptzp::PtzHead_Capability_VIDEO_ROTATE, {-1, R_DISPLAY_ROT}},
+//		{"digi_zoom_pos", {-1, R_DIGI_ZOOM_POS}},
+//		{"optic_zoom_pos", {-1, R_OPTIC_ZOOM_POS}},
+//		{"cam_model", {-1, R_VISCA_MODUL_ID}}
+	};
 }
 
 int OemModuleHead::addSpecialModulSettings()
@@ -456,6 +481,13 @@ void OemModuleHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_SHUTTER);
 	head->add_capabilities(ptzp::PtzHead_Capability_DEFOG);
 	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_ROTATE);
+	head->add_capabilities(ptzp::PtzHead_Capability_ONE_PUSH_FOCUS);
+	head->add_capabilities(ptzp::PtzHead_Capability_NOISE_REDUCT);
+	head->add_capabilities(ptzp::PtzHead_Capability_GAMMA);
+	head->add_capabilities(ptzp::PtzHead_Capability_DIGITAL_ZOOM);
+	head->add_capabilities(ptzp::PtzHead_Capability_FOCUS_MODE);
+	head->add_capabilities(ptzp::PtzHead_Capability_WDR);
+
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
@@ -1413,4 +1445,14 @@ void OemModuleHead::enableZoomControlReadLatencyChecking(bool en)
 	zoomControls.readLatencyCheck = en;
 	if (en)
 		zoomControls.stats = new SimpleStatistics;
+}
+
+QVariant OemModuleHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return getRegister(_mapCap[c].second);
+}
+
+void OemModuleHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	return setProperty(_mapCap[c].first, val);
 }

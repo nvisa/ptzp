@@ -99,6 +99,9 @@ public:
 	void enableZoomControlStationaryFiltering(bool en);
 	void enableZoomControlErrorRateChecking(bool en);
 	void enableZoomControlReadLatencyChecking(bool en);
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
+
 protected:
 	int syncNext();
 	int dataReady(const unsigned char *bytes, int len);

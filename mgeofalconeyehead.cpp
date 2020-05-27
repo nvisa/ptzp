@@ -301,6 +301,61 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps, QString t
 		{"contrast_change", {C_EXTRAS_SET_CONTRAST_CHANGE, 0}},
 	};
 	nonRegisterSettings << "laser_reflections";
+
+	_mapCap = {
+//		{"focus_pos_set", {C_SET_FOCUS, R_FOCUS}},
+//		{"fov_pos", {C_SET_FOV, R_FOV}},
+		{ptzp::PtzHead_Capability_VIDEO_SOURCE, {C_CHOOSE_CAM, R_CAM}},
+		{ptzp::PtzHead_Capability_DIGITAL_ZOOM, {C_SET_DIGITAL_ZOOM, R_DIGI_ZOOM_POS}},
+		{ptzp::PtzHead_Capability_POLARITY, {C_SET_IR_POLARITY, R_IR_POLARITY}},
+		{ptzp::PtzHead_Capability_RETICLE_MODE, {C_SET_RETICLE_MODE, R_RETICLE_MODE}},
+		{ptzp::PtzHead_Capability_RETICLE_TYPE, {C_SET_RETICLE_TYPE, R_RETICLE_TYPE}},
+		{ptzp::PtzHead_Capability_RETICLE_INTENSITY, {C_SET_RETICLE_INTENSITY, R_RETICLE_INTENSITY}},
+		{ptzp::PtzHead_Capability_SYMBOLOGY, {C_SET_SYMBOLOGY, R_SYMBOLOGY}},
+//		{"rayleigh_sigma_coeff",
+//		 {C_SET_RAYLEIGH_SIGMA_COEFF, R_RAYLEIGH_SIGMA}},
+//		{"rayleigh_e_coeff", {C_SET_RAYLEIGH_E_COEFF, R_RAYLEIGH_E}},
+		{ptzp::PtzHead_Capability_IMAGE_PROCESS, {C_SET_IMAGE_PROC, R_IMAGE_PROC}},
+//		{"hf_sigma_coeff", {C_SET_HF_SIGMA_COEFF, R_HF_SIGMA}},
+//		{"hf_filter_std", {C_SET_HF_FILTER_STD, R_HF_FILTER}},
+		{ptzp::PtzHead_Capability_NUC, {C_SET_1_POINT_NUC, R_NUC}},
+//		{"two_point_nuc", {C_SET_1_POINT_NUC, R_NUC}},
+//		{"dmc_param", {C_SET_DMC_PARAM, R_DMC_PARAM}},
+//		{"hekos_param", {C_SET_HEKOS_PARAM, R_HEKOS_PARAM}},
+//		{"current_integration_mode",
+//		 {C_SET_CURRENT_INTEGRATION_MODE, R_CURRENT_INTEGRATION_MODE}},
+//		{"toggle_module_power", {C_SET_TOGGLE_MODULE_POWER_STATUS, 0}},
+//		{"optic_bypass", {C_SET_OPTIC_BYPASS, 0}},
+//		{"flas_protection", {C_SET_FLASH_PROTECTION, R_FLASH_PROTECTION}},
+//		{"optic_step", {C_SET_OPTIC_STEP, R_OPTIC_STEP}},
+//		{"dmc_azimuth", {0, R_DMC_AZIMUTH}},
+//		{"dmc_elevation", {0, R_DMC_ELEVATION}},
+//		{"dmc_bank", {0, R_DMC_BANK}},
+//		{"dmc_offset_save", {C_SET_DMC_OFFSET_SAVE, 0}},
+//		{"laser_up", {C_SET_LASER_UP, R_LASER_STATUS}},
+//		{"laser_fire", {C_SET_LASER_FIRE, 0}},
+//		{"laser_mode", {C_SET_LASER_FIRE_MODE, R_LASER_MODE}},
+//		{"ibit_start", {C_SET_IBIT_START, 0}},
+//		{"gmt", {C_SET_GMT, R_GMT}},
+		{ptzp::PtzHead_Capability_MENU_OVER_VIDEO, {C_SET_BUTTON_PRESSED, 0}},
+		{ptzp::PtzHead_Capability_RELAY_CONTROL, {C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
+//		{"dmc_azimuth_offset",
+//		 {C_SET_DMC_OFFSET_AZIMUTH, R_DMC_OFFSET_AZIMUTH}},
+//		{"dmc_elevation_offset",
+//		 {C_SET_DMC_OFFSET_ELEVATION, R_DMC_OFFSET_ELEVATION}},
+//		{"dmc_bank_offset", {C_SET_DMC_OFFSET_BANK, R_DMC_OFFSET_BANK}},
+
+//		{"software_version", {0, R_SOFTWARE_VERSION}},
+//		{"cooler", {0, R_COOLER}},
+//		{"ibit_power", {0, R_IBIT_POWER}},
+//		{"ibit_system", {0, R_IBIT_SYSTEM}},
+//		{"ibit_optic", {0, R_IBIT_OPTIC}},
+//		{"ibit_lrf", {0, R_IBIT_LRF}},
+//		{"brightness_mode", {C_EXTRAS_SET_BRIGHTNESS_MODE, R_EXTRAS_BRIGHTNESS_MODE}},
+//		{"contrast_mode", {C_EXTRAS_SET_CONTRAST_MODE, R_EXTRAS_CONTRAST_MODE}},
+		{ptzp::PtzHead_Capability_BRIGHTNESS, {C_EXTRAS_SET_BRIGHTNESS_CHANGE, 0}},
+		{ptzp::PtzHead_Capability_CONTRAST, {C_EXTRAS_SET_CONTRAST_CHANGE, 0}},
+	};
 }
 
 void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
@@ -323,6 +378,19 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE);
 
+		head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_SOURCE);
+		head->add_capabilities(ptzp::PtzHead_Capability_DIGITAL_ZOOM);
+		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_MODE);
+		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_TYPE);
+		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_INTENSITY);
+		head->add_capabilities(ptzp::PtzHead_Capability_SYMBOLOGY);
+		head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
+		head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
+		head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
+		head->add_capabilities(ptzp::PtzHead_Capability_NUC);
+		head->add_capabilities(ptzp::PtzHead_Capability_POLARITY);
+
+
 		if(firmwareType == "absgs"){
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
@@ -332,6 +400,9 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
+
+			head->add_capabilities(ptzp::PtzHead_Capability_BRIGHTNESS);
+			head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
 		}
 	}
 	else if (getProperty(R_CAM) == 1){
@@ -350,6 +421,16 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE);
 
+		head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_SOURCE);
+		head->add_capabilities(ptzp::PtzHead_Capability_DIGITAL_ZOOM);
+		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_MODE);
+		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_TYPE);
+		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_INTENSITY);
+		head->add_capabilities(ptzp::PtzHead_Capability_SYMBOLOGY);
+		head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
+		head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
+		head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
+
 		if(firmwareType == "absgs"){
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
@@ -359,6 +440,9 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
+
+			head->add_capabilities(ptzp::PtzHead_Capability_BRIGHTNESS);
+			head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
 		}
 	}
 
@@ -605,6 +689,16 @@ void MgeoFalconEyeHead::buttonClick(int b, int action){
 		setPropertyInt(35, b);
 	else if (action == -1)
 		setPropertyInt(36, b);
+}
+
+QVariant MgeoFalconEyeHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return getRegister(_mapCap[c].second);
+}
+
+void MgeoFalconEyeHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	setProperty(_mapCap[c].first, val);
 }
 
 void MgeoFalconEyeHead::screenClick(int x, int y, int action)

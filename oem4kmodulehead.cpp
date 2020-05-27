@@ -82,6 +82,15 @@ Oem4kModuleHead::Oem4kModuleHead()
 		{ "BlackWhite", 2 }, //night
 	};
 
+	_mapCap = {
+		{ptzp::PtzHead_Capability_BRIGHTNESS, {C_SET_BRIGHTNESS,R_BRIGHTNESS}},
+		{ptzp::PtzHead_Capability_CONTRAST, {C_SET_CONTRAST,R_CONTRAST}},
+		{ptzp::PtzHead_Capability_HUE, {C_SET_HUE,R_HUE}},
+		{ptzp::PtzHead_Capability_SATURATION, {C_SET_SATURATION,R_SATURATION}},
+		{ptzp::PtzHead_Capability_SHARPNESS, {C_SET_SHARPNESS,R_SHARPNESS}},
+		{ptzp::PtzHead_Capability_DAY_NIGHT, {C_SET_CAMMODE, R_CAMMODE}}
+	};
+
 	nextSync = 0;
 
 	switchCmd = false;
@@ -111,6 +120,16 @@ void Oem4kModuleHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_JOYSTICK_CONTROL);
+}
+
+QVariant Oem4kModuleHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return getRegister(_mapCap[c].second);
+}
+
+void Oem4kModuleHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	setProperty(_mapCap[c].first, val);
 }
 
 int Oem4kModuleHead::focusIn(int speed)

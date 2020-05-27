@@ -20,6 +20,8 @@ public:
 	};
 
 	void fillCapabilities(ptzp::PtzHead *head);
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 	int focusIn(int speed);
 	int focusOut(int speed);
