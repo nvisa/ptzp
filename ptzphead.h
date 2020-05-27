@@ -91,12 +91,15 @@ public:
 	void setZoomRatios(std::vector<int> v) { zoomRatios = v; }
 	int getZoomRatio();
 	virtual void fillCapabilities(ptzp::PtzHead *head) = 0;
+	virtual QVariant getCapabilityValues(ptzp::PtzHead_Capability c) = 0;
+	virtual void setCapabilityValues(ptzp::PtzHead_Capability c, uint val) = 0;
 	virtual bool hasCapability(ptzp::PtzHead_Capability c);
 	virtual QVariant getSetting(const QString &setting);
 	virtual QVariantMap getSettings();
 	virtual void setSetting(QString key, const QVariant &value);
 	virtual void setSettings(QVariantMap key);
 	QHash<QString, QPair<int, int>> settings {};
+	QHash<int, QPair<int, int>> _mapCap {};
 	QStringList nonRegisterSettings;
 	ptzp::PtzHead *capcache;
 	int getErrorCount(uint err);

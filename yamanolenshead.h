@@ -37,6 +37,8 @@ public:
 
 	void enableSyncing(bool en);
 	void setSyncInterval(int interval);
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 protected:
 	int syncNext();

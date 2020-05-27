@@ -38,6 +38,8 @@ public:
 	int panSet(int pDeg, int pSpeed);
 	int tiltSet(int tDeg, int tSpeed);
 	int pantiltSet(float pDeg, float tDeg, int pSpeed, int tSpeed);
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 	void initialize();
 signals:

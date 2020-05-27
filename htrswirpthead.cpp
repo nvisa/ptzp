@@ -106,6 +106,16 @@ int HtrSwirPtHead::panTiltGoPos(float ppos, float tpos)
 	return sendCommand(ptzCommandList.at(C_GO_POS).arg(ppos).arg(tpos));
 }
 
+QVariant HtrSwirPtHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void HtrSwirPtHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int HtrSwirPtHead::sendCommand(const QString &key)
 {
 	QByteArray cmd = key.toStdString().c_str();

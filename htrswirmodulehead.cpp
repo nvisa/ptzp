@@ -83,6 +83,16 @@ uint HtrSwirModuleHead::getProperty(uint r)
 	return getRegister(r);
 }
 
+QVariant HtrSwirModuleHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void HtrSwirModuleHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int HtrSwirModuleHead::sendCommand(const QString &key)
 {
 	QByteArray cmd = key.toStdString().c_str();

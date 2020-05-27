@@ -32,6 +32,9 @@ public:
 	QJsonObject factorySettings(const QString &file);
 	float getFovMax();
 	void initHead();
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
+
 protected slots:
 	void timeout();
 protected:

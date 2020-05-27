@@ -364,3 +364,13 @@ void IRDomePTHead::setDeviceVariant(IRDomePTHead::DeviceVariant v)
 {
 	devvar = v;
 }
+
+QVariant IRDomePTHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void IRDomePTHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}

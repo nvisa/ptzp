@@ -190,6 +190,17 @@ void MgeoGunGorHead::initHead()
 	QTimer::singleShot(1000, this, SLOT(timeout()));
 }
 
+QVariant MgeoGunGorHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	//TODO
+	return QVariant();
+}
+
+void MgeoGunGorHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 void MgeoGunGorHead::timeout()
 {
 	if (nextSync != syncList.size()) {

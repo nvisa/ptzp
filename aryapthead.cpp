@@ -189,6 +189,16 @@ int AryaPTHead::panTiltGoPos(float ppos, float tpos)
 		ptzCommandList.at(C_PAN_TILT_POS).arg((int)ppos).arg((int)tpos));
 }
 
+QVariant AryaPTHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void AryaPTHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 void AryaPTHead::setMaxSpeed(int value)
 {
 	MaxSpeed = value;

@@ -27,6 +27,8 @@ public:
 	int setOutput(int no, bool on);
 	void syncDevice();
 	virtual QString whoAmI();
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 protected:
 	int panPos;

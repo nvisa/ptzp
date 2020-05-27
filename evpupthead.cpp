@@ -98,6 +98,16 @@ QString EvpuPTHead::whoAmI()
 	return "";
 }
 
+QVariant EvpuPTHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void EvpuPTHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int EvpuPTHead::panLeft(float speed)
 {
 	speed = speed * -MaxSpeedA;

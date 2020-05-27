@@ -39,6 +39,17 @@ int MoxaControlHead::getHeadStatus()
 	return 0;
 }
 
+QVariant MoxaControlHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	//TODO
+	return QVariant();
+}
+
+void MoxaControlHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int MoxaControlHead::sendCommand(const QString &key)
 {
 	mInfo("Sending command %s", qPrintable(key));

@@ -168,6 +168,17 @@ float FlirPTTcpHead::getTiltAngle()
 	return (flirConfig.tiltPos * 90.0) / flirConfig.maxTiltPos / 3;
 }
 
+QVariant FlirPTTcpHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	//TODO
+	return QVariant();
+}
+
+void FlirPTTcpHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int FlirPTTcpHead::dataReady(const unsigned char *bytes, int len)
 {
 	pingTimer.restart();

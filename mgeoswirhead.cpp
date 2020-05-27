@@ -144,6 +144,16 @@ uint MgeoSwirHead::getProperty(uint r)
 	return getRegister(r);
 }
 
+QVariant MgeoSwirHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void MgeoSwirHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int MgeoSwirHead::syncNext()
 {
 	return sendCommand(commandList.at(nextSync));

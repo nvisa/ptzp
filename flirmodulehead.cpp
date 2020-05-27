@@ -201,6 +201,16 @@ uint FlirModuleHead::getProperty(uint r)
 	return -1;
 }
 
+QVariant FlirModuleHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void FlirModuleHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int FlirModuleHead::sendCommand(const QString &key)
 {
 	return transport->send(key.toUtf8());

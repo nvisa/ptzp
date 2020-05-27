@@ -45,6 +45,16 @@ public:
 		head->add_capabilities(ptzp::PtzHead_Capability_PAN);
 		head->add_capabilities(ptzp::PtzHead_Capability_TILT);
 	}
+
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c)
+	{
+		return QVariant();
+	}
+
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+	{
+		//TODO
+	}
 };
 
 class VirtualPtzpZoomHead : public LifeTimeHead
@@ -57,6 +67,16 @@ public:
 		head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
+	}
+
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c)
+	{
+		return QVariant();
+	}
+
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+	{
+		//TODO
 	}
 };
 

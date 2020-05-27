@@ -11,6 +11,8 @@ public:
 
 	void fillCapabilities(ptzp::PtzHead *head);
 	int getHeadStatus();
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 protected:
 	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);

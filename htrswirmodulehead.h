@@ -34,6 +34,8 @@ public:
 //	virtual int startZoomOut(int speed);
 //	virtual int stopZoom();
 //	virtual int getZoom();
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 protected:
 	int sendCommand(const QString &key);

@@ -290,6 +290,16 @@ void YamanoLensHead::setSyncInterval(int interval)
 	syncInterval = interval;
 }
 
+QVariant YamanoLensHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	return QVariant();
+}
+
+void YamanoLensHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 int YamanoLensHead::syncNext()
 {
 	const unsigned char *p = protoBytes[nextSync];

@@ -18,6 +18,8 @@ public:
 	virtual int focusStop();
 	virtual void setProperty(uint r, uint x);
 	virtual uint getProperty(uint r);
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 	int setFocusMode(uint x);
 	int setFocusValue(uint x);

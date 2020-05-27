@@ -544,6 +544,17 @@ void MgeoThermalHead::initHead()
 	QTimer::singleShot(1000, this, SLOT(timeout()));
 }
 
+QVariant MgeoThermalHead::getCapabilityValues(ptzp::PtzHead_Capability c)
+{
+	//TODO
+	return QVariant();
+}
+
+void MgeoThermalHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
+{
+	//TODO
+}
+
 QList<int> MgeoThermalHead::loadDefaultRegisterValues()
 {
 	QList<int> regs;

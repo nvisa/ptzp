@@ -26,6 +26,8 @@ public:
 	virtual float getPanAngle();
 	virtual float getTiltAngle();
 	int panTiltGoPos(float ppos, float tpos);
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 protected:
 

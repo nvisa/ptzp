@@ -43,6 +43,8 @@ public:
 
 	void setDeviceVariant(DeviceVariant v);
 	DeviceVariant getDeviceVariant() { return devvar; }
+	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
+	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
 
 protected:
 	int dataReady(const unsigned char *bytes, int len);
