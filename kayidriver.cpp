@@ -228,6 +228,8 @@ void KayiDriver::timeout()
 				}
 			}
 		}
+		if (QFile::exists("/run/dont_wait_eye_for_pt"))
+			tp2->enableQueueFreeCallbacks(true);
 		state = WAIT_ALIVE;
 		break;
 	case WAIT_ALIVE:
