@@ -11,8 +11,9 @@
 #include <ptzcontrolinterface.h>
 #include <ptzpatterninterface.h>
 
-class PatternNg: QObject
+class PatternNg: public QObject
 {
+	Q_OBJECT
 public:
 	explicit PatternNg(PtzControlInterface *ctrl = 0);
 
