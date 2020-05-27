@@ -35,6 +35,48 @@ using grpc::ServerWriter;
 using grpc::Status;
 using namespace std;
 
+class PtzpGrpcServerInterceptor : public grpc::experimental::Interceptor
+{
+public:
+	PtzpGrpcServerInterceptor(grpc::experimental::ServerRpcInfo *info)
+	{
+		rpc = info;
+	}
+
+	void Intercept(grpc::experimental::InterceptorBatchMethods *methods) override
+	{
+		if (methods->QueryInterceptionHookPoint(grpc::experimental::InterceptionHookPoints::POST_RECV_MESSAGE)) {
+			//ffDebug() << "intercepting";
+		}
+		methods->Proceed();
+	}
+protected:
+	grpc::experimental::ServerRpcInfo *rpc;
+};
+
+class PtzpGrpcServerInterceptorFactory : public grpc::experimental::ServerInterceptorFactoryInterface
+{
+public:
+	PtzpGrpcServerInterceptorFactory()
+	{
+		t.start();
+	}
+public:
+	grpc::experimental::Interceptor *CreateServerInterceptor(grpc::experimental::ServerRpcInfo *info) override
+	{
+		if (t.elapsed() > 1000) {
+			if (QFile::exists("/run/enable_grpc_debug"))
+				ffDebug() << "creating interceptor for" << info->method() << (int)info->type();
+			t.restart();
+		}
+		return new PtzpGrpcServerInterceptor(info);
+	}
+
+protected:
+	std::mutex m;
+	QElapsedTimer t;
+};
+
 class GRpcThread : public QThread
 {
 public:
@@ -51,6 +93,9 @@ public:
 		ServerBuilder builder;
 		builder.AddListeningPort(ep, grpc::InsecureServerCredentials());
 		builder.RegisterService(service);
+		std::vector<std::unique_ptr<grpc::experimental::ServerInterceptorFactoryInterface>> creators;
+		creators.push_back(std::unique_ptr<grpc::experimental::ServerInterceptorFactoryInterface>(new PtzpGrpcServerInterceptorFactory()));
+		builder.experimental().SetInterceptorCreators(std::move(creators));
 		std::unique_ptr<Server> server(builder.BuildAndStart());
 		server->Wait();
 	}
