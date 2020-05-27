@@ -556,6 +556,8 @@ int MgeoFalconEyeHead::focusStop()
 
 int MgeoFalconEyeHead::getHeadStatus()
 {
+	if (!isAlive())
+		return ST_ERROR;
 	if (nextSync == syncEndPoint)
 		return ST_NORMAL;
 	return ST_SYNCING;
