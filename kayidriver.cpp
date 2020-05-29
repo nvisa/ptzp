@@ -218,11 +218,11 @@ void KayiDriver::timeout()
 		if(1){
 			if(firmwareType == "absgs") {
 				headModule->setProperty(37, 2);
-				headModule->setProperty(5, 1);
+				headModule->setProperty(5, 0);
 				headModule->setProperty(37, 2);
 				while (headModule->getProperty(61) != 2) {
 					usleep(1000);
-					headModule->setProperty(37, 1);
+					headModule->setProperty(37, 0);
 				}
 			}
 			else {
