@@ -1266,7 +1266,7 @@ grpc::Status PtzpDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 	if (head == nullptr)
 		return grpc::Status::CANCELLED;
 
-	if(cap == ptzp::PtzHead_Capability_ZOOM){
+	if(cap == ptzp::PtzHead_Capability_ZOOM || cap == ptzp::PtzHead_Capability_KARDELEN_ZOOM){
 		GetZoom(context,request,response);
 	}
 
@@ -1288,7 +1288,7 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 	if (head == nullptr)
 		return grpc::Status::CANCELLED;
 
-	if(cap == ptzp::PtzHead_Capability_ZOOM){
+	if(cap == ptzp::PtzHead_Capability_ZOOM || cap == ptzp::PtzHead_Capability_KARDELEN_ZOOM){
 		SetZoom(context,request,response);
 	}
 
