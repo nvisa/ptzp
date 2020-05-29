@@ -152,12 +152,10 @@ grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 {
 	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS) {
 		response->set_enum_field(true); // means we got auto-manual brightness for the kardelen dudes.
-		response->set_raw_value(brightnessMode);
 	}
 
 	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST) {
 		response->set_enum_field(true); // means we got auto-manual contrast for the kardelen dudes.
-		response->set_raw_value(brightnessMode);
 	}
 
 	if ( cap == ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER){
@@ -201,6 +199,15 @@ grpc::Status KayiDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 	}
 
 	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
+}
+
+grpc::Status KayiDriver::SetImagingControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, google::protobuf::Empty *response)
+{
+	uint val = request->new_value();
+	headModule->setProperty(38, val);
+	headModule->setProperty(39, val);
+	return grpc::Status::OK;
+
 }
 
 void KayiDriver::timeout()
