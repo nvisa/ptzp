@@ -193,9 +193,11 @@ QString IRDomeDriver::getCapString(ptzp::PtzHead_Capability cap)
 
 grpc::Status IRDomeDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
 {
-	if(cap == ptzp::PtzHead_Capability_FOCUS || cap == ptzp::PtzHead_Capability_KARDELEN_FOCUS){
+	if(cap == ptzp::PtzHead_Capability_FOCUS_MODE){
 		response->set_enum_field(true);
-		response->set_raw_value(headModule->getProperty(OemModuleHead::R_FOCUS_MODE));
+		response->add_supported_values(0);
+		response->add_supported_values(1);
+		response->set_value(headModule->getProperty(OemModuleHead::R_FOCUS_MODE));
 	}
 
 	if(cap == ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW){
