@@ -415,7 +415,7 @@ OemModuleHead::OemModuleHead()
 //		{"flip", {C_VISCA_SET_FLIP_MODE, R_FLIP}},
 //		{"mirror", {C_VISCA_SET_MIRROR_MODE, R_MIRROR}},
 		{ptzp::PtzHead_Capability_ONE_PUSH_FOCUS, {C_VISCA_SET_ONE_PUSH, R_COUNT}},
-		{ptzp::PtzHead_Capability_VIDEO_ROTATE, {-1, R_DISPLAY_ROT}},
+		{ptzp::PtzHead_Capability_VIDEO_ROTATE, {ptzp::PtzHead_Capability_VIDEO_ROTATE, R_DISPLAY_ROT}},
 //		{"digi_zoom_pos", {-1, R_DIGI_ZOOM_POS}},
 //		{"optic_zoom_pos", {-1, R_OPTIC_ZOOM_POS}},
 //		{"cam_model", {-1, R_VISCA_MODUL_ID}}
@@ -1284,6 +1284,23 @@ void OemModuleHead::setProperty(uint r, uint x)
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_TOP_IRIS, (int)((x & 0xfff000) >> 12));
 		setRegister(R_BOT_IRIS, (int)(x & 0x000fff));
+	}else if (r == ptzp::PtzHead_Capability_VIDEO_ROTATE){
+		if (x > 3)
+			return;
+		if (x == 0){
+			setProperty(C_VISCA_SET_FLIP_MODE, 1);
+			setProperty(C_VISCA_SET_MIRROR_MODE, 0);
+		} else if (x == 1){
+			setProperty(C_VISCA_SET_FLIP_MODE, 0);
+			setProperty(C_VISCA_SET_MIRROR_MODE, 1);
+		} else if (x == 2){
+			setProperty(C_VISCA_SET_FLIP_MODE, 1);
+			setProperty(C_VISCA_SET_MIRROR_MODE, 1);
+		} else if (x == 3){
+			setProperty(C_VISCA_SET_FLIP_MODE, 0);
+			setProperty(C_VISCA_SET_MIRROR_MODE, 0);
+		}
+		setRegister(R_DISPLAY_ROT, x);
 	}
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0) {
