@@ -384,11 +384,11 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_TYPE);
 		head->add_capabilities(ptzp::PtzHead_Capability_RETICLE_INTENSITY);
 		head->add_capabilities(ptzp::PtzHead_Capability_SYMBOLOGY);
-		head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
 		head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
 		head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
 		head->add_capabilities(ptzp::PtzHead_Capability_NUC);
 		head->add_capabilities(ptzp::PtzHead_Capability_POLARITY);
+
 
 
 		if(firmwareType == "absgs"){
@@ -403,6 +403,8 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 
 			head->add_capabilities(ptzp::PtzHead_Capability_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
+		} else {
+			head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
 		}
 	}
 	else if (getProperty(R_CAM) == 1){
@@ -443,6 +445,8 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 
 			head->add_capabilities(ptzp::PtzHead_Capability_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
+		} else {
+			head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
 		}
 	}
 
