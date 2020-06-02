@@ -173,30 +173,6 @@ grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 
 grpc::Status KayiDriver::SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
 {
-	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS) {
-		if (request->raw_value()) {
-			headModule->setProperty(38, 1);
-			brightnessMode = AUTO;
-			return grpc::Status::OK;
-		}
-		else {
-			headModule->setProperty(38,0);
-			brightnessMode = MANUAL;
-		}
-	}
-
-	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST) {
-		if (request->raw_value()) {
-			headModule->setProperty(39, 1);
-			brightnessMode = AUTO;
-			return grpc::Status::OK;
-		}
-		else {
-			headModule->setProperty(39,0);
-			brightnessMode = MANUAL;
-		}
-	}
-
 	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
 }
 
