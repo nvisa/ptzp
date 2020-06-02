@@ -612,32 +612,74 @@ int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
 	if (getRegister(R_RELAY_STATUS) == 0 && getRegister(R_CAM) == 0)
 		day = false;
 	int fov_type = getRegister(R_FOV); // wide: 0, narrow: 2, middle: 1
-	if (day) {
-		if (fov_type == 0) {
-			hor = 11.0;
-			ver = 8.25;
+
+	if(firmwareType == "absgs"){
+		if (day) {
+			if (fov_type == 0) {
+				hor = 11.0;
+				ver = 8.25;
+			} else if (fov_type == 1) {
+				hor = 6.0;
+				ver = 4.5;
+			} else if (fov_type == 2){
+				hor = 2.0;
+				ver = 1.5;
+			} else if (fov_type == 3){
+				hor = 10.0;
+				ver = 7.5;
+			} else if (fov_type == 4){
+				hor = 3.5;
+				ver = 2.63;
+			}
+			return 0;
+		}
+
+		/* thermal */
+		if (fov_type == 0) { // thermal
+			hor = 25.0;
+			ver = 20.0;
 		} else if (fov_type == 1) {
 			hor = 6.0;
-			ver = 4.5;
+			ver = 4.8;
+		} else if (fov_type == 2){
+			hor = 2.0;
+			ver = 1.6;
+		} else if (fov_type == 3){
+			hor = 10.0;
+			ver = 8.0;
+		} else if (fov_type == 4){
+			hor = 3.5;
+			ver = 2.8;
+		}
+		return 0;
+	} else {
+		if (day) {
+			if (fov_type == 0) {
+				hor = 11.0;
+				ver = 8.25;
+			} else if (fov_type == 1) {
+				hor = 6.0;
+				ver = 4.5;
+			} else {
+				hor = 2.0;
+				ver = 1.5;
+			}
+			return 0;
+		}
+
+		/* thermal */
+		if (fov_type == 0) { // thermal
+			hor = 25.0;
+			ver = 20.0;
+		} else if (fov_type == 1) {
+			hor = 6.0;
+			ver = 4.8;
 		} else {
 			hor = 2.0;
-			ver = 1.5;
+			ver = 1.6;
 		}
 		return 0;
 	}
-
-	/* thermal */
-	if (fov_type == 0) { // thermal
-		hor = 25.0;
-		ver = 20.0;
-	} else if (fov_type == 1) {
-		hor = 6.0;
-		ver = 4.8;
-	} else {
-		hor = 2.0;
-		ver = 1.6;
-	}
-	return 0;
 }
 
 float *MgeoFalconEyeHead::getFOVAbsgs()
