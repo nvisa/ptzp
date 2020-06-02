@@ -388,7 +388,7 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
 		head->add_capabilities(ptzp::PtzHead_Capability_NUC);
 		head->add_capabilities(ptzp::PtzHead_Capability_POLARITY);
-
+		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MISSION_EXECUTION);
 
 
 		if(firmwareType == "absgs"){
@@ -432,6 +432,7 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
 		head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
 		head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
+		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MISSION_EXECUTION);
 
 		if(firmwareType == "absgs"){
 			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
