@@ -24,6 +24,8 @@ public:
 	grpc::Status GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap);
 	grpc::Status SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap);
 	grpc::Status SetImagingControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, google::protobuf::Empty *response);
+	grpc::Status GetImagingControl(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::ImagingResponse *response);
+
 protected slots:
 	void timeout();
 

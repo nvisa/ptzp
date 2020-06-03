@@ -100,6 +100,12 @@ service PTZService {
 	rpc PoweroffSystem(AdvancedCmdRequest) returns (AdvancedCmdResponse) {}
 	rpc ScreenClick(ClickParameter) returns (google.protobuf.Empty) {}
 	rpc SetImagingControl(AdvancedCmdRequest) returns (google.protobuf.Empty){}
+	rpc GetImagingControl(google.protobuf.Empty) returns (ImagingResponse){}
+}
+
+message ImagingResponse {
+	bool status = 1;
+	repeated int32 caps = 2; 
 }
 
 message AdvancedCmdRequest {
