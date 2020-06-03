@@ -363,20 +363,9 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 	if(getProperty(R_CAM) == 0){
 		head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 		head->add_capabilities(ptzp::PtzHead_Capability_FOCUS);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_POLARITY);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_RANGE);
+
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MENU_OVER_VIDEO);
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_HIDE_SYMBOLOGY);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NUC);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DIGITAL_ZOOM);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
-
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE);
 
 		head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_SOURCE);
 		head->add_capabilities(ptzp::PtzHead_Capability_DIGITAL_ZOOM);
@@ -388,19 +377,8 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
 		head->add_capabilities(ptzp::PtzHead_Capability_NUC);
 		head->add_capabilities(ptzp::PtzHead_Capability_POLARITY);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MISSION_EXECUTION);
-
 
 		if(firmwareType == "absgs"){
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FUSION_VIEW);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
-
 			head->add_capabilities(ptzp::PtzHead_Capability_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
 		} else {
@@ -410,18 +388,8 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 	else if (getProperty(R_CAM) == 1){
 		head->add_capabilities(ptzp::PtzHead_Capability_ZOOM);
 		head->add_capabilities(ptzp::PtzHead_Capability_FOCUS);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_RANGE);
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MENU_OVER_VIDEO);
 		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_HIDE_SYMBOLOGY);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DIGITAL_ZOOM);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
-
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE);
 
 		head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_SOURCE);
 		head->add_capabilities(ptzp::PtzHead_Capability_DIGITAL_ZOOM);
@@ -432,18 +400,8 @@ void MgeoFalconEyeHead::fillCapabilities(ptzp::PtzHead *head)
 		head->add_capabilities(ptzp::PtzHead_Capability_IMAGE_PROCESS);
 		head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
 		head->add_capabilities(ptzp::PtzHead_Capability_RELAY_CONTROL);
-		head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MISSION_EXECUTION);
 
 		if(firmwareType == "absgs"){
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_MULTI_ROI);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FUSION_VIEW);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DETECTION);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_TRACKING);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_AUTO_TRACK_DETECTION);
-			head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CHANGE_DETECTION);
-
 			head->add_capabilities(ptzp::PtzHead_Capability_BRIGHTNESS);
 			head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
 		} else {
