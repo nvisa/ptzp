@@ -149,11 +149,11 @@ grpc::Status KayiDriver::SetZoom(grpc::ServerContext *context, const ptzp::Advan
 
 grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
 {
-	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS) {
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS || cap == ptzp::PtzHead_Capability_BRIGHTNESS) {
 		response->set_enum_field(true); // means we got auto-manual brightness for the kardelen dudes.
 	}
 
-	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST) {
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST || cap == ptzp::PtzHead_Capability_CONTRAST) {
 		response->set_enum_field(true); // means we got auto-manual contrast for the kardelen dudes.
 	}
 

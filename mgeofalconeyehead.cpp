@@ -333,7 +333,7 @@ MgeoFalconEyeHead::MgeoFalconEyeHead(QList<int> relayConfig, bool gps, QString t
 //		{"dmc_bank", {0, R_DMC_BANK}},
 //		{"dmc_offset_save", {C_SET_DMC_OFFSET_SAVE, 0}},
 //		{"laser_up", {C_SET_LASER_UP, R_LASER_STATUS}},
-//		{"laser_fire", {C_SET_LASER_FIRE, 0}},
+		{ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER, {C_SET_LASER_FIRE, 0}},
 //		{"laser_mode", {C_SET_LASER_FIRE_MODE, R_LASER_MODE}},
 //		{"ibit_start", {C_SET_IBIT_START, 0}},
 //		{"gmt", {C_SET_GMT, R_GMT}},
