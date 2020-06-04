@@ -234,7 +234,21 @@ grpc::Status IRDomeDriver::SetAdvancedControl(grpc::ServerContext *context, cons
 grpc::Status IRDomeDriver::SetImagingControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ::google::protobuf::Empty *response)
 {
 	uint val = request->new_value();
-	headModule-> setProperty(21, val);
+	if(val == 0)
+		headModule-> setProperty(21, 3);
+	else if( val == 1)
+		headModule-> setProperty(21, 0);
+	else return grpc::Status::CANCELLED;
+	return grpc::Status::OK;
+}
+
+grpc::Status IRDomeDriver::GetImagingControl(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::ImagingResponse *response)
+{
+	// manuel: false, auto: true)
+	if (headModule->getProperty(19) == 0)
+		response->set_status(true);
+	else if (headModule->getProperty(19) == 3)
+		response->set_status(false);
 	return grpc::Status::OK;
 }
 
