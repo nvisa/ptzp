@@ -187,7 +187,7 @@ grpc::Status KayiDriver::SetImagingControl(grpc::ServerContext *context, const p
 
 grpc::Status KayiDriver::GetImagingControl(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::ImagingResponse *response)
 {
-	response->set_status(headModule->getProperty(38));
+	response->set_status(headModule->getProperty(66));
 	return grpc::Status::OK;
 }
 
