@@ -195,9 +195,14 @@ grpc::Status IRDomeDriver::GetAdvancedControl(grpc::ServerContext *context, cons
 {
 	if(cap == ptzp::PtzHead_Capability_FOCUS_MODE){
 		response->set_enum_field(true);
-		response->add_supported_values(0);
-		response->add_supported_values(1);
-		response->set_value(headModule->getProperty(OemModuleHead::R_FOCUS_MODE));
+		response->add_supported_values(0);//manuel
+		response->add_supported_values(1);//auto
+		headModule->getProperty(OemModuleHead::R_FOCUS_MODE) ? response->set_value(0) : response->set_value(1);
+		return grpc::Status::OK;
+	}
+
+	if(cap == ptzp::PtzHead_Capability_FOCUS){
+		response->set_enum_field(true);
 	}
 
 	if(cap == ptzp::PtzHead_Capability_KARDELEN_DAY_VIEW){
@@ -214,6 +219,13 @@ grpc::Status IRDomeDriver::SetAdvancedControl(grpc::ServerContext *context, cons
 		if(request->raw_value())
 			headModule->setProperty(16, 1); //auto 0 manuel 1
 		else headModule->setProperty(16, 0);
+	}
+
+	if(cap == ptzp::PtzHead_Capability_FOCUS_MODE){
+		//head tarafında manuel: 1, auto: 0
+		//Fakat api dışarı açılırken auto: 1, manuel: 0
+		request->new_value() ? headModule->setProperty(16,0) : headModule->setProperty(16,1);
+		return grpc::Status::OK;
 	}
 
 	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
