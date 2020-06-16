@@ -8,7 +8,7 @@
 #include <QStringList>
 
 class PCA9538Driver;
-class RelayControlThread;
+class RelayControlThreadDortGoz;
 
 class MgeoDortgozHead : public PtzpHead
 {
@@ -77,7 +77,7 @@ private:
 	int readRelayConfig(QString filename);//
 	QElapsedTimer syncTimer;
 	PCA9538Driver *i2c;//OK
-	RelayControlThread *relth; //OK
+	RelayControlThreadDortGoz *relth; //OK
 	bool fastSwitch;//OK
 	int thermalRelay;//OK
 	int dayCamRelay;//OK

@@ -268,10 +268,10 @@ public:
 	uchar controlRelay(uchar reg, uint val) { return i2cWrite(reg, val); }
 };
 
-class RelayControlThread : public QThread
+class RelayControlThreadDortGoz : public QThread
 {
 public:
-	RelayControlThread()
+	RelayControlThreadDortGoz()
 	{
 		switching = false;
 		x = 0;
@@ -327,7 +327,7 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 	i2c = new PCA9538Driver;
 	i2c->open();
 	i2c->resetAllPorts();
-	relth = new RelayControlThread;
+	relth = new RelayControlThreadDortGoz;
 	relth->i2c = i2c;
 	relth->dayCamRelay = dayCamRelay;
 	relth->thermalRelay = thermalRelay;
