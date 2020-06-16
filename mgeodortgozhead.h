@@ -63,6 +63,8 @@ public:
 	virtual uint getProperty(uint r); //ok
 	QVariant getCapabilityValues(ptzp::PtzHead_Capability c);
 	void setCapabilityValues(ptzp::PtzHead_Capability c, uint val);
+	void screenClick(int x, int y, int action);
+	void buttonClick(int b, int action);
 
 protected:
 	int syncNext();//ok

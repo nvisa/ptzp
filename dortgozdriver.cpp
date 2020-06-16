@@ -83,6 +83,25 @@ grpc::Status DortgozDriver::SetAdvancedControl(grpc::ServerContext *context, con
 	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
 }
 
+grpc::Status DortgozDriver::SetImagingControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, google::protobuf::Empty *response)
+{
+	uint val = request->new_value();
+	if (val == 1)
+		headModule->setProperty(13, 1);
+	else if (val == 0)
+		headModule->setProperty(13, 2);
+	return grpc::Status::OK;
+}
+
+grpc::Status DortgozDriver::GetImagingControl(grpc::ServerContext *context, const google::protobuf::Empty *request, ptzp::ImagingResponse *response)
+{
+	if (headModule->getProperty(18) == 1)
+		response->set_status(true);
+	else if (headModule->getProperty(18) == 2)
+		response->set_status(false);
+	return grpc::Status::OK;
+}
+
 void DortgozDriver::timeout()
 {
 	mLog("Driver state: %d", state);
