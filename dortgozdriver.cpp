@@ -67,7 +67,27 @@ QString DortgozDriver::getCapString(ptzp::PtzHead_Capability cap)
 
 grpc::Status DortgozDriver::GetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
 {
-	return PtzpDriver::SetAdvancedControl(context, request, response, cap);
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW) {
+		response->set_value(1);
+		return grpc::Status::OK;
+	}
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS || cap == ptzp::PtzHead_Capability_BRIGHTNESS) {
+		response->set_enum_field(true); // means we got auto-manual brightness for the kardelen dudes.
+	}
+
+	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST || cap == ptzp::PtzHead_Capability_CONTRAST) {
+		response->set_enum_field(true); // means we got auto-manual contrast for the kardelen dudes.
+	}
+	if (cap == ptzp::PtzHead_Capability_POLARITY) {
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+		response->add_supported_values(3);
+		response->add_supported_values(4);
+		response->add_supported_values(5);
+		response->add_supported_values(6);
+		response->add_supported_values(7);
+	}
+	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
 }
 
 grpc::Status DortgozDriver::SetAdvancedControl(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response, ptzp::PtzHead_Capability cap)
