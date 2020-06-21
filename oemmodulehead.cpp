@@ -21,6 +21,11 @@
 	for (int i = 0; i < len; i++)                                              \
 		qDebug("%s: %d: 0x%x", __func__, i, p[i]);
 
+enum FocusMode {
+	FM_AUTO,
+	FM_MANUAL
+};
+
 enum Modules {
 	SONY_FCB_CV7500 = 0x0641,
 	OEM = 0x045F,
@@ -60,6 +65,8 @@ enum Commands {
 	C_VISCA_SET_GAIN_LIMIT_OEM,		// upper << 8 & lower
 	C_VISCA_SET_SHUTTER_LIMIT_OEM,	// upper << 8 & lower
 	C_VISCA_SET_IRIS_LIMIT_OEM,		// upper << 8 & lower
+	C_VISCA_SET_FOCUS_POS,			// 0x1000~0xF000
+	C_VISCA_GET_BLOCK_INQ,
 	C_VISCA_GET_ZOOM,
 
 	C_VISCA_GET_EXPOSURE,
@@ -105,7 +112,7 @@ const Commands queryPatternList[] = {
 	C_VISCA_GET_ZOOM,
 	C_VISCA_GET_ZOOM,
 	C_VISCA_GET_ZOOM,
-	C_VISCA_GET_ZOOM,
+	C_VISCA_GET_BLOCK_INQ,
 	C_VISCA_GET_IRCF_STATUS,
 };
 
@@ -279,6 +286,8 @@ static unsigned char protoBytes[C_COUNT][MAX_CMD_LEN] = {
 	{0x12, 0x00, 0x81, 0x01, 0x04, 0x40, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00,
 	 0x00, 0xff}, // C_VISCA_SET_IRIS_LIMIT_OEM
 
+	{0x09, 0x07, 0x81, 0x01, 0x04, 0x48, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00}, // C_VISCA_SET_FOCUS_POS
+	{0x06, 0x10, 0x81, 0x09, 0x7e, 0x7e, 0x00, 0xff, 0x01}, // C_VISCA_GET_BLOCK_INQ
 	{0x05, 0x07, 0x81, 0x09, 0x04, 0x47, 0xff, 0x00}, // C_VISCA_GET_ZOOM
 
 	{0x05, 0x07, 0x81, 0x09, 0x04, 0x4b, 0xff, 0x00}, // get_exposure_value
@@ -388,7 +397,8 @@ OemModuleHead::OemModuleHead()
 		{"digi_zoom_pos", {-1, R_DIGI_ZOOM_POS}},
 		{"optic_zoom_pos", {-1, R_OPTIC_ZOOM_POS}},
 		{"focus", {C_VISCA_SET_FOCUS, R_COUNT}},
-		{"cam_model", {-1, R_VISCA_MODUL_ID}}
+		{"cam_model", {-1, R_VISCA_MODUL_ID}},
+		{"focus_pos", {C_VISCA_SET_FOCUS_POS, R_FOCUS_POS}}
 	};
 	setRegister(R_VISCA_MODUL_ID, 0);
 	auto &m = SimpleMetrics::Metrics::instance();
@@ -556,6 +566,8 @@ int OemModuleHead::setZoom(uint pos)
 
 int OemModuleHead::focusIn(int speed)
 {
+	if (getRegister(R_FOCUS_MODE) != FM_MANUAL)
+		return -1;
 	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
 	p[4 + 2] = 0x20 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -563,6 +575,8 @@ int OemModuleHead::focusIn(int speed)
 
 int OemModuleHead::focusOut(int speed)
 {
+	if (getRegister(R_FOCUS_MODE) != FM_MANUAL)
+		return -1;
 	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
 	p[4 + 2] = 0x30 + speed;
 	return transport->send((const char *)p + 2, p[0]);
@@ -570,6 +584,8 @@ int OemModuleHead::focusOut(int speed)
 
 int OemModuleHead::focusStop()
 {
+	if (getRegister(R_FOCUS_MODE) != FM_MANUAL)
+		return -1;
 	unsigned char *p = protoBytes[C_VISCA_SET_FOCUS];
 	p[4 + 2] = 0x00;
 	return transport->send((const char *)p + 2, p[0]);
@@ -764,7 +780,11 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_ZOOM_TYPE, (p[2] == 0x0));
 	} else if (sendcmd == C_VISCA_GET_FOCUS_MODE) {
 		mInfo("Focus mode synced");
-		setRegister(R_FOCUS_MODE, (p[2] == 0x03));
+		if (p[2] != 0x02 && p[2] != 0x03) {
+			mDebug("Focus mode Error. %s", qPrintable(QByteArray((char*)bytes, len).toHex()));
+			return expected;
+		}
+		setRegister(R_FOCUS_MODE, (p[2] == 0x03) ? FM_MANUAL : FM_AUTO);
 	} else if (sendcmd == C_VISCA_GET_ZOOM_TRIGGER) {
 		mInfo("Zoom Trigger synced");
 		if (p[2] == 0x02)
@@ -878,6 +898,70 @@ int OemModuleHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(R_TOP_IRIS, (uint(p[2]) << 8) + (p[3] << 4) + p[4]);
 			setRegister(R_BOT_IRIS, (uint(p[5]) << 8) + (p[6] << 4) + p[7]);
 		}
+	} else if (sendcmd == C_VISCA_GET_BLOCK_INQ) {
+		if (p[1] != 0x50 || ((p[2] | p[3] | p[4] | p[5] |
+							  p[8] | p[9] | p[10] | p[11]) & 0xF0)) {
+			mInfo("Block inq response err: wrong mesg[%s]",
+				  QByteArray((char *)p, len).toHex().data());
+			return expected;
+		}
+
+		// Zoom
+		uint regValue = getRegister(R_ZOOM_POS);
+		uint value = ((p[2] & 0x0F) << 12) | ((p[3] & 0x0F) << 8) |
+					 ((p[4] & 0x0F) << 4) | ((p[5] & 0x0F) << 0);
+
+		/* check maximum limit value */
+		if (value > 0x7AC0) {
+			mInfo("Zoom response err: big value [%d]", value);
+			return expected;
+		}
+
+		if (zoomControls.zoomFiltering) {
+			int oldZoomValue = registersCache[R_ZOOM_POS];
+			registersCache[R_ZOOM_POS] = value;
+			if (oldZoomValue * 1.1 < value || value < oldZoomValue * 0.9) {
+				if (regValue * 1.1 < value || value < regValue * 0.9) {
+					oldZoomValue = value;
+					mInfo("Zoom response err: value peak [%d]", value);
+					return expected;
+				}
+			}
+		}
+
+		if (zoomControls.stationaryFiltering && !zoomControls.sfilter->check(value))
+			return expected;
+
+		zoomRecved->push((int)value);
+		mLogv("Zoom Position synced");
+		setRegister(R_ZOOM_POS, value);
+		if (zoomControls.errorRateCheck) {
+			float er = zoomControls.echeck->add(value);
+			mInfo("Error rate for %d is %f", value, er);
+		}
+		if (zoomControls.readLatencyCheck)
+			zoomControls.stats->add();
+
+		/* check digital zoom */
+		if (value >= 16384) {
+			mLogv("Optic and digital zoom position synced");
+			setRegister(R_DIGI_ZOOM_POS, getRegister(R_ZOOM_POS) - 16384);
+			setRegister(R_OPTIC_ZOOM_POS, 16384);
+		} else if (value < 16384) {
+			mLogv("Optic and digital zoom position synced");
+			setRegister(R_OPTIC_ZOOM_POS, getRegister(R_ZOOM_POS));
+			setRegister(R_DIGI_ZOOM_POS, 0);
+		}
+
+		// Focus
+		 value = ((p[8] & 0x0F) << 12) | ((p[9] & 0x0F) << 8) |
+				((p[10] & 0x0F) << 4) | (p[11] & 0x0F);
+		if (value > 0xF000 || value < 0x1000) {
+			mInfo("Focus response err: invalid value [%d]", value);
+			return expected;
+		}
+		mInfo("Focus Position synced");
+		setRegister(R_FOCUS_POS, value);
 	}
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0) {
@@ -1044,7 +1128,7 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 	setProperty(C_VISCA_SET_AUTO_ICR, value);
 	usleep(sleepDur);
 
-	value = (root.value(key.arg(R_FOCUS_MODE)).toInt() > 0) ? 1:0;
+	value = (root.value(key.arg(R_FOCUS_MODE)).toInt() > 0) ? FM_MANUAL : FM_AUTO;
 	setProperty(C_VISCA_SET_FOCUS_MODE, value);
 	usleep(sleepDur);
 
@@ -1064,6 +1148,13 @@ void OemModuleHead::unmarshallloadAllRegisters(const QJsonValue &node)
 
 	setZoom(root.value(key.arg(R_ZOOM_POS)).toInt());
 	usleep(sleepDur);
+
+	int fPos = root.value(key.arg(R_FOCUS_POS)).toInt();
+	if (getRegister(R_FOCUS_MODE) == FM_MANUAL && fPos != 0) {
+		// if focus have set manual, adjust focus position
+		setProperty(C_VISCA_SET_FOCUS_POS, fPos);
+		usleep(sleepDur);
+	}
 	deviceDefinition = root.value("deviceDefiniton").toString();
 }
 
@@ -1171,7 +1262,7 @@ void OemModuleHead::setProperty(uint r, uint x)
 		if (x > 1)
 			return;
 		unsigned char *p = protoBytes[C_VISCA_SET_FOCUS_MODE];
-		p[4 + 2] = x ? 0x03 : 0x02;
+		p[4 + 2] = (x == FM_MANUAL) ? 0x03 : 0x02;
 		transport->send((const char *)p + 2, p[0]);
 		setRegister(R_FOCUS_MODE, (int)x);
 	} else if (r == C_VISCA_SET_ZOOM_TRIGGER) {
@@ -1301,6 +1392,16 @@ void OemModuleHead::setProperty(uint r, uint x)
 			setProperty(C_VISCA_SET_MIRROR_MODE, 0);
 		}
 		setRegister(R_DISPLAY_ROT, x);
+	} else if (r == C_VISCA_SET_FOCUS_POS) {
+		if (x < 0x1000 || x > 0xF000)
+			return;
+		unsigned char *p = protoBytes[C_VISCA_SET_FOCUS_POS];
+		p[4 + 2] = (x & 0XF000) >> 12;
+		p[4 + 3] = (x & 0XF00) >> 8;
+		p[4 + 4] = (x & 0XF0) >> 4;
+		p[4 + 5] = x & 0XF;
+		transport->send((const char *)p + 2, p[0]);
+		setRegister(R_FOCUS_POS, (int)(x & 0xFFFF));
 	}
 
 	if (getRegister(R_FLIP) == 1 && getRegister(R_MIRROR) == 0) {

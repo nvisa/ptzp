@@ -58,6 +58,7 @@ public:
 		R_BOT_GAIN,
 
 		R_VISCA_MODUL_ID,
+		R_FOCUS_POS,
 
 		R_COUNT
 	};
