@@ -65,8 +65,10 @@ SOURCES += \
         irdomepthead.cpp \
         mgeofalconeyehead.cpp \
         simplemetrics.cpp \
-    mgeodortgozhead.cpp \
-dortgozdriver.cpp
+        mgeodortgozhead.cpp \
+        dortgozdriver.cpp \
+        okbsrppthead.cpp \
+        gozokbdriver.cpp
 
 HEADERS += \
         i2cdevice.h \
@@ -133,7 +135,9 @@ HEADERS += \
         tbgthdriver.h \ 
         simplemetrics.h \
 	mgeodortgozhead.h \
-	dortgozdriver.h
+	dortgozdriver.h \
+        okbsrppthead.h \
+        gozokbdriver.h
 
 contains(QT, websockets) {
     SOURCES += networksource.cpp
