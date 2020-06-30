@@ -116,7 +116,8 @@ void PatternNg::stop(int pan, int tilt, int zoom)
 	recording = false;
 	replaying = false;
 	positionUpdate(pan, tilt, zoom);
-	ptzctrl->sendCommand(ptzctrl->C_PAN_TILT_STOP, 0, 0);
+	ptzctrl->sendCommand(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
+	ptzctrl->sendCommand(PtzControlInterface::C_ZOOM_STOP, 0, 0);
 	currentPattern = "";
 }
 
