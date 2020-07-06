@@ -751,48 +751,46 @@ void MgeoDortgozHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
 
 void MgeoDortgozHead::screenClick(int x, int y, int action)
 {
-	ffDebug() << "screen click" << x << y;
+	double BUTTON_HEIGHT 	= 0.09; //0.112
+	double BUTTON_WIDTH 	= 0.184; //0.158
+	double FIRST_BUTTON_UP_LEFT_X = 0.062; //0.026
+	double FIRST_BUTTON_UP_LEFT_Y = 0.268; //0.246
+	double SECOND_BUTTON_UP_LEFT_X = 0.062; //0.026
+	double SECOND_BUTTON_UP_LEFT_Y = 0.406; //0.555
+	double THIRD_BUTTON_UP_LEFT_X = 0.062; //0.026
+	double THIRD_BUTTON_UP_LEFT_Y = 0.543; //0.710
+	double FOURTH_BUTTON_UP_LEFT_X = 0.743; //0.793
+	double FOURTH_BUTTON_UP_LEFT_Y = 0.268; //0.246
+	double FIFTH_BUTTON_UP_LEFT_X = 0.743; //0.793
+	double FIFTH_BUTTON_UP_LEFT_Y = 0.406;//0.555
+	double SIXTH_BUTTON_UP_LEFT_X = 0.743; //0.793
+	double SIXTH_BUTTON_UP_LEFT_Y = 0.543; //0.710
 
-	double BUTTON_HEIGHT 	= 0.108; //0.112
-	double BUTTON_WIDTH 	= 0.158; //0.158
-	double FIRST_BUTTON_UP_LEFT_X = 0.026; //0.026
-	double FIRST_BUTTON_UP_LEFT_Y = 0.246; //0.246
-	double SECOND_BUTTON_UP_LEFT_X = 0.026; //0.026
-	double SECOND_BUTTON_UP_LEFT_Y = 0.424; //0.555
-	double THIRD_BUTTON_UP_LEFT_X = 0.026; //0.026
-	double THIRD_BUTTON_UP_LEFT_Y = 0.602; //0.710
-	double FOURTH_BUTTON_UP_LEFT_X = 0.793; //0.793
-	double FOURTH_BUTTON_UP_LEFT_Y = 0.246; //0.246
-	double FIFTH_BUTTON_UP_LEFT_X = 0.793; //0.793
-	double FIFTH_BUTTON_UP_LEFT_Y = 0.424;//0.555
-	double SIXTH_BUTTON_UP_LEFT_X = 0.793; //0.793
-	double SIXTH_BUTTON_UP_LEFT_Y = 0.602; //0.710
-
-	double ROUTING_LEFT_X1 = 0.794; //0.794
-	double ROUTING_LEFT_X2 = 0.825; //0.825
+	double ROUTING_LEFT_X1 = 0.804; //0.794
+	double ROUTING_LEFT_X2 = 0.826; //0.825
 	double ROUTING_RIGHT_X1 = 0.845; //0.845
 	double ROUTING_RIGHT_X2 = 0.872; //0.872
-	double ROUTING_RIGHT_LEFT_Y1 = 0.850;  //0.850
-	double ROUTING_RIGHT_LEFT_Y2 = 0.875;  //0.875
-	double ROUTING_UP_DOWN_X1 = 0.82; //0.82
-	double ROUTING_UP_DOWN_X2 = 0.857; //0.857
-	double ROUTING_UP_Y1 = 0.84; //0.84
-	double ROUTING_UP_Y2 = 0.82; //0.82
-	double ROUTING_DOWN_Y1 = 0.90; //0.90
-	double ROUTING_DOWN_Y2 = 0.88; //0.88
+	double ROUTING_RIGHT_LEFT_Y1 = 0.812;  //0.850
+	double ROUTING_RIGHT_LEFT_Y2 = 0.840;  //0.875
+	double ROUTING_UP_DOWN_X1 = 0.827; //0.82
+	double ROUTING_UP_DOWN_X2 = 0.847; //0.857
+	double ROUTING_UP_Y1 = 0.810; //0.84
+	double ROUTING_UP_Y2 = 0.784; //0.82
+	double ROUTING_DOWN_Y1 = 0.864; //0.90
+	double ROUTING_DOWN_Y2 = 0.84; //0.88
 
-	double ROUTING_AREA_TOP 	= 0.82; //0.82
+	double ROUTING_AREA_TOP 	= 0.78; //0.82
 	double ROUTING_AREA_BOTTOM = 0.90; //0.90
-	int L0 = 0;
-	int L1 = 1;
-	int L2 = 2;
-	int R0 = 3;
-	int R1 = 4;
-	int R2 = 5;
-	int UP = 6;
-	int DOWN = 7;
-	int LEFT = 8;
-	int RIGHT = 9;
+	int L0 = 1;
+	int L1 = 2;
+	int L2 = 3;
+	int R0 = 4;
+	int R1 = 5;
+	int R2 = 6;
+	int UP = 7;
+	int DOWN = 8;
+	int LEFT = 9;
+	int RIGHT = 10;
 
 	double ratioX = x / 720.0;
 	double ratioY = y / 576.0;
@@ -830,7 +828,6 @@ void MgeoDortgozHead::screenClick(int x, int y, int action)
 
 void MgeoDortgozHead::buttonClick(int b, int action)
 {
-	ffDebug() << action;
 	if (action == 1)
 		setProperty(20, b);
 	else if (action == -1)
