@@ -516,11 +516,12 @@ int MgeoDortgozHead::getHeadStatus()
 void MgeoDortgozHead::setProperty(uint r, uint x)
 {
 	if(r == C_SET_STATE){
-//		termal: 1 standby:2
+//		default val: term 1, stand: 2
+//		desired val: termal: 0 standby:1
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		p[6] = x;
+		p[6] = x + 1;
 		int chk = crc_ccitt_generic(p, len - 2);
 		p[40] = chk & 0x00FF;
 		p[41] = chk >> 8;
@@ -636,6 +637,7 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 		setRegister(R_POLARITY, x);
 		sendCommand(p, len);
 	} else if (r == C_SET_IMAGE_PROC) {
+		//1: auto, 2: manuel
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
@@ -874,7 +876,10 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 		uint fov = bytes[10] & 0x0F;
 		if(fov >= 0x07)
 			setRegister(R_FOV, fov - 0x07);
-		setRegister(R_STATE, bytes[6] & 0x03);
+		if(bytes[6] & 0x03 == 0x01)
+			setRegister(R_STATE, 0);
+		if(bytes[6] & 0x03 == 0x02)
+			setRegister(R_STATE, 1);
 //		setRegister(, bytes[7])
 
 		setRegister(R_VIDEO_STATE, bytes[8] & 0x03);
