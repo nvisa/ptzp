@@ -87,6 +87,16 @@ grpc::Status DortgozDriver::GetAdvancedControl(grpc::ServerContext *context, con
 		response->add_supported_values(6);
 		response->add_supported_values(7);
 	}
+	if (cap == ptzp::PtzHead_Capability_IMAGE_PROCESS) {
+		response->add_supported_values(3);
+		response->add_supported_values(4);
+		response->add_supported_values(5);
+	}
+	if (cap == ptzp::PtzHead_Capability_DIGITAL_ZOOM) {
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+		response->add_supported_values(3);
+	}
 	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
 }
 
@@ -119,6 +129,30 @@ grpc::Status DortgozDriver::GetImagingControl(grpc::ServerContext *context, cons
 		response->set_status(true);
 	else if (headModule->getProperty(18) == 2)
 		response->set_status(false);
+	return grpc::Status::OK;
+}
+
+grpc::Status DortgozDriver::GetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	Q_UNUSED(request);
+	Q_UNUSED(context);
+
+	response->add_supported_values(0);
+	response->add_supported_values(1);
+	response->add_supported_values(2);
+
+	response->set_value(headModule->getProperty(MgeoDortgozHead::R_FOV));
+	return grpc::Status::OK;
+}
+
+grpc::Status DortgozDriver::SetZoom(grpc::ServerContext *context, const ptzp::AdvancedCmdRequest *request, ptzp::AdvancedCmdResponse *response)
+{
+	Q_UNUSED(response);
+	Q_UNUSED(context);
+	float value = request->new_value();
+
+	headModule->setProperty(17, value);
+
 	return grpc::Status::OK;
 }
 
