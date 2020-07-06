@@ -385,11 +385,6 @@ void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DIGITAL_ZOOM);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_HIDE_SYMBOLOGY);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_POLARITY);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NUC);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
