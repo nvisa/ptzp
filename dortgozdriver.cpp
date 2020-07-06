@@ -163,7 +163,7 @@ void DortgozDriver::timeout()
 	case INIT:
 		headModule->setProperty(16, 0);
 		headModule->setProperty(16, 0);
-		while (headModule->getProperty(20) != 1) {
+		while (headModule->getProperty(20) != 0) {
 			usleep(1000);
 			headModule->setProperty(16, 0);
 		}
