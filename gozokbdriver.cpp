@@ -13,7 +13,9 @@ GozOKBDriver::GozOKBDriver()
 
 PtzpHead *GozOKBDriver::getHead(int index)
 {
-	return head;
+	if(index == 0)
+		return head;
+	return NULL;
 }
 
 int GozOKBDriver::setTarget(const QString &targetUri)
