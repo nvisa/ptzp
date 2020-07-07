@@ -43,7 +43,7 @@ float OkbSrpPTHead::getPanAngle()
 
 float OkbSrpPTHead::getTiltAngle()
 {
-	return tiltPos;
+	return -1 * tiltPos;
 }
 
 QVariant OkbSrpPTHead::getCapabilityValues(ptzp::PtzHead_Capability c)
