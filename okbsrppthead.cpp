@@ -62,15 +62,14 @@ int OkbSrpPTHead::dataReady(const unsigned char *bytes, int len)
 		return -ENOENT;
 	if (bytes[20] != 0x51)
 		return -ENOENT;
-	int chk = checksum(bytes, len);
-	if(bytes[22] != chk || bytes[23] != chk){
-		fDebug("Checksum error");
-		return len;
-	}
+//	int chk = checksum(bytes, len);
+//	if(bytes[22] != chk || bytes[23] != chk){
+//		fDebug("Checksum error");
+//		return len;
+//	}
 	pingTimer.restart();
 	panPos = *(float *)(bytes + 40);
 	tiltPos = *(float *)(bytes + 48);
-	ffDebug() << "pan pos: " << panPos << "tilt pos:" << tiltPos;
 
 	return len;
 }
