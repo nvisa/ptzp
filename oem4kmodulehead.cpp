@@ -265,6 +265,7 @@ int Oem4kModuleHead::dataReady(const unsigned char *bytes, int len)
 			setRegister(R_CAMMODE, camModes.value(line.split("=").last()));
 		else if(settings.contains(key.toLower()))
 			setRegister(settings[key.toLower()].second, line.split("=").last().toInt());
+		pingTimer.restart();
 	}
 
 	manageIRC();
