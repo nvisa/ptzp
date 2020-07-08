@@ -617,10 +617,14 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 		setRegister(R_RETICLE_INTENSITY, x);
 		sendCommand(p, len);
 	} else if (r == C_SET_SYMBOLOGY) {
+//		default val: on 1, off 2
+//		desired val: on 1, off 0
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		p[29] = x << 6;
+		if (x == 0)
+			p[29] = 2 << 6;
+		else p[29] = 1 << 6;
 		int chk = crc_ccitt_generic(p, len - 2);
 		p[40] = chk & 0x00FF;
 		p[41] = chk >> 8;
@@ -896,7 +900,9 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_CONTRAST, bytes[21] >> 1);
 		setRegister(R_RETICLE_MODE, bytes[28] & 0x03);
 		setRegister(R_RETICLE_INTENSITY, bytes[28] >> 0x0F);
-		setRegister(R_SYMBOLOGY, bytes[29] >> 6);
+		if (bytes[29] >> 6 == 0x02)
+			setRegister(R_SYMBOLOGY, 0);
+		else setRegister(R_SYMBOLOGY, 1);
 		setRegister(R_POLARITY, bytes[34] & 0x07 );
 		setRegister(R_THERMAL_TABLE, (bytes[34] >> 4) & 0x03);
 		setRegister(R_IMG_PROC_MODE, bytes[35] & 0x0F);
