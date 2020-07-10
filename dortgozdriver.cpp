@@ -10,6 +10,12 @@
 #include <errno.h>
 #include <unistd.h>
 
+
+#define zoomEntry(zoomv, h)                                                    \
+	zooms.push_back((zoomv / (float)17703)* 100);                                                    \
+	hmap.push_back(h);                                                         \
+	vmap.push_back(h *(float)4 / 3)
+
 DortgozDriver::DortgozDriver(QList<int> relayConfig, QObject *parent)
 	: PtzpDriver(parent)
 {
@@ -19,6 +25,40 @@ DortgozDriver::DortgozDriver(QList<int> relayConfig, QObject *parent)
 	state = INIT;
 	defaultPTHead = headDome;
 	defaultModuleHead = headModule;
+
+
+	std::vector<float> hmap, vmap;
+	std::vector<int> zooms;
+	zoomEntry(0, 17.2);
+	zoomEntry(740, 16.24);
+	zoomEntry(1397, 14.81);
+	zoomEntry(1988, 12.08);
+	zoomEntry(2778, 11.06);
+	zoomEntry(3474, 9.87);
+	zoomEntry(4252, 8.64);
+	zoomEntry(4836, 7.87);
+	zoomEntry(5647, 6.84);
+	zoomEntry(6586, 5.83);
+	zoomEntry(7115, 5.32);
+	zoomEntry(7678, 4.84);
+	zoomEntry(8665, 4.11);
+	zoomEntry(9511, 3.56);
+	zoomEntry(10250, 3.15);
+	zoomEntry(10982, 2.76);
+	zoomEntry(10790, 2.33);
+	zoomEntry(12288, 2.19);
+	zoomEntry(13199, 1.87);
+	zoomEntry(13988, 1.63);
+	zoomEntry(14684, 1.47);
+	zoomEntry(15307, 1.32);
+	zoomEntry(15870, 1.2);
+	zoomEntry(16384, 1.11);
+	zoomEntry(17080, 0.99);
+	zoomEntry(17502, 0.93);
+	zoomEntry(17703, 0.91);
+	headModule->getRangeMapper()->setLookUpValues(zooms);
+	headModule->getRangeMapper()->addMap(hmap);
+	headModule->getRangeMapper()->addMap(vmap);
 }
 
 PtzpHead *DortgozDriver::getHead(int index)

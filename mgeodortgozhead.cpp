@@ -467,7 +467,11 @@ int MgeoDortgozHead::setZoom(uint pos)
 
 int MgeoDortgozHead::getZoom()
 {
-	return getRegister(R_ZOOM_ENC_POS);
+	float normZoom = 0;
+	float nonNorm = 0;
+	nonNorm = getRegister(R_ZOOM_ENC_POS);
+	normZoom = ((nonNorm - 16002)/ 17703)* 100;
+	return normZoom;
 }
 
 int MgeoDortgozHead::focusIn(int speed)
