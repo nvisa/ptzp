@@ -137,6 +137,15 @@ grpc::Status DortgozDriver::GetAdvancedControl(grpc::ServerContext *context, con
 		response->add_supported_values(2);
 		response->add_supported_values(3);
 	}
+	if (cap == ptzp::PtzHead_Capability_NUC_CHART) {
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+		response->add_supported_values(3);
+	}
+	if (cap == ptzp::PtzHead_Capability_VIDEO_FREEZE) {
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+	}
 	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
 }
 

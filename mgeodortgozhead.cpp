@@ -375,6 +375,8 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 //		{"start_ibit", {C_SET_IBIT, 0}},
 //		{"get_ibit", {C_GET_IBIT, R_IBIT_RESULT}},
 		{ptzp::PtzHead_Capability_ONE_PUSH_FOCUS, {C_SET_FOCUS_MODE, R_FOCUS_MODE}},
+		{ptzp::PtzHead_Capability_NUC_CHART, {C_SET_NUC_TABLE, R_THERMAL_TABLE}},
+		{ptzp::PtzHead_Capability_VIDEO_FREEZE, {C_SET_VIDEO_STATE, R_VIDEO_STATE}}
 	};
 }
 
@@ -404,6 +406,8 @@ void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
 	head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
 	head->add_capabilities(ptzp::PtzHead_Capability_ONE_PUSH_FOCUS);
+	head->add_capabilities(ptzp::PtzHead_Capability_NUC_CHART);
+	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_FREEZE);
 
 }
 

@@ -195,6 +195,8 @@ message PtzHead {
 		ONE_PUSH_FOCUS = 129;
 		VIDEO_SOURCE = 130;
 		WDR = 131; //Wide dynamic range
+		NUC_CHART = 132;
+		VIDEO_FREEZE = 133;
 
 
 		REBOOT = 201;
