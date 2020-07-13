@@ -29,6 +29,8 @@ PtzpHead::PtzpHead()
 	transport = NULL;
 	pingTimer.start();
 	capcache = nullptr;
+	controlOwner = PTZP_HEAD;
+	isPTchanged = false;
 }
 
 /**
@@ -554,6 +556,27 @@ std::vector<float> PtzpHead::RangeMapper::map(int value)
 			m.push_back((w1 * maps[i][offu] + w0 * maps[i][offl]) / (w0 + w1));
 	}
 	return m;
+}
+
+void PtzpHead::setControlOwner(ControlOwner val)
+{
+	/// PTZP_HEAD: System is controlled by Our Application
+	/// THIRD_PARTY: Our aim is only to obtain information[Pan,Tilt] (For instance: OkbSrpPtHead)
+	controlOwner = val;
+}
+
+void PtzpHead::setIsPTchanged(bool val)
+{
+	static long long counterThreshold = 0;
+	counterThreshold++;
+	if (!val && counterThreshold > 2) {
+		isPTchanged = false;
+		return;
+	} else if (val){
+		counterThreshold = 0;
+		isPTchanged = true;
+		return;
+	}
 }
 
 QVariantMap PtzpHead::getSettings()

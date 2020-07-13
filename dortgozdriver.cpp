@@ -146,6 +146,18 @@ grpc::Status DortgozDriver::GetAdvancedControl(grpc::ServerContext *context, con
 		response->add_supported_values(1);
 		response->add_supported_values(2);
 	}
+	if (cap == ptzp::PtzHead_Capability_RETICLE_INTENSITY){
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+		response->add_supported_values(3);
+		response->add_supported_values(4);
+		response->add_supported_values(5);
+		response->add_supported_values(6);
+		response->add_supported_values(7);
+		response->add_supported_values(8);
+		response->add_supported_values(9);
+		response->add_supported_values(10);
+	}
 	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
 }
 

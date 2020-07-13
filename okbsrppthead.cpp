@@ -18,6 +18,7 @@ static uint checksum(const uchar *p, uint lenght)
 
 OkbSrpPTHead::OkbSrpPTHead()
 {
+	setControlOwner(THIRD_PARTY);
 	pingTimer.start();
 }
 
@@ -70,6 +71,14 @@ int OkbSrpPTHead::dataReady(const unsigned char *bytes, int len)
 	pingTimer.restart();
 	panPos = *(float *)(bytes + 40);
 	tiltPos = *(float *)(bytes + 48);
+
+	if (abs(panPos - prevPanPos) > 1 || abs(tiltPos - prevTiltPos) > 1)
+		setIsPTchanged(true);
+	else
+		setIsPTchanged(false);
+
+	prevPanPos = panPos;
+	prevTiltPos = tiltPos;
 
 	return len;
 }

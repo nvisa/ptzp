@@ -32,6 +32,8 @@ protected:
 //	QStringList ptzCommandList;
 	float panPos;
 	float tiltPos;
+	float prevPanPos;
+	float prevTiltPos;
 //	int MaxSpeed;
 //	int sendCommand(const QString &key);
 	int dataReady(const unsigned char *bytes, int len);

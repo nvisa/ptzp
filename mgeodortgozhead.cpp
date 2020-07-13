@@ -357,7 +357,7 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 	};
 
 	_mapCap = {
-		{ptzp::PtzHead_Capability_VIDEO_SOURCE, {C_SET_VIDEO_STATE, R_STATE}},
+		{ptzp::PtzHead_Capability_VIDEO_SOURCE, {C_SET_STATE, R_STATE}},
 		{ptzp::PtzHead_Capability_DIGITAL_ZOOM, {C_SET_E_ZOOM, R_E_ZOOM}},
 		{ptzp::PtzHead_Capability_POLARITY, {C_SET_POLARITY, R_POLARITY}},
 		{ptzp::PtzHead_Capability_RETICLE_MODE, {C_SET_RETICLE_MODE, R_RETICLE_MODE}},
