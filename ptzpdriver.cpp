@@ -1290,6 +1290,7 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 
 	if(cap == ptzp::PtzHead_Capability_ZOOM || cap == ptzp::PtzHead_Capability_KARDELEN_ZOOM){
 		SetZoom(context,request,response);
+		return grpc::Status::OK;
 	}
 
 	QVariant var;
