@@ -158,6 +158,21 @@ grpc::Status DortgozDriver::GetAdvancedControl(grpc::ServerContext *context, con
 		response->add_supported_values(9);
 		response->add_supported_values(10);
 	}
+//	supported indexte;
+//	index[0] = Off
+//	index[1] = On
+	if ( cap == ptzp::PtzHead_Capability_RETICLE_MODE){
+		response->add_supported_values(1);
+		response->add_supported_values(2);
+	}
+//	supported indexte;
+//	index[0] = Test/line olmalı
+//	index[1] = Milyem olmalı
+	if (cap == ptzp::PtzHead_Capability_RETICLE_TYPE){
+		response->add_supported_values(2);
+		response->add_supported_values(3);
+	}
+
 	return PtzpDriver::GetAdvancedControl(context, request, response, cap);
 }
 
