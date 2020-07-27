@@ -573,19 +573,19 @@ int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
 
 	if(firmwareType == "absgs"){
 		if (day) {
-			if (fov_type == 0) {
-				hor = 11.0;
-				ver = 8.25;
-			} else if (fov_type == 1) {
+			if (fov_type == 0) {//wide
+				hor = 25.0;
+				ver = 18.75;
+			} else if (fov_type == 1) {//medium
 				hor = 6.0;
 				ver = 4.5;
-			} else if (fov_type == 2){
+			} else if (fov_type == 2){//narrow
 				hor = 2.0;
 				ver = 1.5;
-			} else if (fov_type == 3){
+			} else if (fov_type == 3){//wide medium
 				hor = 10.0;
 				ver = 7.5;
-			} else if (fov_type == 4){
+			} else if (fov_type == 4){//narrow medium
 				hor = 3.5;
 				ver = 2.63;
 			}
@@ -593,19 +593,19 @@ int MgeoFalconEyeHead::getFOV(float &hor, float &ver)
 		}
 
 		/* thermal */
-		if (fov_type == 0) { // thermal
-			hor = 25.0;
-			ver = 20.0;
-		} else if (fov_type == 1) {
+		if (fov_type == 0) { // thermal //wide
+			hor = 16.5;
+			ver = 13.2;
+		} else if (fov_type == 1) {//medium
 			hor = 6.0;
 			ver = 4.8;
-		} else if (fov_type == 2){
+		} else if (fov_type == 2){//narrow
 			hor = 2.0;
 			ver = 1.6;
-		} else if (fov_type == 3){
+		} else if (fov_type == 3){//wide medium
 			hor = 10.0;
 			ver = 8.0;
-		} else if (fov_type == 4){
+		} else if (fov_type == 4){//narrow medium
 			hor = 3.5;
 			ver = 2.8;
 		}
