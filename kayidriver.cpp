@@ -151,10 +151,12 @@ grpc::Status KayiDriver::GetAdvancedControl(grpc::ServerContext *context, const 
 {
 	if (cap == ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS || cap == ptzp::PtzHead_Capability_BRIGHTNESS) {
 		response->set_enum_field(true); // means we got auto-manual brightness for the kardelen dudes.
+		return grpc::Status::OK;
 	}
 
 	if (cap == ptzp::PtzHead_Capability_KARDELEN_CONTRAST || cap == ptzp::PtzHead_Capability_CONTRAST) {
 		response->set_enum_field(true); // means we got auto-manual contrast for the kardelen dudes.
+		return grpc::Status::OK;
 	}
 
 	if ( cap == ptzp::PtzHead_Capability_KARDELEN_LAZER_RANGE_FINDER){
