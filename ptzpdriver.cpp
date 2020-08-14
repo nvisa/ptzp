@@ -1068,7 +1068,7 @@ float PtzpDriver::regulateSpeed(float raw, int zoom)
 	if (sreg.minZoom < sreg.maxZoom) {
 		if (zoom < sreg.minZoom)
 			return raw;
-		if (zoom > sreg.maxZoom)
+		if (zoom >= sreg.maxZoom)
 			return sreg.minSpeed;
 		if (sreg.ipol == SpeedRegulation::LINEAR) {
 			// when zoom == minZoom => zoomr = 1, when zoom == maxZoom => zoomr
@@ -1082,7 +1082,7 @@ float PtzpDriver::regulateSpeed(float raw, int zoom)
 	} else {
 		if (zoom < sreg.maxZoom)
 			return raw;
-		if (zoom > sreg.minZoom)
+		if (zoom >= sreg.minZoom)
 			return sreg.minSpeed;
 		if (sreg.ipol == SpeedRegulation::LINEAR) {
 			// when zoom == minZoom => zoomr = 1, when zoom == maxZoom => zoomr
