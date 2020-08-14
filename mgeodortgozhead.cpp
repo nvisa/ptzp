@@ -366,7 +366,7 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 		{ptzp::PtzHead_Capability_SYMBOLOGY, {C_SET_SYMBOLOGY, R_SYMBOLOGY}},
 		{ptzp::PtzHead_Capability_IMAGE_PROCESS, {C_SET_IMAGE_PROC, R_IMG_PROC_MODE}},
 		{ptzp::PtzHead_Capability_NUC, {C_SET_NUC, 0}},
-		{ptzp::PtzHead_Capability_RELAY_CONTROL, {C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
+		{ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES, {C_SET_RELAY_CONTROL, R_RELAY_STATUS}},
 		{ptzp::PtzHead_Capability_BRIGHTNESS, {C_SET_BRIGHTNES, R_BRIGTNESS}},
 		{ptzp::PtzHead_Capability_CONTRAST, {C_SET_CONTRAST, R_CONTRAST}},
 		{ptzp::PtzHead_Capability_MENU_OVER_VIDEO, {C_SET_BUTTON, 0}},
