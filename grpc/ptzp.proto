@@ -195,6 +195,8 @@ message PtzHead {
 		ONE_PUSH_FOCUS = 129;
 		VIDEO_SOURCE = 130;
 		WDR = 131; //Wide dynamic range
+		NUC_CHART = 132;
+		VIDEO_FREEZE = 133;
 
 
 		REBOOT = 201;
@@ -323,8 +325,8 @@ message PTZInfoQ {
 }
 
 message PTZPosInfo {
-	int32 pan_pos = 1;
-	int32 tilt_pos = 2;
+	float pan_pos = 1;
+	float tilt_pos = 2;
 	int32 zoom_pos = 3;
 	float fovh = 4;
 	float fovv = 5;

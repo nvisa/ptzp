@@ -683,7 +683,7 @@ grpc::Status PtzpDriver::PresetGo(grpc::ServerContext *context,
 {
 	Q_UNUSED(context);
 	Q_UNUSED(response);
-	stopAnyProcess();
+	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 	QStringList li = PresetNg::getInstance()->getPreset(
 		QString::fromStdString(request->preset_name()));
 	if (li.isEmpty())
@@ -757,7 +757,7 @@ grpc::Status PtzpDriver::PatrolRun(grpc::ServerContext *context,
 								   ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	stopAnyProcess();
+	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 	addStartupProcess("patrol", QString::fromStdString(request->patrol_name()));
 	int ret = runPatrol(QString::fromStdString(request->patrol_name()));
 	response->set_err(ret);
@@ -822,7 +822,7 @@ grpc::Status PtzpDriver::PatternRun(grpc::ServerContext *context,
 									ptzp::PtzCommandResult *response)
 {
 	Q_UNUSED(context);
-	stopAnyProcess();
+	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 	if (ptrn->load(QString::fromStdString(request->pattern_name())) == 0) {
 		addStartupProcess("pattern",
 						  QString::fromStdString(request->pattern_name()));
@@ -858,7 +858,8 @@ grpc::Status PtzpDriver::PatternStartRecording(grpc::ServerContext *context,
 {
 	Q_UNUSED(context);
 	Q_UNUSED(request);
-	stopAnyProcess();
+	commandUpdate(PtzControlInterface::C_ZOOM_STOP, 0, 0);
+	commandUpdate(PtzControlInterface::C_PAN_TILT_STOP, 0, 0);
 	if (defaultPTHead && defaultModuleHead)
 		ptrn->start(defaultPTHead->getPanAngle(), defaultPTHead->getTiltAngle(),
 					defaultModuleHead->getZoom());
@@ -1290,6 +1291,7 @@ grpc::Status PtzpDriver::SetAdvancedControl(grpc::ServerContext *context, const 
 
 	if(cap == ptzp::PtzHead_Capability_ZOOM || cap == ptzp::PtzHead_Capability_KARDELEN_ZOOM){
 		SetZoom(context,request,response);
+		return grpc::Status::OK;
 	}
 
 	QVariant var;

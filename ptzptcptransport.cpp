@@ -50,11 +50,12 @@ int PtzpTcpTransport::connectTo(const QString &targetUri)
 	}
 	serverUrl = flds[0];
 	serverPort = flds[1].toInt();
-	sock->connectToHost(serverUrl, serverPort);
+	if (serverUrl.size())
+		sock->connectToHost(serverUrl, serverPort);
 	connect(sock, SIGNAL(connected()), SLOT(connected()));
 	connect(sock, SIGNAL(disconnected()), SLOT(clientDisconnected()));
 	connect(sock, SIGNAL(readyRead()), SLOT(dataReady()));
-	if (!sock->waitForConnected(3000)) {
+	if (!isUdp && !sock->waitForConnected(3000)) {
 		mDebug("Socket connection error: Error code: %d, Error string: %s",
 			   sock->error(), qPrintable(sock->errorString()));
 		return -1;
@@ -133,6 +134,20 @@ PtzpTcpTransport::DevStatus PtzpTcpTransport::getStatus()
 
 void PtzpTcpTransport::dataReady()
 {
+	if (isUdp) {
+		QUdpSocket *usock = (QUdpSocket *)sock;
+		while (usock->hasPendingDatagrams()) {
+			QByteArray datagram;
+			datagram.resize(usock->pendingDatagramSize());
+			QHostAddress sender;
+			quint16 senderPort;
+
+			usock->readDatagram(datagram.data(), datagram.size(),
+									&sender, &senderPort);
+			protocol->dataReady(datagram);
+		}
+		return;
+	}
 	if (devStatus != ALIVE)
 		return;
 	if (filterInterface) {

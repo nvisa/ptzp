@@ -28,6 +28,12 @@ public:
 		ST_NORMAL,
 		ST_ERROR,
 	};
+
+	enum ControlOwner {
+		PTZP_HEAD,
+		THIRD_PARTY,
+	};
+
 	struct FovValues {
 		float max;
 		float min;
@@ -49,6 +55,10 @@ public:
 		std::vector<std::vector<float>> maps;
 		std::vector<int> lookup;
 	};
+	void setControlOwner(ControlOwner val); // if controlled by our application, it will be PTZP_HEAD; else THIRD_PARTY
+	ControlOwner getControlOwner() {return controlOwner;}
+	void setIsPTchanged(bool val);
+	bool getIsPTchanged() {return isPTchanged;}
 
 	virtual int setTransport(PtzpTransport *tport);
 	virtual int syncRegisters();
@@ -133,6 +143,8 @@ protected:
 	std::vector<int> zoomRatios;
 	QString headName;
 	FovValues fovValue;
+	ControlOwner controlOwner;
+	bool isPTchanged;
 };
 
 #endif // PTZPHEAD_H

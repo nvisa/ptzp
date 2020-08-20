@@ -268,10 +268,10 @@ public:
 	uchar controlRelay(uchar reg, uint val) { return i2cWrite(reg, val); }
 };
 
-class RelayControlThread : public QThread
+class RelayControlThreadDortGoz : public QThread
 {
 public:
-	RelayControlThread()
+	RelayControlThreadDortGoz()
 	{
 		switching = false;
 		x = 0;
@@ -327,7 +327,7 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 	i2c = new PCA9538Driver;
 	i2c->open();
 	i2c->resetAllPorts();
-	relth = new RelayControlThread;
+	relth = new RelayControlThreadDortGoz;
 	relth->i2c = i2c;
 	relth->dayCamRelay = dayCamRelay;
 	relth->thermalRelay = thermalRelay;
@@ -357,7 +357,7 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 	};
 
 	_mapCap = {
-		{ptzp::PtzHead_Capability_VIDEO_SOURCE, {C_SET_VIDEO_STATE, R_STATE}},
+		{ptzp::PtzHead_Capability_VIDEO_SOURCE, {C_SET_STATE, R_STATE}},
 		{ptzp::PtzHead_Capability_DIGITAL_ZOOM, {C_SET_E_ZOOM, R_E_ZOOM}},
 		{ptzp::PtzHead_Capability_POLARITY, {C_SET_POLARITY, R_POLARITY}},
 		{ptzp::PtzHead_Capability_RETICLE_MODE, {C_SET_RETICLE_MODE, R_RETICLE_MODE}},
@@ -375,6 +375,8 @@ MgeoDortgozHead::MgeoDortgozHead(QList<int> relayConfig)
 //		{"start_ibit", {C_SET_IBIT, 0}},
 //		{"get_ibit", {C_GET_IBIT, R_IBIT_RESULT}},
 		{ptzp::PtzHead_Capability_ONE_PUSH_FOCUS, {C_SET_FOCUS_MODE, R_FOCUS_MODE}},
+		{ptzp::PtzHead_Capability_NUC_CHART, {C_SET_NUC_TABLE, R_THERMAL_TABLE}},
+		{ptzp::PtzHead_Capability_VIDEO_FREEZE, {C_SET_VIDEO_STATE, R_VIDEO_STATE}}
 	};
 }
 
@@ -385,11 +387,6 @@ void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_ZOOM);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NIGHT_VIEW);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_FOCUS);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_DIGITAL_ZOOM);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_RETICLE);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_SHOW_HIDE_SYMBOLOGY);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_POLARITY);
-	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_NUC);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_BRIGHTNESS);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_CONTRAST);
 	head->add_capabilities(ptzp::PtzHead_Capability_KARDELEN_THERMAL_STANDBY_MODES);
@@ -409,6 +406,8 @@ void MgeoDortgozHead::fillCapabilities(ptzp::PtzHead *head)
 	head->add_capabilities(ptzp::PtzHead_Capability_CONTRAST);
 	head->add_capabilities(ptzp::PtzHead_Capability_MENU_OVER_VIDEO);
 	head->add_capabilities(ptzp::PtzHead_Capability_ONE_PUSH_FOCUS);
+	head->add_capabilities(ptzp::PtzHead_Capability_NUC_CHART);
+	head->add_capabilities(ptzp::PtzHead_Capability_VIDEO_FREEZE);
 
 }
 
@@ -472,7 +471,11 @@ int MgeoDortgozHead::setZoom(uint pos)
 
 int MgeoDortgozHead::getZoom()
 {
-	return getRegister(R_ZOOM_ENC_POS);
+	float normZoom = 0;
+	float nonNorm = 0;
+	nonNorm = getRegister(R_ZOOM_ENC_POS);
+	normZoom = ((nonNorm - 16002)/ 17703)* 100;
+	return normZoom;
 }
 
 int MgeoDortgozHead::focusIn(int speed)
@@ -521,11 +524,12 @@ int MgeoDortgozHead::getHeadStatus()
 void MgeoDortgozHead::setProperty(uint r, uint x)
 {
 	if(r == C_SET_STATE){
-//		termal: 1 standby:2
+//		default val: term 1, stand: 2
+//		desired val: termal: 0 standby:1
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		p[6] = x;
+		p[6] = x + 1;
 		int chk = crc_ccitt_generic(p, len - 2);
 		p[40] = chk & 0x00FF;
 		p[41] = chk >> 8;
@@ -621,10 +625,14 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 		setRegister(R_RETICLE_INTENSITY, x);
 		sendCommand(p, len);
 	} else if (r == C_SET_SYMBOLOGY) {
+//		default val: on 1, off 2
+//		desired val: on 1, off 0
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
-		p[29] = x << 6;
+		if (x == 0)
+			p[29] = 2 << 6;
+		else p[29] = 1 << 6;
 		int chk = crc_ccitt_generic(p, len - 2);
 		p[40] = chk & 0x00FF;
 		p[41] = chk >> 8;
@@ -641,6 +649,7 @@ void MgeoDortgozHead::setProperty(uint r, uint x)
 		setRegister(R_POLARITY, x);
 		sendCommand(p, len);
 	} else if (r == C_SET_IMAGE_PROC) {
+		//1: auto, 2: manuel
 		unsigned char *p = protoBytes[r];
 		int len = p[0];
 		p++;
@@ -754,6 +763,91 @@ void MgeoDortgozHead::setCapabilityValues(ptzp::PtzHead_Capability c, uint val)
 	setProperty(_mapCap[c].first, val);
 }
 
+void MgeoDortgozHead::screenClick(int x, int y, int action)
+{
+	double BUTTON_HEIGHT 	= 0.09; //0.112
+	double BUTTON_WIDTH 	= 0.184; //0.158
+	double FIRST_BUTTON_UP_LEFT_X = 0.062; //0.026
+	double FIRST_BUTTON_UP_LEFT_Y = 0.268; //0.246
+	double SECOND_BUTTON_UP_LEFT_X = 0.062; //0.026
+	double SECOND_BUTTON_UP_LEFT_Y = 0.406; //0.555
+	double THIRD_BUTTON_UP_LEFT_X = 0.062; //0.026
+	double THIRD_BUTTON_UP_LEFT_Y = 0.543; //0.710
+	double FOURTH_BUTTON_UP_LEFT_X = 0.743; //0.793
+	double FOURTH_BUTTON_UP_LEFT_Y = 0.268; //0.246
+	double FIFTH_BUTTON_UP_LEFT_X = 0.743; //0.793
+	double FIFTH_BUTTON_UP_LEFT_Y = 0.406;//0.555
+	double SIXTH_BUTTON_UP_LEFT_X = 0.743; //0.793
+	double SIXTH_BUTTON_UP_LEFT_Y = 0.543; //0.710
+
+	double ROUTING_LEFT_X1 = 0.804; //0.794
+	double ROUTING_LEFT_X2 = 0.826; //0.825
+	double ROUTING_RIGHT_X1 = 0.845; //0.845
+	double ROUTING_RIGHT_X2 = 0.872; //0.872
+	double ROUTING_RIGHT_LEFT_Y1 = 0.812;  //0.850
+	double ROUTING_RIGHT_LEFT_Y2 = 0.840;  //0.875
+	double ROUTING_UP_DOWN_X1 = 0.827; //0.82
+	double ROUTING_UP_DOWN_X2 = 0.847; //0.857
+	double ROUTING_UP_Y1 = 0.810; //0.84
+	double ROUTING_UP_Y2 = 0.784; //0.82
+	double ROUTING_DOWN_Y1 = 0.864; //0.90
+	double ROUTING_DOWN_Y2 = 0.84; //0.88
+
+	double ROUTING_AREA_TOP 	= 0.78; //0.82
+	double ROUTING_AREA_BOTTOM = 0.90; //0.90
+	int L0 = 1;
+	int L1 = 2;
+	int L2 = 3;
+	int R0 = 4;
+	int R1 = 5;
+	int R2 = 6;
+	int UP = 7;
+	int DOWN = 8;
+	int LEFT = 9;
+	int RIGHT = 10;
+
+	double ratioX = x / 720.0;
+	double ratioY = y / 576.0;
+
+	if(ratioY >= FIRST_BUTTON_UP_LEFT_Y && ratioY <= (FIRST_BUTTON_UP_LEFT_Y + BUTTON_HEIGHT)) {
+		if(ratioX >= FIRST_BUTTON_UP_LEFT_X && ratioX <= (FIRST_BUTTON_UP_LEFT_X + BUTTON_WIDTH)){
+			buttonClick(L0, action);
+		} else if(ratioX >= FOURTH_BUTTON_UP_LEFT_X && ratioX <= (FOURTH_BUTTON_UP_LEFT_X + BUTTON_WIDTH)) {
+			buttonClick(R0, action);
+		}
+	} else if(ratioY >= SECOND_BUTTON_UP_LEFT_Y && ratioY <= (SECOND_BUTTON_UP_LEFT_Y + BUTTON_HEIGHT)) {
+		if(ratioX >= SECOND_BUTTON_UP_LEFT_X && ratioX <= (SECOND_BUTTON_UP_LEFT_X + BUTTON_WIDTH)){
+			buttonClick(L1, action);
+		} else if(ratioX >= FIFTH_BUTTON_UP_LEFT_X && ratioX <= (FIFTH_BUTTON_UP_LEFT_X + BUTTON_WIDTH)) {
+			buttonClick(R1, action);
+		}
+	} else if(ratioY >= THIRD_BUTTON_UP_LEFT_Y && ratioY <= (THIRD_BUTTON_UP_LEFT_Y + BUTTON_HEIGHT)) {
+		if(ratioX >= THIRD_BUTTON_UP_LEFT_X && ratioX <= (THIRD_BUTTON_UP_LEFT_X + BUTTON_WIDTH)){
+			buttonClick(L2, action);
+		} else if(ratioX >= SIXTH_BUTTON_UP_LEFT_X && ratioX <= (SIXTH_BUTTON_UP_LEFT_X + BUTTON_WIDTH)) {
+			buttonClick(R2, action);
+		}
+	} else if(ratioY >= ROUTING_AREA_TOP && ratioY <= ROUTING_AREA_BOTTOM){
+		if(ratioX >= ROUTING_LEFT_X1 && ratioX <= ROUTING_LEFT_X2 && ratioY >= ROUTING_RIGHT_LEFT_Y1 && ratioY<= ROUTING_RIGHT_LEFT_Y2) {
+			buttonClick(LEFT, action);
+		} else if(ratioX >= ROUTING_RIGHT_X1 && ratioX <= ROUTING_RIGHT_X2 && ratioY >= ROUTING_RIGHT_LEFT_Y1 && ratioY<= ROUTING_RIGHT_LEFT_Y2) {
+			buttonClick(RIGHT, action);
+		} else if(ratioY >= ROUTING_DOWN_Y2 && ratioY <= ROUTING_DOWN_Y1 && ratioX >= ROUTING_UP_DOWN_X1 && ratioX <= ROUTING_UP_DOWN_X2) {
+			buttonClick(DOWN, action);
+		} else if(ratioY >= ROUTING_UP_Y2 && ratioY <= ROUTING_UP_Y1 && ratioX >= ROUTING_UP_DOWN_X1 && ratioX <= ROUTING_UP_DOWN_X2) {
+			buttonClick(UP, action);
+		}
+	}
+}
+
+void MgeoDortgozHead::buttonClick(int b, int action)
+{
+	if (action == 1)
+		setProperty(20, b);
+	else if (action == -1)
+		setProperty(20, -1 * b);
+}
+
 int MgeoDortgozHead::syncNext()
 {
 	unsigned char *p = protoBytes[nextSync];
@@ -794,7 +888,10 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 		uint fov = bytes[10] & 0x0F;
 		if(fov >= 0x07)
 			setRegister(R_FOV, fov - 0x07);
-		setRegister(R_STATE, bytes[6] & 0x03);
+		if(bytes[6] & 0x03 == 0x01)
+			setRegister(R_STATE, 0);
+		if(bytes[6] & 0x03 == 0x02)
+			setRegister(R_STATE, 1);
 //		setRegister(, bytes[7])
 
 		setRegister(R_VIDEO_STATE, bytes[8] & 0x03);
@@ -811,7 +908,9 @@ int MgeoDortgozHead::dataReady(const unsigned char *bytes, int len)
 		setRegister(R_CONTRAST, bytes[21] >> 1);
 		setRegister(R_RETICLE_MODE, bytes[28] & 0x03);
 		setRegister(R_RETICLE_INTENSITY, bytes[28] >> 0x0F);
-		setRegister(R_SYMBOLOGY, bytes[29] >> 6);
+		if (bytes[29] >> 6 == 0x02)
+			setRegister(R_SYMBOLOGY, 0);
+		else setRegister(R_SYMBOLOGY, 1);
 		setRegister(R_POLARITY, bytes[34] & 0x07 );
 		setRegister(R_THERMAL_TABLE, (bytes[34] >> 4) & 0x03);
 		setRegister(R_IMG_PROC_MODE, bytes[35] & 0x0F);
