@@ -105,7 +105,7 @@ int IRDomeDriver::setTarget(const QString &targetUri)
 			SpeedRegulation sreg = getSpeedRegulation();
 			sreg.enable = true;
 			sreg.ipol = SpeedRegulation::LINEAR;
-			sreg.minSpeed = 0.01;
+			sreg.minSpeed = 0.016;
 			sreg.minZoom = 0;
 			sreg.maxZoom = 16384;
 			sreg.zoomHead = headModule;
